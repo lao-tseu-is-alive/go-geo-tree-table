@@ -30,7 +30,7 @@ jobs:
         run: |
           LDFLAGS="-s -w -X ${APP_REPOSITORY}/pkg/version.BuildStamp=${NOW} -X ${APP_REPOSITORY}/pkg/version.REVISION=${REVISION}"
           echo "LDFLAGS=$LDFLAGS" >> $GITHUB_ENV
-          env:
+        env:
           APP_REPOSITORY: ${{ env.APP_REPOSITORY }}
           NOW: ${{ env.NOW }}
           REVISION: ${{ env.REVISION }}
