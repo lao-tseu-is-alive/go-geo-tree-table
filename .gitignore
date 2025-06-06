@@ -31,3 +31,4 @@ go.work.sum
 .idea/
 .vscode/
 /.env_for_github.txt
+/geoTreeTableServer-linux-amd64
