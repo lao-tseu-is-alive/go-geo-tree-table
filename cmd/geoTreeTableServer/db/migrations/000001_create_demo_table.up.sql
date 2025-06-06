@@ -1,22 +1,30 @@
 CREATE TABLE IF NOT EXISTS public.cada_tree_position
-(
-    id                    serial
-        constraint cada_tree_position_pk primary key,
-    goeland_thing_id      integer,
-    cada_id               integer                 not null,
-    cada_code             integer                 not null,
-    pos_east              double precision        not null,
-    pos_north             double precision        not null,
-    pos_altitude          double precision,
-    tree_circumference_cm integer,
-    tree_crown_m          integer,
-    tree_type             text                    not null,
-    cada_date             date                    not null,
-    cada_comment          text                    not null,
-    name                  text                    not null,
-    description           text,
-    created_at            timestamp default now() not null,
-    geom                  geometry(POINT, 2056)   NOT NULL,
+(   -- using Postgres Native UUID v4 128bit https://www.postgresql.org/docs/14/datatype-uuid.html
+    -- this choice allows to do client side generation of the id UUID v4
+    -- https://shekhargulati.com/2022/06/23/choosing-a-primary-key-type-in-postgres/
+
+    id                     uuid    not null
+        constraint pk_cada_tree_position primary key default gen_random_uuid(),
+    goeland_thing_id       integer,
+    cada_id                integer                 not null,
+    cada_code              integer                 not null,
+    pos_east               double precision        not null,
+    pos_north              double precision        not null,
+    pos_altitude           double precision,
+    tree_circumference_cm  integer,
+    tree_crown_m           integer,
+    cada_tree_type         text                    null,
+    cada_date              date                    not null,
+    cada_comment           text                    not null,
+    description            text,
+    created_at             timestamp default now() not null,
+    created_by             integer                 not null,
+    goeland_thing_saved_at timestamp,
+    goeland_thing_saved_by integer,
+    deleted                boolean,
+    deleted_at             timestamp,
+    deleted_by             integer,
+    geom                   geometry(POINT, 2056)   NOT NULL,
     EXCLUDE USING gist (geom WITH &&) WHERE (ST_DWithin(geom, geom, 0.1))
 );
 /*
