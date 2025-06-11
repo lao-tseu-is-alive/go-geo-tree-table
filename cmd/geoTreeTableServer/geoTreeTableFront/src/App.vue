@@ -24,7 +24,7 @@
   <v-app>
     <v-app-bar app color="primary" dark>
       <v-app-bar-nav-icon @click.stop="toggleDrawer" />
-      <v-toolbar-title>{{ APP }} v{{ VERSION }}</v-toolbar-title>
+      <v-toolbar-title>{{ AppName }} v{{ AppVersion }}</v-toolbar-title>
       <v-btn v-if="DEV" @click="showDebug = !showDebug">{{
           showDebug ? "Hide Debug" : "Show Debug"
         }}</v-btn>
@@ -79,13 +79,18 @@ import { isNullOrUndefined } from "@/tools/utils";
 //import MyTable from "./components/Table.vue";
 //import MyDataLoader from "./components/DataLoader.vue";
 import VResizeDrawer from "@wdns/vuetify-resize-drawer";
-import { APP, getLog, DEV, BUILD_DATE, VERSION } from "@/config";
+import {BACKEND_URL, DEV, getLog} from "@/config";
 import MapLausanne from "@/components/Map.vue";
 import { mapClickInfo } from "@/components/Map";
 import { useDataStore } from "@/stores/DataStore";
 import { storeToRefs } from "pinia";
+import {fetchAppInfo} from "@/tools/appInfo";
 
-const log = getLog(APP, 4, 2);
+let log = getLog("APP", 4, 2);;
+const AppName = ref("");
+const AppVersion = ref("");
+const AppRepository = ref("");
+const AppAuthUrl = ref("");
 const dataLoaded = ref(true);
 const mapZoom = ref(14);
 const placeStFrancoisLausanne = [2538202, 1152364];
@@ -179,7 +184,19 @@ const toggleDrawer = () => {
   drawer.value = !drawer.value;
 };
 
-onMounted(() => {
-  log.t(`Main App.vue ${APP}-${VERSION}, du ${BUILD_DATE}`);
+onMounted(async () => {
+  log.t(`onMounted Main App.vue ${BACKEND_URL}`);
+  try {
+    const appData = await fetchAppInfo(`http://localhost:7979/goAppInfo`);
+    AppName.value = appData.app;
+    AppVersion.value = appData.version;
+    AppRepository.value = appData.repository;
+    AppAuthUrl.value = appData.authUrl;
+    log = getLog(AppName.value, 4, 2)
+    log.t(`Main App.vue ${AppName.value}-${AppVersion.value}, at ${AppRepository.value}`)
+  } catch (error) {
+    log.e("Error fetching app info:", error);
+  }
+
 });
 </script>
