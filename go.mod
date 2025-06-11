@@ -5,7 +5,7 @@ go 1.24.3
 require (
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.14
+	github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.15
 )
 
 require (
