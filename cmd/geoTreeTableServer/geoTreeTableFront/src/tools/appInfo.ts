@@ -10,7 +10,7 @@ const log = getLog("appInfo", 4, 2);
  * @property {string} repository - The URL of the application's code repository.
  * @property {string} authUrl - The authentication URL for the application's login form.
  */
-interface AppInfo {
+export interface AppInfo {
     app: string;
     version: string;
     repository: string;
