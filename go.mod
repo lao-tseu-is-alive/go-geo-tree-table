@@ -6,10 +6,13 @@ require (
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.15
+	github.com/oapi-codegen/runtime v1.1.1
 )
 
 require (
+	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/cristalhq/jwt/v5 v5.4.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438 // indirect

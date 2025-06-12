@@ -45,7 +45,6 @@ paths:
           explode: true
           schema:
             type: boolean
-            format: int32
         - name: limit
           in: query
           description: maximum number of results to return
@@ -134,7 +133,6 @@ paths:
           explode: true
           schema:
             type: boolean
-            format: int32
         - name: created_by
           in: query
           description: id of the creator to filter by the cadaTreePositions to return
@@ -203,7 +201,6 @@ paths:
           explode: true
           schema:
             type: boolean
-            format: int32
         - name: created_by
           in: query
           description: id of the creator to filter by the cadaTreePositions to return
