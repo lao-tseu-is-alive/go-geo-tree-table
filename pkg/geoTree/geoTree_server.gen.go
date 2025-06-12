@@ -14,27 +14,30 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// List returns a list of cadaTreePosition
-	// (GET /cadaTreePosition)
+	// List returns a list of geoTree
+	// (GET /geoTree)
 	List(ctx echo.Context, params ListParams) error
-	// Create will create a new cadaTreePosition
-	// (POST /cadaTreePosition)
+	// Create will create a new geoTree
+	// (POST /geoTree)
 	Create(ctx echo.Context) error
-	// Count returns the number of cadaTreePosition based on search criterias
-	// (GET /cadaTreePosition/count)
+	// Count returns the number of geoTree based on search criterias
+	// (GET /geoTree/count)
 	Count(ctx echo.Context, params CountParams) error
-	// List returns a geoJson of cadaTreePositions found
-	// (GET /cadaTreePosition/geojson)
+	// List returns a geoJson of geoTrees found
+	// (GET /geoTree/geojson)
 	GeoJson(ctx echo.Context, params GeoJsonParams) error
-	// Delete allows to delete a specific cadaTreePositionId
-	// (DELETE /cadaTreePosition/{cadaTreePositionId})
-	Delete(ctx echo.Context, cadaTreePositionId openapi_types.UUID) error
-	// Get will retrieve in backend all information about a specific cadaTreePositionId
-	// (GET /cadaTreePosition/{cadaTreePositionId})
-	Get(ctx echo.Context, cadaTreePositionId openapi_types.UUID) error
-	// Update allows to modify information about a specific cadaTreePositionId
-	// (PUT /cadaTreePosition/{cadaTreePositionId})
-	Update(ctx echo.Context, cadaTreePositionId openapi_types.UUID) error
+	// Update allows to modify goeland_thing_id information about a specific geoTreeId
+	// (PUT /geoTree/setGoelandThingId/{geoTreeId})
+	UpdateGoelandThingId(ctx echo.Context, geoTreeId openapi_types.UUID) error
+	// Delete allows to delete a specific geoTreeId
+	// (DELETE /geoTree/{geoTreeId})
+	Delete(ctx echo.Context, geoTreeId openapi_types.UUID) error
+	// Get will retrieve in backend all information about a specific geoTreeId
+	// (GET /geoTree/{geoTreeId})
+	Get(ctx echo.Context, geoTreeId openapi_types.UUID) error
+	// Update allows to modify information about a specific geoTreeId
+	// (PUT /geoTree/{geoTreeId})
+	Update(ctx echo.Context, geoTreeId openapi_types.UUID) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -116,13 +119,6 @@ func (w *ServerInterfaceWrapper) Count(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter cada_date: %s", err))
 	}
 
-	// ------------- Optional query parameter "deleted" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "deleted", ctx.QueryParams(), &params.Deleted)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter deleted: %s", err))
-	}
-
 	// ------------- Optional query parameter "created_by" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "created_by", ctx.QueryParams(), &params.CreatedBy)
@@ -150,13 +146,6 @@ func (w *ServerInterfaceWrapper) GeoJson(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter cada_date: %s", err))
 	}
 
-	// ------------- Optional query parameter "deleted" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "deleted", ctx.QueryParams(), &params.Deleted)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter deleted: %s", err))
-	}
-
 	// ------------- Optional query parameter "created_by" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "created_by", ctx.QueryParams(), &params.CreatedBy)
@@ -164,76 +153,80 @@ func (w *ServerInterfaceWrapper) GeoJson(ctx echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter created_by: %s", err))
 	}
 
-	// ------------- Optional query parameter "limit" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", ctx.QueryParams(), &params.Limit)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter limit: %s", err))
-	}
-
-	// ------------- Optional query parameter "offset" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "offset", ctx.QueryParams(), &params.Offset)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter offset: %s", err))
-	}
-
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GeoJson(ctx, params)
+	return err
+}
+
+// UpdateGoelandThingId converts echo context to params.
+func (w *ServerInterfaceWrapper) UpdateGoelandThingId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "geoTreeId" -------------
+	var geoTreeId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "geoTreeId", ctx.Param("geoTreeId"), &geoTreeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter geoTreeId: %s", err))
+	}
+
+	ctx.Set(JWTAuthScopes, []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.UpdateGoelandThingId(ctx, geoTreeId)
 	return err
 }
 
 // Delete converts echo context to params.
 func (w *ServerInterfaceWrapper) Delete(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "cadaTreePositionId" -------------
-	var cadaTreePositionId openapi_types.UUID
+	// ------------- Path parameter "geoTreeId" -------------
+	var geoTreeId openapi_types.UUID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "cadaTreePositionId", ctx.Param("cadaTreePositionId"), &cadaTreePositionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "geoTreeId", ctx.Param("geoTreeId"), &geoTreeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter cadaTreePositionId: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter geoTreeId: %s", err))
 	}
 
 	ctx.Set(JWTAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.Delete(ctx, cadaTreePositionId)
+	err = w.Handler.Delete(ctx, geoTreeId)
 	return err
 }
 
 // Get converts echo context to params.
 func (w *ServerInterfaceWrapper) Get(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "cadaTreePositionId" -------------
-	var cadaTreePositionId openapi_types.UUID
+	// ------------- Path parameter "geoTreeId" -------------
+	var geoTreeId openapi_types.UUID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "cadaTreePositionId", ctx.Param("cadaTreePositionId"), &cadaTreePositionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "geoTreeId", ctx.Param("geoTreeId"), &geoTreeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter cadaTreePositionId: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter geoTreeId: %s", err))
 	}
 
 	ctx.Set(JWTAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.Get(ctx, cadaTreePositionId)
+	err = w.Handler.Get(ctx, geoTreeId)
 	return err
 }
 
 // Update converts echo context to params.
 func (w *ServerInterfaceWrapper) Update(ctx echo.Context) error {
 	var err error
-	// ------------- Path parameter "cadaTreePositionId" -------------
-	var cadaTreePositionId openapi_types.UUID
+	// ------------- Path parameter "geoTreeId" -------------
+	var geoTreeId openapi_types.UUID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "cadaTreePositionId", ctx.Param("cadaTreePositionId"), &cadaTreePositionId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "geoTreeId", ctx.Param("geoTreeId"), &geoTreeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter cadaTreePositionId: %s", err))
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter geoTreeId: %s", err))
 	}
 
 	ctx.Set(JWTAuthScopes, []string{})
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.Update(ctx, cadaTreePositionId)
+	err = w.Handler.Update(ctx, geoTreeId)
 	return err
 }
 
@@ -265,12 +258,13 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/cadaTreePosition", wrapper.List)
-	router.POST(baseURL+"/cadaTreePosition", wrapper.Create)
-	router.GET(baseURL+"/cadaTreePosition/count", wrapper.Count)
-	router.GET(baseURL+"/cadaTreePosition/geojson", wrapper.GeoJson)
-	router.DELETE(baseURL+"/cadaTreePosition/:cadaTreePositionId", wrapper.Delete)
-	router.GET(baseURL+"/cadaTreePosition/:cadaTreePositionId", wrapper.Get)
-	router.PUT(baseURL+"/cadaTreePosition/:cadaTreePositionId", wrapper.Update)
+	router.GET(baseURL+"/geoTree", wrapper.List)
+	router.POST(baseURL+"/geoTree", wrapper.Create)
+	router.GET(baseURL+"/geoTree/count", wrapper.Count)
+	router.GET(baseURL+"/geoTree/geojson", wrapper.GeoJson)
+	router.PUT(baseURL+"/geoTree/setGoelandThingId/:geoTreeId", wrapper.UpdateGoelandThingId)
+	router.DELETE(baseURL+"/geoTree/:geoTreeId", wrapper.Delete)
+	router.GET(baseURL+"/geoTree/:geoTreeId", wrapper.Get)
+	router.PUT(baseURL+"/geoTree/:geoTreeId", wrapper.Update)
 
 }

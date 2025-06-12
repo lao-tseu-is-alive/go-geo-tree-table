@@ -15,6 +15,7 @@ import (
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/golog"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/metadata"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/tools"
+	"github.com/lao-tseu-is-alive/go-geo-tree-table/pkg/geoTree"
 	"github.com/lao-tseu-is-alive/go-geo-tree-table/pkg/version"
 	"log"
 	"net/http"
@@ -228,6 +229,20 @@ func main() {
 	e.POST(jwtAuthUrl, yourService.login)
 	r := server.GetRestrictedGroup()
 	r.GET("/secret", yourService.restricted)
+
+	geoStore := geoTree.GetStorageInstanceOrPanic("pgx", db, l)
+
+	// now with restricted group reference you can register your secured handlers defined in OpenApi things.yaml
+	thingService := geoTree.Service{
+		Log:              l,
+		DbConn:           db,
+		Store:            geoStore,
+		Server:           server,
+		ListDefaultLimit: 50,
+	}
+
+	geoTree.RegisterHandlers(r, &thingService)
+
 	err = server.StartServer()
 	if err != nil {
 		l.Fatal("💥💥 error doing server.StartServer error: %v'\n", err)

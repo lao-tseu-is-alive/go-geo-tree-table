@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public.cada_tree_position
     created_by             integer                 not null,
     goeland_thing_saved_at timestamp,
     goeland_thing_saved_by integer,
-    deleted                boolean,
+    deleted                boolean default false   not null,
     deleted_at             timestamp,
     deleted_by             integer,
     geom                   geometry(POINT, 2056)   NOT NULL,

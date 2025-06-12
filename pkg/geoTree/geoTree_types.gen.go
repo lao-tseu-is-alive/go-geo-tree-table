@@ -19,8 +19,8 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-// CadaTreePosition defines model for cadaTreePosition.
-type CadaTreePosition struct {
+// GeoTree defines model for geoTree.
+type GeoTree struct {
 	// CadaCode code interne de cadastre pour ce type de point
 	CadaCode    int32              `json:"cada_code"`
 	CadaComment string             `json:"cada_comment"`
@@ -64,14 +64,29 @@ type CadaTreePosition struct {
 	TreeCrownM          *int32             `json:"tree_crown_m,omitempty"`
 }
 
-// CadaTreePositionList defines model for cadaTreePositionList.
-type CadaTreePositionList struct {
+// GeoTreeGoelandThingId defines model for geoTreeGoelandThingId.
+type GeoTreeGoelandThingId struct {
+	// GoelandThingId FK sur la clé primaire du goéland Thing de type arbre pour cette position d'objet
+	GoelandThingId int32 `json:"goeland_thing_id"`
+
+	// GoelandThingSavedBy FK sur la clé primaire de utilisateur spadom qui alimente l'info goéland Thing de type arbre pour cette position d'objet
+	GoelandThingSavedBy int32 `json:"goeland_thing_saved_by"`
+
+	// Id cet Universally unique identifier (UUID) sera généré automatiquement pour vous
+	Id openapi_types.UUID `json:"id"`
+}
+
+// GeoTreeList defines model for geoTreeList.
+type GeoTreeList struct {
 	CadaComment string             `json:"cada_comment"`
 	CadaDate    openapi_types.Date `json:"cada_date"`
 
 	// CadaId identifiant interne de cadastre pour cet objet
 	CadaId       int32  `json:"cada_id"`
 	CadaTreeType string `json:"cada_tree_type"`
+
+	// CreatedAt date de création de cet enregistrement dans la base
+	CreatedAt time.Time `json:"created_at"`
 
 	// CreatedBy identifiant de l'utilisateur ayant créé cet enregistrement
 	CreatedBy int32 `json:"created_by"`
@@ -89,13 +104,13 @@ type CadaTreePositionList struct {
 
 // ListParams defines parameters for List.
 type ListParams struct {
-	// CadaDate cada_date is the date to filter by the cadaTreePositions to return
+	// CadaDate cada_date is the date to filter by the geoTrees to return
 	CadaDate *openapi_types.Date `form:"cada_date,omitempty" json:"cada_date,omitempty"`
 
-	// CreatedBy id of the creator to filter by the cadaTreePositions to return
+	// CreatedBy id of the creator to filter by the geoTrees to return
 	CreatedBy *int32 `form:"created_by,omitempty" json:"created_by,omitempty"`
 
-	// Deleted add records that are deleted to the list of cadaTreePositions to return
+	// Deleted add records that are deleted to the list of geoTrees to return
 	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
 
 	// Limit maximum number of results to return
@@ -107,36 +122,27 @@ type ListParams struct {
 
 // CountParams defines parameters for Count.
 type CountParams struct {
-	// CadaDate cada_date is the date to filter by the cadaTreePositions to return
+	// CadaDate cada_date is the date to filter by the geoTrees to return
 	CadaDate *openapi_types.Date `form:"cada_date,omitempty" json:"cada_date,omitempty"`
 
-	// Deleted add records that are deleted to the list of cadaTreePositions to return
-	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
-
-	// CreatedBy id of the creator to filter by the cadaTreePositions to return
+	// CreatedBy id of the creator to filter by the geoTrees to return
 	CreatedBy *int32 `form:"created_by,omitempty" json:"created_by,omitempty"`
 }
 
 // GeoJsonParams defines parameters for GeoJson.
 type GeoJsonParams struct {
-	// CadaDate cada_date is the date to filter by the cadaTreePositions to return
+	// CadaDate cada_date is the date to filter by the geoTrees to return
 	CadaDate *openapi_types.Date `form:"cada_date,omitempty" json:"cada_date,omitempty"`
 
-	// Deleted add records that are deleted to the list of cadaTreePositions to return
-	Deleted *bool `form:"deleted,omitempty" json:"deleted,omitempty"`
-
-	// CreatedBy id of the creator to filter by the cadaTreePositions to return
+	// CreatedBy id of the creator to filter by the geoTrees to return
 	CreatedBy *int32 `form:"created_by,omitempty" json:"created_by,omitempty"`
-
-	// Limit maximum number of results to return
-	Limit *int32 `form:"limit,omitempty" json:"limit,omitempty"`
-
-	// Offset offset rows to skip before returning rows
-	Offset *int32 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // CreateJSONRequestBody defines body for Create for application/json ContentType.
-type CreateJSONRequestBody = CadaTreePosition
+type CreateJSONRequestBody = GeoTree
+
+// UpdateGoelandThingIdFormdataRequestBody defines body for UpdateGoelandThingId for application/x-www-form-urlencoded ContentType.
+type UpdateGoelandThingIdFormdataRequestBody = GeoTreeGoelandThingId
 
 // UpdateFormdataRequestBody defines body for Update for application/x-www-form-urlencoded ContentType.
-type UpdateFormdataRequestBody = CadaTreePosition
+type UpdateFormdataRequestBody = GeoTree
