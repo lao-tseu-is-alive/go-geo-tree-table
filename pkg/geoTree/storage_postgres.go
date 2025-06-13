@@ -190,39 +190,153 @@ func (db *PGX) Create(geoTree GeoTree) (*GeoTree, error) {
 }
 
 // Update the thing stored in DB with given id and other information in struct
-func (db *PGX) Update(id uuid.UUID, t GeoTree) (*GeoTree, error) {
-	db.log.Debug("trace : entering Update(id:%q, %q)", id, t.Id)
-	panic("implement me")
-	/*
-		rowsAffected, err := db.dbi.ExecActionQuery(updateGeoTree,
-			t.Id, t.TypeId, t.Name, &t.Description, &t.Comment, &t.ExternalId, &t.ExternalRef, //$7
-			&t.BuildAt, &t.Status, &t.ContainedBy, &t.ContainedByOld, t.Inactivated, &t.InactivatedTime, &t.InactivatedBy, &t.InactivatedReason, //$15
-			t.Validated, &t.ValidatedTime, &t.ValidatedBy, //$18
-			&t.ManagedBy, &t.LastModifiedBy, &t.MoreData, t.PosX, t.PosY) //$23
-		if err != nil {
+func (db *PGX) Update(id uuid.UUID, geoTree GeoTree) (*GeoTree, error) {
+	db.log.Debug("trace : entering Update(id:%q, data:%+v)", id, geoTree)
+	if id == uuid.Nil {
+		return nil, ErrInvalidUUID
+	}
+	if geoTree.Id != id {
+		db.log.Warn("Update function called with id: %s and geoTree.Id: %s mismatch", id, geoTree.Id)
+		// Decide if this is an error or if geoTree.Id should be ignored/overwritten.
+		// For now, assume 'id' parameter is authoritative. geoTree.Id will be ignored by the query.
+	}
 
-			db.log.Error("Update(%q) unexpectedly failed. error : %v", t.Id, err)
-			return nil, err
-		}
-		if rowsAffected < 1 {
-			db.log.Error("Update(%q) no row was created so create as failed. error : %v", t.Id, err)
-			return nil, err
-		}
+	// Ensure UpdatedBy is set, if not, log a warning or error, or use a default.
+	if geoTree.UpdatedBy == uuid.Nil {
+		db.log.Warn("geoTree.UpdatedBy is not set for Update operation on id: %s", id)
+		// Potentially return an error: return nil, errors.New("UpdatedBy field is mandatory")
+		// Or use a system/default user. For now, proceeding with what's provided.
+	}
 
-		// if we get to here all is good, so let's retrieve a fresh copy to send it back
-		updatedGeoTree, err := db.Get(t.Id)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("error %v: thing was updated, but can not be retrieved.", err))
-		}
-		return updatedGeoTree, nil
+	// Arguments for updateGeoTree:
+	// $1: id (for WHERE)
+	// $2: cada_id, $3: cada_code, $4: pos_east, $5: pos_north, $6: pos_altitude,
+	// $7: tree_circumference_cm, $8: tree_crown_m, $9: cada_tree_type, $10: cada_date,
+	// $11: cada_comment, $12: description, $13: updated_by, $14: name, $15: status
+	// $16: lock_version (for WHERE)
+	rowsAffected, err := db.dbi.ExecActionQuery(context.Background(), updateGeoTree,
+		id,                       // $1
+		geoTree.CadaId,           // $2
+		geoTree.CadaCode,         // $3
+		geoTree.PosEast,          // $4
+		geoTree.PosNorth,         // $5
+		geoTree.PosAltitude,      // $6
+		geoTree.TreeCircumferenceCm, // $7
+		geoTree.TreeCrownM,       // $8
+		geoTree.CadaTreeType,     // $9
+		geoTree.CadaDate,         // $10
+		geoTree.CadaComment,      // $11
+		geoTree.Description,      // $12
+		geoTree.UpdatedBy,        // $13
+		geoTree.Name,             // $14
+		geoTree.Status,           // $15
+		geoTree.LockVersion,      // $16
+	)
 
-	*/
+	if err != nil {
+		db.log.Error("Update(id:%q) unexpectedly failed. error : %v", id, err)
+		// Consider checking for specific pgx errors, like constraint violations or data type issues.
+		return nil, err
+	}
+
+	if rowsAffected < 1 {
+		db.log.Warn("Update(id:%q) no row was updated. This might be due to incorrect id or lock_version mismatch.", id)
+		// It's important to distinguish "not found" from "version mismatch".
+		// If RETURNING id was used in query and it returned nothing, that's a good indicator.
+		// For now, returning a generic error.
+		return nil, ErrNotFoundOrOldVersion // Or simply ErrNotFound if lock_version handling implies "not found"
+	}
+
+	db.log.Info("Update(id:%q) successfully updated %d row(s)", id, rowsAffected)
+
+	// Retrieve and return the updated geoTree object
+	updatedGeoTree, getErr := db.Get(id)
+	if getErr != nil {
+		db.log.Error("Update(id:%q) was successful, but failed to retrieve the updated record. error : %v", id, getErr)
+		return nil, fmt.Errorf("error %w: thing was updated, but can not be retrieved", getErr)
+	}
+	return updatedGeoTree, nil
 }
 
 // UpdateGoelandThingId updates the goeland_thing_id value for the geoTree with given ID in the storage.
 func (db *PGX) UpdateGoelandThingId(id uuid.UUID, geoTreeGoelandThingId GeoTreeGoelandThingId) (*GeoTreeGoelandThingId, error) {
-	db.log.Debug("trace : entering UpdateGoelandThingId(id:%q, %q)", id, geoTreeGoelandThingId.GoelandThingId)
-	panic("implement me")
+	db.log.Debug("trace : entering UpdateGoelandThingId(id:%q, goelandId:%q, savedBy:%q)", id, geoTreeGoelandThingId.GoelandThingId, geoTreeGoelandThingId.GoelandThingSavedBy)
+	if id == uuid.Nil {
+		return nil, ErrInvalidUUID
+	}
+	if geoTreeGoelandThingId.GoelandThingSavedBy == uuid.Nil {
+		db.log.Warn("geoTreeGoelandThingId.GoelandThingSavedBy is not set for UpdateGoelandThingId on id: %s", id)
+		// Depending on requirements, this could be an error or a default value could be used.
+		// return nil, errors.New("GoelandThingSavedBy is mandatory")
+	}
+
+	// Arguments for updateGeoTreeGoelandThingId:
+	// $1: id (for WHERE)
+	// $2: goeland_thing_id
+	// $3: goeland_thing_saved_by
+	rowsAffected, err := db.dbi.ExecActionQuery(context.Background(), updateGeoTreeGoelandThingId,
+		id,
+		geoTreeGoelandThingId.GoelandThingId,
+		geoTreeGoelandThingId.GoelandThingSavedBy,
+	)
+
+	if err != nil {
+		db.log.Error("UpdateGoelandThingId(id:%q) unexpectedly failed. error : %v", id, err)
+		return nil, err
+	}
+
+	if rowsAffected < 1 {
+		db.log.Warn("UpdateGoelandThingId(id:%q) no row was updated. This might be due to incorrect id or lock_version mismatch (if lock_version was part of WHERE).", id)
+		// The current updateGeoTreeGoelandThingId query does not check lock_version in WHERE, but it does increment it.
+		// So, 0 rows affected means the ID was not found.
+		return nil, ErrNotFound
+	}
+
+	db.log.Info("UpdateGoelandThingId(id:%q) successfully updated goeland_thing_id for %d row(s)", id, rowsAffected)
+
+	// The function signature asks to return *GeoTreeGoelandThingId.
+	// We can return the input object as it contains the new GoelandThingId and GoelandThingSavedBy.
+	// If GoelandThingSavedAt was critical to return, we'd need to fetch it (e.g. via RETURNING in query or a Get).
+	// For now, returning the modified input is simplest and matches the signature.
+	// Create a new pointer to avoid returning a pointer to the input struct if it was passed by value.
+	// However, geoTreeGoelandThingId is already a value, so returning its address is fine if the caller expects this.
+	// Let's make a copy to be safe and explicit.
+	// Actually, the current query for updateGeoTreeGoelandThingId updates `updated_at` and `lock_version`
+	// and `goeland_thing_saved_at`. If we want to return these fresh values, we'd need to do a Get.
+	// But the return type is GeoTreeGoelandThingId, which only has GoelandThingId and GoelandThingSavedBy.
+	// So, returning the input (or a copy) is fine.
+
+	// To ensure we are not returning a pointer to a method argument that might be on the stack (if GeoTreeGoelandThingId was a large struct passed by value)
+	// it's safer to construct a new one or ensure the input itself is a pointer.
+	// Given GeoTreeGoelandThingId is a small struct, returning a modified copy of the input is fine.
+	// The current signature implies we don't need to return the full GeoTree.
+
+	// Let's assume the caller is happy with the GoelandThingId and GoelandThingSavedBy they provided.
+	// If the SavedAt time was needed, the query/return type would need adjustment or a subsequent Get.
+	// The simplest is to return the object that was passed in, potentially modified if needed.
+	// Since GoelandThingSavedAt is set by CURRENT_TIMESTAMP, we don't have it here unless we query it.
+	// The struct GeoTreeGoelandThingId doesn't have SavedAt.
+
+	// So, returning the input struct is fine.
+	// To be absolutely correct according to typical patterns, one might fetch the record.
+	// But let's stick to the minimal interpretation of the current requirements.
+	// The struct has ID, GoelandThingId, GoelandThingSavedBy.
+	// We have ID from param, the other two from geoTreeGoelandThingId.
+
+	// Create a new instance to return, populating with known values.
+	// This avoids returning the input directly if it's a value type and we want to return a pointer.
+	// geoTreeGoelandThingId is a value type.
+
+	// The current struct definition for GeoTreeGoelandThingId in the problem description only has
+	// GoelandThingId and GoelandThingSavedBy. If it also had ID, we could set it.
+	// Let's assume the caller only cares about the fields in GeoTreeGoelandThingId.
+
+	// Return a pointer to a new struct with the values.
+	// The 'id' is not part of GeoTreeGoelandThingId struct.
+	return &GeoTreeGoelandThingId{
+		GoelandThingId:      geoTreeGoelandThingId.GoelandThingId,
+		GoelandThingSavedBy: geoTreeGoelandThingId.GoelandThingSavedBy,
+	}, nil
 }
 
 // Delete the thing stored in DB with given id
