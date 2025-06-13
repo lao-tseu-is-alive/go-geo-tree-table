@@ -66,36 +66,26 @@ FROM (SELECT 'FeatureCollection'                         AS type,
 `
 
 	updateGeoTree = `
-UPDATE cada_tree_position SET
-    cada_id = $2,
-    cada_code = $3,
-    pos_east = $4,
-    pos_north = $5,
-    pos_altitude = $6,
+UPDATE cada_tree_position
+SET cada_id               = $2,
+    cada_code             = $3,
+    pos_east              = $4,
+    pos_north             = $5,
+    pos_altitude          = $6,
     tree_circumference_cm = $7,
-    tree_crown_m = $8,
-    cada_tree_type = $9,
-    cada_date = $10,
-    cada_comment = $11,
-    description = $12,
-    updated_at = CURRENT_TIMESTAMP,
-    updated_by = $13,
-    geom = ST_SetSRID(ST_MakePoint($4, $5), 2056),
-    lock_version = lock_version + 1,
-    name = $14, -- Assuming name is part of the update, added as a new field
-    status = $15 -- Assuming status is part of the update, added as a new field
-WHERE id = $1 AND lock_version = $16`
-	// Note: created_by is generally not updated.
-	// goeland_id and goeland_thing_id might be updated via specific functions.
+    tree_crown_m          = $8,
+    cada_tree_type        = $9,
+    cada_date             = $10,
+    cada_comment          = $11,
+    description           = $12,
+    geom                  = ST_SetSRID(ST_MakePoint($4, $5), 2056)
+WHERE id = $1;
+`
 
 	updateGeoTreeGoelandThingId = `
 UPDATE cada_tree_position SET
 	goeland_thing_id = $2,
 	goeland_thing_saved_by = $3,
-	goeland_thing_saved_at = CURRENT_TIMESTAMP,
-	updated_at = CURRENT_TIMESTAMP,
-	updated_by = $3, -- Assuming updated_by is the user saving the Goeland ID
-	lock_version = lock_version + 1
+	goeland_thing_saved_at = CURRENT_TIMESTAMP
 WHERE id = $1`
-)
 )
