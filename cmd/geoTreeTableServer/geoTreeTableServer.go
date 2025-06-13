@@ -24,18 +24,19 @@ import (
 )
 
 const (
-	defaultPort                = 8080
-	defaultDBPort              = 5432
-	defaultDBIp                = "127.0.0.1"
-	defaultDBSslMode           = "prefer"
-	defaultWebRootDir          = "geoTreeTableFront/dist/"
-	defaultSqlDbMigrationsPath = "db/migrations"
-	defaultAdminUser           = "goadmin"
-	defaultAdminEmail          = "goadmin@yourdomain.org"
-	defaultAdminId             = 960901
-	charsetUTF8                = "charset=UTF-8"
-	MIMEHtml                   = "text/html"
-	MIMEHtmlCharsetUTF8        = MIMEHtml + "; " + charsetUTF8
+	defaultPort                  = 8080
+	defaultDBPort                = 5432
+	defaultDBIp                  = "127.0.0.1"
+	defaultDBSslMode             = "prefer"
+	defaultRestrictedUrlBasePath = "/api/v1"
+	defaultWebRootDir            = "geoTreeTableFront/dist/"
+	defaultSqlDbMigrationsPath   = "db/migrations"
+	defaultAdminUser             = "goadmin"
+	defaultAdminEmail            = "goadmin@yourdomain.org"
+	defaultAdminId               = 960901
+	charsetUTF8                  = "charset=UTF-8"
+	MIMEHtml                     = "text/html"
+	MIMEHtmlCharsetUTF8          = MIMEHtml + "; " + charsetUTF8
 )
 
 // content holds our static web server content.
@@ -192,7 +193,7 @@ func main() {
 			Logger:        l,
 			WebRootDir:    defaultWebRootDir,
 			Content:       content,
-			RestrictedUrl: "/api/v1",
+			RestrictedUrl: defaultRestrictedUrlBasePath,
 		},
 	)
 

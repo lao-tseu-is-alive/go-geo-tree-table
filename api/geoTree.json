@@ -593,7 +593,7 @@
             "title": "commentaire cadastre (campagne de levé)"
           },
           "cada_date": {
-            "format": "date",
+            "format": "date-time",
             "type": "string",
             "title": "date du levé par cadastre pour cet objet"
           },
@@ -664,7 +664,6 @@
       "geoTreeList": {
         "required": [
           "id",
-          "goeland_thing_id",
           "cada_id",
           "tree_circumference_cm",
           "tree_crown_m",
@@ -716,7 +715,7 @@
             "title": "commentaire cadastre (campagne de levé)"
           },
           "cada_date": {
-            "format": "date",
+            "format": "date-time",
             "type": "string",
             "title": "date du levé par cadastre pour cet objet"
           },

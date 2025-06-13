@@ -1,7 +1,7 @@
 package geoTree
 
 const (
-	countGeoTree  = "SELECT COUNT(*) FROM cada_tree_position WHERE deleted = false"
+	countGeoTree  = "SELECT COUNT(*) FROM cada_tree_position WHERE deleted = false "
 	createGeoTree = `
 insert into cada_tree_position
 (id, cada_id, cada_code, pos_east, pos_north, pos_altitude,
@@ -13,8 +13,32 @@ values ($1,$2, $3, $4, $5, $6,
         ST_SetSRID(ST_MakePoint($4,$5), 2056)
        );
 `
-	existGeoTree         = "SELECT COUNT(*) FROM cada_tree_position WHERE id = $1 AND deleted = false"
-	getGeoTree           = "SELECT * FROM cada_tree_position WHERE id = $1 AND deleted = false"
+	existGeoTree = "SELECT COUNT(*) FROM cada_tree_position WHERE id = $1 AND deleted = false "
+	getGeoTree   = `
+SELECT id,
+       goeland_thing_id,
+       cada_id,
+       cada_code,
+       st_x(geom) as pos_east,
+       st_y(geom) as pos_north,
+       pos_altitude,
+       tree_circumference_cm,
+       tree_crown_m,
+       cada_tree_type,
+       cada_date,
+       cada_comment,
+       description,
+       created_at,
+       created_by,
+       goeland_thing_saved_at,
+       goeland_thing_saved_by,
+       deleted,
+       deleted_at,
+       deleted_by
+FROM cada_tree_position
+WHERE id = $1
+  AND deleted = false
+`
 	baseGeoTreeListQuery = `
 SELECT 
        id,goeland_thing_id,cada_id,
@@ -25,7 +49,7 @@ SELECT
 	   st_x(geom) as pos_east,
        st_y(geom) as pos_north
 FROM cada_tree_position
-WHERE deleted = false AND geom IS NOT NULL
+WHERE deleted = false AND geom IS NOT NULL 
 `
 	geoTreeListOrderBy    = " ORDER BY created_at DESC LIMIT $1 OFFSET $2;"
 	listGeoTreeConditions = `

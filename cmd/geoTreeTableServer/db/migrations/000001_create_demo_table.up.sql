@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.cada_tree_position
     tree_circumference_cm  integer,
     tree_crown_m           integer,
     cada_tree_type         text                    null,
-    cada_date              date                    not null,
+    cada_date              timestamp               not null,
     cada_comment           text                    not null,
     description            text,
     created_at             timestamp default now() not null,

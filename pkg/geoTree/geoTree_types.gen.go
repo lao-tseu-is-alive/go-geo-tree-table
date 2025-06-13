@@ -22,9 +22,9 @@ type Error struct {
 // GeoTree defines model for geoTree.
 type GeoTree struct {
 	// CadaCode code interne de cadastre pour ce type de point
-	CadaCode    int32              `json:"cada_code"`
-	CadaComment string             `json:"cada_comment"`
-	CadaDate    openapi_types.Date `json:"cada_date"`
+	CadaCode    int32     `json:"cada_code"`
+	CadaComment string    `json:"cada_comment"`
+	CadaDate    time.Time `json:"cada_date"`
 
 	// CadaId identifiant interne de cadastre pour cet objet
 	CadaId       int32   `json:"cada_id"`
@@ -78,8 +78,8 @@ type GeoTreeGoelandThingId struct {
 
 // GeoTreeList defines model for geoTreeList.
 type GeoTreeList struct {
-	CadaComment string             `json:"cada_comment"`
-	CadaDate    openapi_types.Date `json:"cada_date"`
+	CadaComment string    `json:"cada_comment"`
+	CadaDate    time.Time `json:"cada_date"`
 
 	// CadaId identifiant interne de cadastre pour cet objet
 	CadaId       int32  `json:"cada_id"`
@@ -92,7 +92,7 @@ type GeoTreeList struct {
 	CreatedBy int32 `json:"created_by"`
 
 	// GoelandThingId FK sur la clé primaire du goéland Thing de type arbre pour cette position d'objet
-	GoelandThingId int32 `json:"goeland_thing_id"`
+	GoelandThingId *int32 `json:"goeland_thing_id,omitempty"`
 
 	// Id cet Universally unique identifier (UUID) sera généré automatiquement pour vous
 	Id                  openapi_types.UUID `json:"id"`

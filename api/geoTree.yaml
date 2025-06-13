@@ -389,7 +389,7 @@ components:
           type: string
           title: "commentaire cadastre (campagne de levé)"
         cada_date:
-          format: date
+          format: date-time
           type: string
           title: "date du levé par cadastre pour cet objet"
         description:
@@ -446,7 +446,6 @@ components:
     geoTreeList:
       required:
         - id
-        - goeland_thing_id
         - cada_id
         - tree_circumference_cm
         - tree_crown_m
@@ -491,7 +490,7 @@ components:
           type: string
           title: "commentaire cadastre (campagne de levé)"
         cada_date:
-          format: date
+          format: date-time
           type: string
           title: "date du levé par cadastre pour cet objet"
         created_at:

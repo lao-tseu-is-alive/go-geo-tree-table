@@ -57,8 +57,7 @@ func (db *PGX) GeoJson(params GeoJsonParams) (string, error) {
 		err               error
 	)
 
-	listThings := baseGeoJsonThingSearch
-	err = pgxscan.Select(context.Background(), db.Conn, &mayBeResultIsNull, listThings,
+	err = pgxscan.Select(context.Background(), db.Conn, &mayBeResultIsNull, baseGeoJsonThingSearch,
 		&params.CadaDate, &params.CreatedBy)
 
 	if err != nil {
@@ -86,8 +85,7 @@ func (db *PGX) List(offset, limit int, params ListParams) ([]*GeoTreeList, error
 		err error
 	)
 
-	listGeoTrees := baseGeoTreeListQuery + listGeoTreeConditions
-	listGeoTrees += geoTreeListOrderBy
+	listGeoTrees := baseGeoTreeListQuery + listGeoTreeConditions + geoTreeListOrderBy
 	err = pgxscan.Select(context.Background(), db.Conn, &res, listGeoTrees,
 		limit, offset, &params.CadaDate, &params.CreatedBy)
 
@@ -142,7 +140,8 @@ func (db *PGX) Count(params CountParams) (int32, error) {
 		count int
 		err   error
 	)
-	queryCount := countGeoTree + listGeoTreeConditions
+	queryCount := countGeoTree + " AND cada_date = coalesce($1, cada_date)  AND created_by = coalesce($2, created_by)"
+	//queryCount := countGeoTree + "  AND created_by = coalesce($1, created_by)"
 
 	count, err = db.dbi.GetQueryInt(queryCount, &params.CadaDate, &params.CreatedBy)
 
@@ -170,7 +169,7 @@ func (db *PGX) Create(geoTree GeoTree) (*GeoTree, error) {
 		*/
 		geoTree.Id, geoTree.CadaId, geoTree.CadaCode, geoTree.PosEast, geoTree.PosNorth, &geoTree.PosAltitude, //$6
 		&geoTree.TreeCircumferenceCm, &geoTree.TreeCrownM, &geoTree.CadaTreeType, &geoTree.CadaDate, geoTree.CadaComment, //$11
-		&geoTree.Description, geoTree.CreatedBy, geoTree.PosEast, geoTree.PosNorth)
+		&geoTree.Description, geoTree.CreatedBy)
 	if err != nil {
 		db.log.Error("Create(%q) unexpectedly failed. error : %v", geoTree.CadaId, err)
 		return nil, err
