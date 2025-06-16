@@ -12,6 +12,8 @@ import (
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/golog"
 )
 
+const emptyGeoJson = `{"type":"FeatureCollection","features":[]}`
+
 type PGX struct {
 	Conn *pgxpool.Pool
 	dbi  database.DB
@@ -53,7 +55,7 @@ func (db *PGX) GeoJson(params GeoJsonParams) (string, error) {
 		db.log.Info("params.CreatedBy : %v", *params.CreatedBy)
 	}
 	var (
-		mayBeResultIsNull *string
+		mayBeResultIsNull []*string
 		err               error
 	)
 
@@ -66,9 +68,12 @@ func (db *PGX) GeoJson(params GeoJsonParams) (string, error) {
 	}
 	if mayBeResultIsNull == nil {
 		db.log.Info(FunctionNReturnedNoResults, "List")
-		return "nil", pgx.ErrNoRows
+		return emptyGeoJson, pgx.ErrNoRows
 	}
-	return *mayBeResultIsNull, nil
+	if len(mayBeResultIsNull) > 0 {
+		return *mayBeResultIsNull[0], nil
+	}
+	return emptyGeoJson, nil
 }
 
 // List returns the list of existing geoTrees with the given offset and limit.

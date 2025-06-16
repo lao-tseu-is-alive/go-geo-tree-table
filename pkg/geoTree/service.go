@@ -209,7 +209,7 @@ func (s Service) Update(ctx echo.Context, geoTreeId uuid.UUID) error {
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
 	if len(strings.Trim(updateGeoTree.CadaComment, " ")) < 1 {
-		msg := fmt.Sprintf(FieldCannotBeEmpty, "name")
+		msg := fmt.Sprintf(FieldCannotBeEmpty, "CadaComment")
 		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
@@ -229,35 +229,28 @@ func (s Service) Update(ctx echo.Context, geoTreeId uuid.UUID) error {
 // UpdateGoelandThingId will change the goeland_thing_id value for the geoTree identified by the given geoTreeId
 // curl -s -XPUT -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"id": "3999971f-53d7-4eb6-8898-97f257ea5f27","goeland_thing_id": 3,"goeland_thing_saved_by": 3456,   }' 'http://localhost:9090/goapi/v1/geoTree/setGoelandThingId/3999971f-53d7-4eb6-8898-97f257ea5f27' |jq
 func (s Service) UpdateGoelandThingId(ctx echo.Context, geoTreeId uuid.UUID) error {
-	handlerName := "GeoJson"
+	handlerName := "UpdateGoelandThingId"
 	s.Log.TraceHttpRequest(handlerName, ctx.Request())
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := int32(claims.User.UserId)
-	s.Log.Info("in %s(%d) : currentUserId: %d", handlerName, geoTreeId, currentUserId)
+	s.Log.Info("in %s(%s) : currentUserId: %d", handlerName, geoTreeId, currentUserId)
 	if s.Store.Exist(geoTreeId) == false {
-		msg := fmt.Sprintf("Update(%v) cannot update this id, it does not exist !", geoTreeId)
+		msg := fmt.Sprintf("UpdateGoelandThingId(%v) cannot update this id, it does not exist !", geoTreeId)
 		s.Log.Warn(msg)
 		return ctx.JSON(http.StatusNotFound, msg)
 	}
 
-	updateGeoTree := new(GeoTree)
-	if err := ctx.Bind(updateGeoTree); err != nil {
+	updateGeoTreeGoelandThingId := new(GeoTreeGoelandThingId)
+	if err := ctx.Bind(updateGeoTreeGoelandThingId); err != nil {
 		msg := fmt.Sprintf("Update has invalid format error:[%v]", err)
 		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
-	if len(strings.Trim(updateGeoTree.CadaComment, " ")) < 1 {
-		msg := fmt.Sprintf(FieldCannotBeEmpty, "name")
-		s.Log.Error(msg)
-		return ctx.JSON(http.StatusBadRequest, msg)
-	}
 
-	//updateGeoTree.CLastModifiedBy = &currentUserId
-
-	geoTreeUpdated, err := s.Store.Update(geoTreeId, *updateGeoTree)
+	geoTreeUpdated, err := s.Store.UpdateGoelandThingId(geoTreeId, *updateGeoTreeGoelandThingId)
 	if err != nil {
-		msg := fmt.Sprintf("Update had an error saving geoTree:%#v, err:%#v", *updateGeoTree, err)
+		msg := fmt.Sprintf("UpdateGoelandThingId had an error saving updateGeoTreeGoelandThingId:%#v, err:%#v", *updateGeoTreeGoelandThingId, err)
 		s.Log.Info(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}

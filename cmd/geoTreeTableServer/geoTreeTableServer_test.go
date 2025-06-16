@@ -422,7 +422,7 @@ func TestMainExec(t *testing.T) {
 			paramKeyValues:               make(map[string]string, 0),
 			httpMethod:                   http.MethodPut,
 			url:                          "/api/v1/geoTree/setGoelandThingId/" + newGeoTreeId,
-			useFormUrlencodedContentType: true,
+			useFormUrlencodedContentType: false,
 			useJwtToken:                  true,
 			body:                         exampleGeoTreeGoelandThingId,
 		},
