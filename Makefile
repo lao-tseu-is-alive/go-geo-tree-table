@@ -29,8 +29,10 @@ APP_EXECUTABLE := $(APP_NAME)Server
 APP_REVISION := $(shell git describe --dirty --always)
 BUILD := $(shell date -u '+%Y-%m-%d_%I:%M:%S%p')
 PACKAGES := $(shell go list ./... | grep -v /vendor/)
-LDFLAGS := -ldflags "-X ${APP_REPOSITORY}/pkg/version.REVISION=${APP_REVISION} -X ${APP_REPOSITORY}/pkg/version.BuildStamp=${BUILD}"
-#$(info $$LDFLAGS = $(LDFLAGS) )
+# Remove "https://" from APP_REPOSITORY
+APP_REPOSITORY_CLEAN := $(subst https://,,$(APP_REPOSITORY))
+LDFLAGS := -ldflags "-X ${APP_REPOSITORY_CLEAN}/pkg/version.REVISION=${APP_REVISION} -X ${APP_REPOSITORY_CLEAN}/pkg/version.BuildStamp=${BUILD}"
+$(info $$LDFLAGS = $(LDFLAGS) )
 PID_FILE := "./$(APP).pid"
 APP_DSN := $(DB_DRIVER)://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)?sslmode=$(DB_SSL_MODE)
 ifeq ($(ENV_EXISTS),"TRUE")
