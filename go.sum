@@ -63,8 +63,8 @@ github.com/labstack/echo/v4 v4.13.4 h1:oTZZW+T3s9gAu5L8vmzihV7/lkXGZuITzTQkTEhcX
 github.com/labstack/echo/v4 v4.13.4/go.mod h1:g63b33BZ5vZzcIUF8AtRH40DrTlXnx4UMC8rBdndmjQ=
 github.com/labstack/gommon v0.4.2 h1:F8qTUNXgG1+6WQmqoUWnz8WiEU60mXVVw0P4ht1WRA0=
 github.com/labstack/gommon v0.4.2/go.mod h1:QlUFxVM+SNXhDL/Z7YhocGIBYOiwB0mXm1+1bAPHPyU=
-github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.15 h1:R3Try63lLOAfgVkdq7x6L8EZdv1TvcW7pWW6HpJP5ko=
-github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.15/go.mod h1:lebOspSsxcIO3lwyyJLIWbrbWqOGUWG/YORbWo4d9/8=
+github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.16 h1:eQmj3RXebQymKHHNQ0uqMSTHoMmAa5mvsQKvNV0hyHg=
+github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.16/go.mod h1:v06sfTxtNu/SfjQUwE0zrWCgXQJUV1Pw/qisExwx8dg=
 github.com/lib/pq v1.10.9 h1:YXG7RB+JIjhP29X+OtkiDnYaXQwpS4JEWq7dtCCRUEw=
 github.com/lib/pq v1.10.9/go.mod h1:AlVN5x4E4T544tWzH6hKfbfQvm3HdbOxrmggDNAPY9o=
 github.com/mattn/go-colorable v0.1.14 h1:9A9LHSqF/7dyVVX6g0U9cwm9pG3kP9gSzcuIPHPsaIE=
