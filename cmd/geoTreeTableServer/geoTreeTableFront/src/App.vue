@@ -38,6 +38,7 @@
         <v-icon>mdi-delete</v-icon>
       </v-btn>
     </v-app-bar>
+    <template v-if="appStore.getIsUserAuthenticated">
     <VResizeDrawer v-model="drawer" v-bind="drawerOptions">
       <MyTable v-if="dataLoaded" @row-clicked="handleRowClicked" />
     </VResizeDrawer>
@@ -70,6 +71,16 @@
         </v-row>
       </v-container>
     </v-main>
+    </template>
+    <template v-else>
+      <Login
+          :app="appStore.getAppName"
+          :base_server_url="BACKEND_URL"
+          :jwt_auth_url="appStore.getAppAuthUrl"
+          @login-ok="handleLoginSuccess"
+          @login-error="handleLoginFailure"
+      />
+    </template>
   </v-app>
 </template>
 
@@ -79,12 +90,14 @@ import { isNullOrUndefined } from "@/tools/utils";
 //import MyTable from "./components/Table.vue";
 //import MyDataLoader from "./components/DataLoader.vue";
 import VResizeDrawer from "@wdns/vuetify-resize-drawer";
-import {BACKEND_URL, DEV, getLog} from "@/config";
+import {BACKEND_URL, DEV, getLog, HOME} from "@/config";
+import Login from "@/components/Login.vue";
 import MapLausanne from "@/components/Map.vue";
 import { mapClickInfo } from "@/components/Map";
 import { useDataStore } from "@/stores/DataStore";
 import { useAppStore } from "@/stores/appStore";
 import { storeToRefs } from "pinia";
+import { AuthService } from "@/components/Login";
 
 
 let log = getLog("APP", 4, 2);;
@@ -93,6 +106,7 @@ const mapZoom = ref(14);
 const placeStFrancoisLausanne = [2538202, 1152364];
 const mapCenter = ref(placeStFrancoisLausanne);
 const appStore = useAppStore();
+const authService = new AuthService(appStore)
 const dataStore = useDataStore();
 const { getGeoJson } = storeToRefs(dataStore);
 const showDebug = ref(false);
@@ -134,6 +148,64 @@ const drawerOptions = ref({
   theme: "light",
   width: "350px",
 });
+const defaultFeedbackErrorTimeout = 5000 // default display time 5sec
+let autoLogoutTimer: number
+
+const logout = () => {
+  log.t("# IN logout()")
+  authService.clearSessionStorage()
+  appStore.setUserNotAuthenticated()
+  appStore.displayFeedBack("Vous vous êtes déconnecté de l'application avec succès !", "success")
+  if (isNullOrUndefined(autoLogoutTimer)) {
+    clearInterval(autoLogoutTimer)
+  }
+  setTimeout(() => {
+    window.location.href = HOME
+  }, 2000) // after 2 sec redirect to home page just in case
+}
+
+const checkIsSessionTokenValid = () => {
+  log.t("# entering...  ")
+  if (authService.doesCurrentSessionExist()) {
+    authService.getTokenStatus()
+        .then((val) => {
+          if (val.data == null) {
+            log.e(`# getTokenStatus() ${val.msg}, ERROR is: `, val.err)
+            appStore.displayFeedBack(`Problème réseau :${val.msg}`, "error", defaultFeedbackErrorTimeout)
+          } else {
+            log.l(`# getTokenStatus() SUCCESS ${val.msg} data: `, val.data)
+            if (isNullOrUndefined(val.err) && val.status === 200) {
+              // everything is okay, session is still valid
+              appStore.setUserAuthenticated()
+              return
+            }
+            if (val.status === 401) {
+              // jwt token is no more valid
+              appStore.setUserNotAuthenticated()
+              appStore.displayFeedBack("Votre session a expiré !", "warning", defaultFeedbackErrorTimeout)
+              logout()
+            }
+            appStore.displayFeedBack(
+                `Un problème est survenu avec votre session erreur: ${val.err}`,
+                "error",
+                defaultFeedbackErrorTimeout
+            )
+          }
+        })
+        .catch((err) => {
+          log.e("# getJwtToken() in catch ERROR err: ", err)
+          appStore.displayFeedBack(
+              `Il semble qu'il y a eu un problème réseau ! erreur: ${err}`,
+              "error",
+              defaultFeedbackErrorTimeout
+          )
+        })
+  } else {
+    log.w("SESSION DOES NOT EXIST OR HAS EXPIRED !")
+    logout()
+  }
+}
+
 /*
 const handleDataLoaded = () => {
   log.t(`## handleDataLoaded entering...`);
@@ -163,6 +235,24 @@ const handleRowClicked = (item: Record<string, any>) => {
     log.t(`## index was not found... item:}`, item);
   }
 };
+
+const handleLoginSuccess = (v: string) => {
+  log.t(`# entering... val:${v} `)
+  appStore.setUserAuthenticated()
+  appStore.hideFeedBack()
+  appStore.displayFeedBack("Vous êtes authentifié sur l'application.", "success")
+  if (isNullOrUndefined(autoLogoutTimer)) {
+    // check every 600 seconds(600'000 milliseconds) if jwt is still valid
+    autoLogoutTimer = window.setInterval(checkIsSessionTokenValid, 600000)
+  }
+}
+
+const handleLoginFailure = (v: string) => {
+  log.w(`# entering... val:${v} `)
+  appStore.setUserNotAuthenticated()
+  appStore.hideFeedBack()
+}
+
 
 const getGeoJsonString = () => {
   log.t(`## entering...`, getGeoJson.value);

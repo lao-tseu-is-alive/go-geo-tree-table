@@ -482,8 +482,38 @@ export async function createSwissMap(
   zoomLevel = 16,
   baseLayer = defaultBaseLayer,
 ) {
-  log.t(`createLausanneMap(x,y: [${centerOfMap[0]},${centerOfMap[1]}]  zoom:${zoomLevel})`);
+  log.t(`createSwissMap(x,y: [${centerOfMap[0]},${centerOfMap[1]}]  zoom:${zoomLevel})`);
   const arrBaseLayers = await getWmtsSwissTopoBaseLayers(urlSwissTopoMN95, baseLayer);
+  if (arrBaseLayers === null || arrBaseLayers.length < 1) {
+    log.w("arrBaseLayers cannot be null or empty to be able to see a nice map !");
+    return null;
+  }
+  return new OlMap({
+    target: divOfMap,
+    layers: arrBaseLayers,
+    view: new OlView({
+      projection: swissProjection,
+      center: centerOfMap,
+      zoom: zoomLevel,
+    }),
+  });
+}
+/**
+ * createLausanneMap will create a map in the given div
+ * @param divOfMap the id of the div you want to draw a map
+ * @param centerOfMap the position where you want to center map in MN95 Coordinates [x,y] array
+ * @param zoomLevel
+ * @param baseLayer one of orthophotos_ortho_lidar_2016 fonds_geo_osm_bdcad_(gris|couleur)
+ * @returns an instance of an OpenLayer Map
+ */
+export async function createLausanneMap(
+    divOfMap: string,
+    centerOfMap = lausanneGare,
+    zoomLevel = 16,
+    baseLayer = defaultBaseLayer,
+) {
+  log.t(`createLausanneMap(x,y: [${centerOfMap[0]},${centerOfMap[1]}]  zoom:${zoomLevel})`);
+  const arrBaseLayers = await getWmtsLausanneBaseLayers(urlLausanneMN95, baseLayer);
   if (arrBaseLayers === null || arrBaseLayers.length < 1) {
     log.w("arrBaseLayers cannot be null or empty to be able to see a nice map !");
     return null;

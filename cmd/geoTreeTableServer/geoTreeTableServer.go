@@ -50,6 +50,11 @@ var content embed.FS
 //go:embed db/migrations/*.sql
 var sqlMigrations embed.FS
 
+// UserLogin defines model for UserLogin.
+type UserLogin struct {
+	PasswordHash string `json:"password_hash"`
+	Username     string `json:"username"`
+}
 type Service struct {
 	Logger golog.MyLogger
 	//Store       Storage
@@ -62,15 +67,21 @@ type Service struct {
 // and share the same secret with the above component
 func (s Service) login(ctx echo.Context) error {
 	s.Logger.TraceHttpRequest("login", ctx.Request())
+	uLogin := new(UserLogin)
 	login := ctx.FormValue("login")
 	passwordHash := ctx.FormValue("hashed")
 	s.Logger.Debug("login: %s, hash: %s ", login, passwordHash)
 	// maybe it was not a form but a fetch data post
 	if len(strings.Trim(login, " ")) < 1 {
-		return ctx.JSON(http.StatusUnauthorized, "invalid credentials")
+		if err := ctx.Bind(uLogin); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid user login or json format in request body")
+		}
+	} else {
+		uLogin.Username = login
+		uLogin.PasswordHash = passwordHash
 	}
-
-	if s.server.Authenticator.AuthenticateUser(login, passwordHash) {
+	s.Logger.Debug("About to check username: %s , password: %s", uLogin.Username, uLogin.PasswordHash)
+	if s.server.Authenticator.AuthenticateUser(uLogin.Username, uLogin.PasswordHash) {
 		userInfo, err := s.server.Authenticator.GetUserInfoFromLogin(login)
 		if err != nil {
 			errGetUInfFromLogin := fmt.Sprintf("Error getting user info from login: %v", err)

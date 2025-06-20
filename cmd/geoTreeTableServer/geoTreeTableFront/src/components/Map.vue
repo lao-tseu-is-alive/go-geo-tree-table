@@ -215,7 +215,12 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
 <script setup lang="ts">
 import {onMounted, ref, watch} from "vue"
 import {getLog} from "@/config"
-import {addGeoJsonLayer, createSwissMap, mapClickInfo, mapFeatureInfo} from "@/components/Map"
+import {
+  addGeoJsonLayer,
+  createLausanneMap,
+  mapClickInfo,
+  mapFeatureInfo
+} from "@/components/Map"
 import OlMap from "ol/Map"
 import OlOverlay from "ol/Overlay"
 import LayerSwitcher from "ol-layerswitcher"
@@ -309,7 +314,7 @@ const toggleLayerSwitcher = () => {
 
 const initialize = async (center: [number, number]) => {
   log.t(" #> entering initialize...")
-  myOlMap.value = await createSwissMap("map", center, 4, "ch.swisstopo.landeskarte-farbe-10")
+  myOlMap.value = await createLausanneMap("map", center, 4, "fonds_geo_osm_bdcad_couleur")
   if (myOlMap.value !== null) {
     log.l("initialize() myOlMap is not null : ", myOlMap.value)
     myOlMap.value.on("pointermove", (evt) => {

@@ -5,8 +5,8 @@ import {BACKEND_URL, getLog} from "@/config";
 
 const log = getLog("appStore", 4, 2);
 type LevelAlert = "error" | "success" | "warning" | "info"
-
 const feedbackDefaultTimeout = 3000
+
 export const useAppStore = defineStore("app", {
   state: () => {
     return {
@@ -25,8 +25,28 @@ export const useAppStore = defineStore("app", {
     getAppVersion: (state): string => `${state.appData.version}`,
     getAppRepository: (state): string => `${state.appData.repository}`,
     getAppAuthUrl: (state): string => `${state.appData.authUrl}`,
+    getIsUserAuthenticated: (state): boolean => state.isUserAuthenticated,
+    getIsNetworkOk: (state): boolean => state.isNetworkOk,
+    getUserIsAdmin: (state):boolean => {
+      if (state.isUserAuthenticated) {
+        const APP = state.appData.app; // Use the internal appStore
+        const val = sessionStorage.getItem(`${APP}_goapi_isadmin`);
+        if (val !== null) {
+          return val === "true";
+        }
+        return false;
+      } else {
+        return false
+      }
+    },
   },
   actions: {
+    setUserAuthenticated() {
+      this.isUserAuthenticated = true
+    },
+    setUserNotAuthenticated() {
+      this.isUserAuthenticated = false
+    },
     networkOffLine() {
       this.isNetworkOk = false
     },

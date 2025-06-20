@@ -12,6 +12,7 @@ import { registerPlugins } from "@/plugins";
 import { createPinia } from "pinia";
 // Components
 import { createVResizeDrawer } from "@wdns/vuetify-resize-drawer";
+// App
 import App from "./App.vue";
 
 const app = createApp(App);
