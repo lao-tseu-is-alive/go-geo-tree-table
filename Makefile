@@ -99,7 +99,7 @@ env-test-export:
 .PHONY: test
 test: clean mod-download env-test-export
 	@echo "  >  Running all tests code..."
-	go test -race -coverprofile coverage.txt -coverpkg=./... ./...
+	go test -race -coverprofile coverage.txt -coverpkg=./... ./cmd/geoTreeTableServer
 
 .PHONY: test-all
 test-all: clean mod-download env-test-export
