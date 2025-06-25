@@ -81,7 +81,7 @@ env-test-export:
 .PHONY: test
 test: clean mod-download env-test-export
 	@echo "  >  Running all tests code..."
-	. .env-testing-export && go test -race -coverprofile coverage.out -coverpkg=./... ./...
+	. .env-testing-export && go test -race -coverprofile coverage.txt -coverpkg=./... ./...
 
 .PHONY: test-all
 test-all: clean mod-download env-test-export
@@ -89,7 +89,7 @@ test-all: clean mod-download env-test-export
 	@echo "mode: count" > coverage-all.out
 	@$(foreach pkg,$(PACKAGES), \
 		. .env-testing-export && go test -race -p=1 -cover -covermode=atomic -coverprofile=coverage.out ${pkg}; \
-		tail -n +2 coverage.out >> coverage-all.out;)
+		tail -n +2 coverage.out >> coverage.txt;)
 
 
 else
@@ -99,7 +99,7 @@ env-test-export:
 .PHONY: test
 test: clean mod-download env-test-export
 	@echo "  >  Running all tests code..."
-	go test -race -coverprofile coverage.out -coverpkg=./... ./...
+	go test -race -coverprofile coverage.txt -coverpkg=./... ./...
 
 .PHONY: test-all
 test-all: clean mod-download env-test-export
@@ -107,7 +107,7 @@ test-all: clean mod-download env-test-export
 	@echo "mode: count" > coverage-all.out
 	@$(foreach pkg,$(PACKAGES), \
 		go test -race -p=1 -cover -covermode=atomic -coverprofile=coverage.out ${pkg}; \
-		tail -n +2 coverage.out >> coverage-all.out;)
+		tail -n +2 coverage.out >> coverage.txt;)
 
 
 
@@ -118,7 +118,7 @@ endif
 ## clean:	will delete you server app binary and remove temporary files like coverage output
 clean:
 	@echo "  >  Removing $(APP_EXECUTABLE) from bin directory..."
-	rm -rf bin/$(APP_EXECUTABLE) coverage.out coverage-all.out ___geoTreeTableServer_test_go.test
+	rm -rf bin/$(APP_EXECUTABLE) coverage.out coverage.txt coverage-all.out ___geoTreeTableServer_test_go.test
 
 .PHONY: release
 ## release:	will build & tag a clean repo with a version release and push the tag to the remote git
