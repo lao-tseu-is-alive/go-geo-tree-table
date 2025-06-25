@@ -1,4 +1,6 @@
 # go-geo-tree-table
 [![Go-Test](https://github.com/lao-tseu-is-alive/go-geo-tree-table/actions/workflows/go.yml/badge.svg)](https://github.com/lao-tseu-is-alive/go-geo-tree-table/actions/workflows/go.yml)
 
-Using Go to have a create and  api and front for managing importing trees position  in Lausanne  Switzerland
+Using the Go programming language to develop a backend API and a frontend interface for creating, managing, and importing tree location data in Lausanne, Switzerland
+
+
