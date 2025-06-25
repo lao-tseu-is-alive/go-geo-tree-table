@@ -23,54 +23,56 @@
 <template>
   <v-app>
     <v-app-bar app color="primary" dark>
-      <v-app-bar-nav-icon @click.stop="toggleDrawer" />
+      <v-app-bar-nav-icon @click.stop="toggleDrawer"/>
       <v-toolbar-title>{{ appStore.getAppName }} v{{ appStore.getAppVersion }}</v-toolbar-title>
       <v-btn v-if="DEV" @click="showDebug = !showDebug">{{
           showDebug ? "Hide Debug" : "Show Debug"
-        }}</v-btn>
-      <v-spacer />
-      <v-btn
-          v-if="dataLoaded"
-          icon
-          title="clear data and import a new file"
-          @click="clearData"
-      >
-        <v-icon>mdi-delete</v-icon>
+        }}
       </v-btn>
+      <v-spacer/>
+      <template v-if="appStore.getIsUserAuthenticated">
+        <v-btn
+            v-if="dataLoaded"
+            icon
+            title="clear data and import a new file"
+            @click="clearData"
+        >
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
+        <v-btn variant="text" icon="mdi-logout" title="Logout" @click="logout"></v-btn>
+      </template>
     </v-app-bar>
     <template v-if="appStore.getIsUserAuthenticated">
-    <VResizeDrawer v-model="drawer" v-bind="drawerOptions">
-      <MyTable v-if="dataLoaded" @row-clicked="handleRowClicked" />
-    </VResizeDrawer>
-    <v-main>
-      <v-container class="w-100 full-width">
-        <v-row v-if="showDebug">
-          <v-col cols="12">
-            <v-code outlined rows="5" readonly disabled
-            >{{ getGeoJsonString() }}
-            </v-code>
-          </v-col>
-        </v-row>
-        <v-row>
-          <!--
-          <MyDataLoader
-              v-if="!dataLoaded"
-              @data-loaded="handleDataLoaded"
-              @fields-settings-ready="handleFieldsSettingsReady"
-          />
-          -->
-          <!-- map-lausanne should be ready to display the geojson data -->
-          <map-lausanne
-              v-if="dataLoaded"
-              ref="myMap"
-              :zoom="mapZoom"
-              :center="mapCenter"
-              :geodata="getGeoJson"
-              @map-click="handleMapClickEvent"
-          />
-        </v-row>
-      </v-container>
-    </v-main>
+      <VResizeDrawer v-model="drawer" v-bind="drawerOptions">
+        <MyTable v-if="dataLoaded" @row-clicked="handleRowClicked"/>
+      </VResizeDrawer>
+      <v-main>
+        <v-container class="w-100 full-width">
+          <v-row v-if="showDebug">
+            <v-col cols="12">
+              <v-code outlined rows="5" readonly disabled
+              >{{ getGeoJsonString() }}
+              </v-code>
+            </v-col>
+          </v-row>
+          <v-row>
+            <MyDataLoader
+                v-if="!dataLoaded"
+                @data-loaded="handleDataLoaded"
+                @fields-settings-ready="handleFieldsSettingsReady"
+            />
+            <!-- map-lausanne should be ready to display the geojson data -->
+            <map-lausanne
+                v-if="dataLoaded"
+                ref="myMap"
+                :zoom="mapZoom"
+                :center="mapCenter"
+                :geodata="getGeoJson"
+                @map-click="handleMapClickEvent"
+            />
+          </v-row>
+        </v-container>
+      </v-main>
     </template>
     <template v-else>
       <Login
@@ -85,30 +87,30 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
-import { isNullOrUndefined } from "@/tools/utils";
-//import MyTable from "./components/Table.vue";
-//import MyDataLoader from "./components/DataLoader.vue";
+import {onMounted, ref} from "vue";
+import {isNullOrUndefined} from "@/tools/utils";
+import MyTable from "./components/Table.vue";
+import MyDataLoader from "./components/DataLoader.vue";
 import VResizeDrawer from "@wdns/vuetify-resize-drawer";
 import {BACKEND_URL, DEV, getLog, HOME} from "@/config";
 import Login from "@/components/Login.vue";
 import MapLausanne from "@/components/Map.vue";
-import { mapClickInfo } from "@/components/Map";
-import { useDataStore } from "@/stores/DataStore";
-import { useAppStore } from "@/stores/appStore";
-import { storeToRefs } from "pinia";
-import { AuthService } from "@/components/Login";
+import {mapClickInfo} from "@/components/Map";
+import {useDataStore} from "@/stores/DataStore";
+import {useAppStore} from "@/stores/appStore";
+import {storeToRefs} from "pinia";
+import {AuthService} from "@/components/AuthService";
 
 
-let log = getLog("APP", 4, 2);;
+let log = getLog("APP", 4, 2);
 const dataLoaded = ref(true);
 const mapZoom = ref(14);
 const placeStFrancoisLausanne = [2538202, 1152364];
 const mapCenter = ref(placeStFrancoisLausanne);
 const appStore = useAppStore();
-const authService = new AuthService(appStore)
+const authService = new AuthService(appStore.getAppName)
 const dataStore = useDataStore();
-const { getGeoJson } = storeToRefs(dataStore);
+const {getGeoJson} = storeToRefs(dataStore);
 const showDebug = ref(false);
 const drawer = ref(false);
 const drawerOptions = ref({

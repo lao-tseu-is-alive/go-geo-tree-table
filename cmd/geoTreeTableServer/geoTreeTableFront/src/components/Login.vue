@@ -67,7 +67,7 @@
 <script>
 import { isNullOrUndefined } from "@/tools/utils"
 import { BACKEND_URL, getLog } from "@/config"
-import {getToken} from "@/components/Login";
+import {getToken} from "@/components/AuthService";
 
 const log = getLog("Login-Vue", 4, 2)
 
