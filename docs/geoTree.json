@@ -12,7 +12,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "0.0.3"
+    "version": "0.0.7"
   },
   "servers": [
     {
@@ -20,16 +20,16 @@
     }
   ],
   "paths": {
-    "/cadaTreePosition": {
+    "/geoTree": {
       "get": {
-        "summary": "List returns a list of cadaTreePosition",
-        "description": "Returns the cadaTreePosition in an array",
+        "summary": "List returns a list of geoTree",
+        "description": "Returns the geoTree in an array",
         "operationId": "List",
         "parameters": [
           {
             "name": "cada_date",
             "in": "query",
-            "description": "cada_date is the date to filter by the cadaTreePositions to return",
+            "description": "cada_date is the date to filter by the geoTrees to return",
             "required": false,
             "style": "form",
             "explode": true,
@@ -41,24 +41,12 @@
           {
             "name": "created_by",
             "in": "query",
-            "description": "id of the creator to filter by the cadaTreePositions to return",
+            "description": "id of the creator to filter by the geoTrees to return",
             "required": false,
             "style": "form",
             "explode": true,
             "schema": {
               "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "deleted",
-            "in": "query",
-            "description": "add records that are deleted to the list of cadaTreePositions to return",
-            "required": false,
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "boolean",
               "format": "int32"
             }
           },
@@ -89,13 +77,13 @@
         ],
         "responses": {
           "200": {
-            "description": "get List of cadaTreePosition response",
+            "description": "get List of geoTree response",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/cadaTreePositionList"
+                    "$ref": "#/components/schemas/geoTreeList"
                   }
                 }
               }
@@ -122,15 +110,15 @@
         ]
       },
       "post": {
-        "summary": "Create will create a new cadaTreePosition",
-        "description": "Creates a new cadaTreePosition",
+        "summary": "Create will create a new geoTree",
+        "description": "Creates a new geoTree",
         "operationId": "Create",
         "requestBody": {
-          "description": "cadaTreePosition to add",
+          "description": "geoTree to add",
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/cadaTreePosition"
+                "$ref": "#/components/schemas/geoTree"
               }
             }
           },
@@ -138,11 +126,11 @@
         },
         "responses": {
           "201": {
-            "description": "cadaTreePosition creation response",
+            "description": "geoTree creation response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/cadaTreePosition"
+                  "$ref": "#/components/schemas/geoTree"
                 }
               }
             }
@@ -168,16 +156,16 @@
         ]
       }
     },
-    "/cadaTreePosition/geojson": {
+    "/geoTree/geojson": {
       "get": {
-        "summary": "List returns a geoJson of cadaTreePositions found",
-        "description": "Returns the geoJson of the cadaTreePosition selected by the givven parameters",
+        "summary": "List returns a geoJson of geoTrees found",
+        "description": "Returns the geoJson of the geoTree selected by the given parameters",
         "operationId": "GeoJson",
         "parameters": [
           {
             "name": "cada_date",
             "in": "query",
-            "description": "cada_date is the date to filter by the cadaTreePositions to return",
+            "description": "cada_date is the date to filter by the geoTrees to return",
             "required": false,
             "style": "form",
             "explode": true,
@@ -187,21 +175,9 @@
             }
           },
           {
-            "name": "deleted",
-            "in": "query",
-            "description": "add records that are deleted to the list of cadaTreePositions to return",
-            "required": false,
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "boolean",
-              "format": "int32"
-            }
-          },
-          {
             "name": "created_by",
             "in": "query",
-            "description": "id of the creator to filter by the cadaTreePositions to return",
+            "description": "id of the creator to filter by the geoTrees to return",
             "required": false,
             "style": "form",
             "explode": true,
@@ -237,7 +213,7 @@
         ],
         "responses": {
           "200": {
-            "description": "get List of cadaTreePosition response",
+            "description": "get List of geoTree response",
             "content": {
               "application/json": {
                 "schema": {
@@ -267,16 +243,16 @@
         ]
       }
     },
-    "/cadaTreePosition/count": {
+    "/geoTree/count": {
       "get": {
-        "summary": "Count returns the number of cadaTreePosition based on search criterias",
-        "description": "Returns the number of cadaTreePositions found after filtering with passed criterias",
+        "summary": "Count returns the number of geoTree based on search criterias",
+        "description": "Returns the number of geoTrees found after filtering with passed criterias",
         "operationId": "Count",
         "parameters": [
           {
             "name": "cada_date",
             "in": "query",
-            "description": "cada_date is the date to filter by the cadaTreePositions to return",
+            "description": "cada_date is the date to filter by the geoTrees to return",
             "required": false,
             "style": "form",
             "explode": true,
@@ -286,21 +262,9 @@
             }
           },
           {
-            "name": "deleted",
-            "in": "query",
-            "description": "add records that are deleted to the list of cadaTreePositions to return",
-            "required": false,
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "boolean",
-              "format": "int32"
-            }
-          },
-          {
             "name": "created_by",
             "in": "query",
-            "description": "id of the creator to filter by the cadaTreePositions to return",
+            "description": "id of the creator to filter by the geoTrees to return",
             "required": false,
             "style": "form",
             "explode": true,
@@ -312,7 +276,7 @@
         ],
         "responses": {
           "200": {
-            "description": "get List of cadaTreePosition response",
+            "description": "get List of geoTree response",
             "content": {
               "application/json": {
                 "schema": {
@@ -343,16 +307,16 @@
         ]
       }
     },
-    "/cadaTreePosition/{cadaTreePositionId}": {
+    "/geoTree/{geoTreeId}": {
       "get": {
-        "summary": "Get will retrieve in backend all information about a specific cadaTreePositionId",
-        "description": "Retrieve a specific cadaTreePosition",
+        "summary": "Get will retrieve in backend all information about a specific geoTreeId",
+        "description": "Retrieve a specific geoTree",
         "operationId": "Get",
         "parameters": [
           {
-            "name": "cadaTreePositionId",
+            "name": "geoTreeId",
             "in": "path",
-            "description": "Id of the cadaTreePosition",
+            "description": "Id of the geoTree",
             "required": true,
             "style": "simple",
             "explode": false,
@@ -364,11 +328,11 @@
         ],
         "responses": {
           "200": {
-            "description": "get cadaTreePosition successful response",
+            "description": "get geoTree successful response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/cadaTreePosition"
+                  "$ref": "#/components/schemas/geoTree"
                 }
               }
             }
@@ -377,7 +341,7 @@
             "description": "Access token is missing or invalid"
           },
           "404": {
-            "description": "get cadaTreePositions response when cadaTreePositionId was not found"
+            "description": "get geoTrees response when geoTreeId was not found"
           },
           "default": {
             "description": "unexpected error",
@@ -397,14 +361,14 @@
         ]
       },
       "put": {
-        "summary": "Update allows to modify information about a specific cadaTreePositionId",
-        "description": "Updates the status of a cadaTreePosition",
+        "summary": "Update allows to modify information about a specific geoTreeId",
+        "description": "Updates the status of a geoTree",
         "operationId": "Update",
         "parameters": [
           {
-            "name": "cadaTreePositionId",
+            "name": "geoTreeId",
             "in": "path",
-            "description": "Id of the cadaTreePosition",
+            "description": "Id of the geoTree",
             "required": true,
             "style": "simple",
             "explode": false,
@@ -415,22 +379,22 @@
           }
         ],
         "requestBody": {
-          "description": "informations related to the cadaTreePosition",
+          "description": "informations related to the geoTree",
           "content": {
             "application/x-www-form-urlencoded": {
               "schema": {
-                "$ref": "#/components/schemas/cadaTreePosition"
+                "$ref": "#/components/schemas/geoTree"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "put cadaTreePositions successful response",
+            "description": "put geoTrees successful response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/cadaTreePosition"
+                  "$ref": "#/components/schemas/geoTree"
                 }
               }
             }
@@ -439,7 +403,7 @@
             "description": "Access token is missing or invalid"
           },
           "404": {
-            "description": "put cadaTreePositions response when cadaTreePositionId was not found"
+            "description": "put geoTrees response when geoTreeId was not found"
           },
           "default": {
             "description": "unexpected error",
@@ -459,14 +423,14 @@
         ]
       },
       "delete": {
-        "summary": "Delete allows to delete a specific cadaTreePositionId",
-        "description": "delete a cadaTreePosition",
+        "summary": "Delete allows to delete a specific geoTreeId",
+        "description": "delete a geoTree",
         "operationId": "Delete",
         "parameters": [
           {
-            "name": "cadaTreePositionId",
+            "name": "geoTreeId",
             "in": "path",
-            "description": "Id of the cadaTreePosition",
+            "description": "Id of the geoTree",
             "required": true,
             "style": "simple",
             "explode": false,
@@ -478,13 +442,77 @@
         ],
         "responses": {
           "204": {
-            "description": "delete cadaTreePosition successful no content"
+            "description": "delete geoTree successful no content"
           },
           "401": {
             "description": "Access token is missing or invalid"
           },
           "404": {
-            "description": "delete cadaTreePosition response when cadaTreePositionId was not found"
+            "description": "delete geoTree response when geoTreeId was not found"
+          },
+          "default": {
+            "description": "unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
+    "/geoTree/setGoelandThingId/{geoTreeId}": {
+      "put": {
+        "summary": "Update allows to modify goeland_thing_id information about a specific geoTreeId",
+        "description": "Updates the goeland_thing_id of a geoTree",
+        "operationId": "UpdateGoeland_thing_id",
+        "parameters": [
+          {
+            "name": "geoTreeId",
+            "in": "path",
+            "description": "Id of the geoTree",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "informations related to the geoTree",
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/geoTreeGoelandThingId"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "put geoTrees successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/geoTreeGoelandThingId"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access token is missing or invalid"
+          },
+          "404": {
+            "description": "put geoTrees response when geoTreeId was not found"
           },
           "default": {
             "description": "unexpected error",
@@ -507,7 +535,7 @@
   },
   "components": {
     "schemas": {
-      "cadaTreePosition": {
+      "geoTree": {
         "required": [
           "id",
           "cada_id",
@@ -565,7 +593,7 @@
             "title": "commentaire cadastre (campagne de levé)"
           },
           "cada_date": {
-            "format": "date",
+            "format": "date-time",
             "type": "string",
             "title": "date du levé par cadastre pour cet objet"
           },
@@ -633,10 +661,9 @@
           }
         }
       },
-      "cadaTreePositionList": {
+      "geoTreeList": {
         "required": [
           "id",
-          "goeland_thing_id",
           "cada_id",
           "tree_circumference_cm",
           "tree_crown_m",
@@ -688,7 +715,7 @@
             "title": "commentaire cadastre (campagne de levé)"
           },
           "cada_date": {
-            "format": "date",
+            "format": "date-time",
             "type": "string",
             "title": "date du levé par cadastre pour cet objet"
           },
@@ -710,6 +737,34 @@
           }
         }
       },
+      "geoTreeGoelandThingId": {
+        "required": [
+          "id",
+          "goeland_thing_id",
+          "goeland_thing_saved_by"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "identifiant interne pour cet objet",
+            "description": "cet Universally unique identifier (UUID) sera généré automatiquement pour vous "
+          },
+          "goeland_thing_id": {
+            "type": "integer",
+            "format": "int32",
+            "title": "identifiant cadastre",
+            "description": "FK sur la clé primaire du goéland Thing de type arbre pour cette position d'objet"
+          },
+          "goeland_thing_saved_by": {
+            "type": "integer",
+            "format": "int32",
+            "title": "identifiant cadastre",
+            "description": "FK sur la clé primaire de utilisateur spadom qui alimente l'info goéland Thing de type arbre pour cette position d'objet"
+          }
+        }
+        },
       "Error": {
         "required": [
           "code",
