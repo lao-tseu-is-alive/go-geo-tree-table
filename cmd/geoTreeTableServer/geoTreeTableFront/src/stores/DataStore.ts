@@ -7,7 +7,7 @@ import {
   parseJsonWithDetailedError,
 } from "@/tools/utils";
 
-const log = getLog("DataStore", 3, 2);
+const log = getLog("DataStore", 4, 2);
 
 export interface ITableHeader {
   title: string;
@@ -45,13 +45,14 @@ export const useDataStore = defineStore("data", {
     records: <any[]>[],
     headers: <ITableHeader[]>[],
     columns: <string[]>[],
+    defaultIconValue: "/img/gomarker_tree_ok.png",
     xIndex: -1,
     yIndex: -1,
     nameIndex: -1,
-    nameField: "name",
+    nameField: "titre",
     keyIndex: -1,
-    posXName: "x",
-    posYName: "y",
+    posXName: "e",
+    posYName: "n",
     doNotDisplayFieldsNames: [
       "x",
       "y",
@@ -61,6 +62,7 @@ export const useDataStore = defineStore("data", {
       "lat",
       "longitude",
       "latitude",
+        "e","n",
       "icon_path",
     ],
     doNotDisplayFieldsIndexes: <number[]>[],
@@ -103,7 +105,6 @@ export const useDataStore = defineStore("data", {
         );
         let myGeoJson = null;
         let result = '{"type": "FeatureCollection", "features": [';
-        //state.records.forEach((r: Record<string, any>) => {
         for (let i = 0; i < state.records.length; i++) {
           const r = state.records[i];
           let myTypeId = 0;
@@ -113,13 +114,16 @@ export const useDataStore = defineStore("data", {
           let myIconPath = getValueFromTemplate(
             r,
             "icon_path",
-            "/img/gomarker_star_blue.png",
+              state.defaultIconValue,
           );
           let myName = "";
           if (state.nameIndex >= 0) {
             myName = !isNullOrUndefined(r[state.nameField])
               ? escapeJsonString(r[state.nameField])
               : `record[${r.id}]`;
+          } else {
+            myName = `cadastre_id[${r.id_cadastre}] ${r.essence}`;
+            log.l(`record ${i}`, r);
           }
           let myX = 0;
           if (state.xIndex >= 0) {
@@ -151,7 +155,7 @@ export const useDataStore = defineStore("data", {
                 "name": "${myName}",
                 "icon_path": "${myIconPath}"
               }},`;
-          //log.l(feature)
+          log.l(feature)
           result += feature;
         } //) end of for loop
         //log.l(`> IN getGeoJson.. result after ForEach: ${result}`)
@@ -225,33 +229,35 @@ export const useDataStore = defineStore("data", {
           isVisible: true,
           frozenField: false,
         };
+        //normalize header
+        const headerName = header.toLowerCase().trim();
         const doNotDisplay = this.doNotDisplayFieldsNames.includes(
-          header.toLowerCase(),
+          headerName,
         );
         if (header === "") {
           log.w(`Empty header at index ${index}`);
           currentHeader.title = `field ${index}`;
         } else {
-          if (header.toLowerCase() == "pos_x" || header.toLowerCase() == "x") {
-            log.l(`pos_x or x found at index ${index}`);
+          if (headerName == "pos_x" || headerName == "x" || headerName == "e") {
+            log.l(`pos_x or x or E found at index ${index}`);
             currentHeader.align = "end";
             this.xIndex = index;
           }
-          if (header.toLowerCase() == "pos_y" || header.toLowerCase() == "y") {
-            log.l(`pos_y or y found at index ${index}`);
+          if (headerName == "pos_y" || headerName == "y" || headerName == "n") {
+            log.l(`pos_y or y or N found at index ${index}`);
             currentHeader.align = "end";
             this.yIndex = index;
           }
           if (
-            header.toLowerCase() == "name" ||
-            header.toLowerCase() == "title"
+            headerName == "name" ||
+            headerName == "title"
           ) {
             log.l(`name or title found at index ${index}`);
             currentHeader.align = "center";
             this.nameIndex = index;
-            this.nameField = header.toLowerCase();
+            this.nameField = headerName;
           }
-          if (header.toLowerCase() == "id" || header.toLowerCase() == "key") {
+          if (headerName == "id" || headerName == "key") {
             log.l(`id or key found at index ${index}`);
             currentHeader.align = "center";
             this.keyIndex = index;
@@ -262,8 +268,8 @@ export const useDataStore = defineStore("data", {
             currentHeader.isVisible = false;
             this.doNotDisplayFieldsIndexes.push(index);
           }
-          currentHeader.title = header;
-          currentHeader.key = `${header}`.toLowerCase();
+          currentHeader.title = header.trim();
+          currentHeader.key = `${headerName}`;
           this.headers.push(currentHeader);
         }
       });

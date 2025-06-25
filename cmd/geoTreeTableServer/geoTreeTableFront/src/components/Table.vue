@@ -54,7 +54,7 @@
           title="Table data"
           variant="text"
         >
-          <template v-slot:text>
+<!--          <template v-slot:text>
             <v-text-field
               v-model="search"
               label="Search"
@@ -63,7 +63,7 @@
               hide-details
               single-line
             ></v-text-field>
-          </template>
+          </template>-->
           <template #default>
             <v-data-table
               height="400" fixed-header

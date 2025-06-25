@@ -12,7 +12,7 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
   top: 0px;
   bottom: 0px;
   width: 100%;
-  height: 98%;
+  height: 80vh;
   min-height: 550px;
 }
 
@@ -49,14 +49,16 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
     background-color: rgba(245, 245, 245, 1);
     color: black;
     font-weight: normal;
-    box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
-    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
-    transition-property: box-shadow,
-    transform,
-    opacity,
-    -webkit-box-shadow,
-    -webkit-transform;
+    box-shadow:
+      0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+      0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+      0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+    transition-property:
+      box-shadow,
+      transform,
+      opacity,
+      -webkit-box-shadow,
+      -webkit-transform;
     border-radius: 4px;
   }
 
@@ -88,7 +90,9 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
   }
 
   .ol-zoom-out {
-    top: calc($button_size_20px / 2 + $button_size_20px + 1.5em); // = 1.05em = 21px
+    top: calc(
+      $button_size_20px / 2 + $button_size_20px + 1.5em
+    ); // = 1.05em = 21px
     height: 42px;
     width: 42px;
     min-width: 42px;
@@ -147,7 +151,10 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
     <div class="text-xs-center">
       <v-dialog v-model="layerSwitcherVisible" eager width="290">
         <v-card>
-          <v-card-title class="subtitle-1 grey lighten-2 pl-6 pt-2 pb-1" primary-title>
+          <v-card-title
+            class="subtitle-1 grey lighten-2 pl-6 pt-2 pb-1"
+            primary-title
+          >
             Choix des couches
           </v-card-title>
 
@@ -174,14 +181,13 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
     <v-toolbar density="compact" class="" color="secondary">
       &nbsp;{{ posMouseX }}, {{ posMouseY }}&nbsp;
       <v-spacer></v-spacer>
-        <v-text-field
-          prepend-icon="mdi-magnify"
-          hide-details
-          single-line
-          v-model="searchStreet"
-          placeholder="Search street"
-        ></v-text-field>
-
+      <v-text-field
+        prepend-icon="mdi-magnify"
+        hide-details
+        single-line
+        v-model="searchStreet"
+        placeholder="Search street"
+      ></v-text-field>
 
       <v-btn icon>
         <v-icon>mdi-crosshairs-gps</v-icon>
@@ -191,11 +197,16 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
       <template v-if="numRecords > 0">
-        <div class="right-0">Found {{ numRecords }} with :{{ searchParameters }}</div>
+        <div class="right-0">
+          Found {{ numRecords }} with :{{ searchParameters }}
+        </div>
       </template>
     </v-toolbar>
     <div class="map" id="map" ref="myMap">
-      <noscript> You need to have a browser with javascript support to see this OpenLayers map of Lausanne</noscript>
+      <noscript>
+        You need to have a browser with javascript support to see this
+        OpenLayers map of Lausanne</noscript
+      >
       <div ref="mapTooltip" class="tooltip"></div>
     </div>
     <v-btn
@@ -208,52 +219,51 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
       width="45"
       @click.stop="toggleLayerSwitcher"
     ></v-btn>
-
   </v-responsive>
 </template>
 
 <script setup lang="ts">
-import {onMounted, ref, watch} from "vue"
-import {getLog} from "@/config"
+import { onMounted, ref, watch } from "vue";
+import { getLog } from "@/config";
 import {
   addGeoJsonLayer,
   createLausanneMap,
   mapClickInfo,
-  mapFeatureInfo
-} from "@/components/Map"
-import OlMap from "ol/Map"
-import OlOverlay from "ol/Overlay"
-import LayerSwitcher from "ol-layerswitcher"
-import {isNullOrUndefined} from "@/tools/utils"
-import {useDataStore} from "@/stores/DataStore"
-import {storeToRefs} from "pinia"
+  mapFeatureInfo, zoomToLayerContent
+} from "@/components/Map";
+import OlMap from "ol/Map";
+import OlOverlay from "ol/Overlay";
+import LayerSwitcher from "ol-layerswitcher";
+import { isNullOrUndefined } from "@/tools/utils";
+import { useDataStore } from "@/stores/DataStore";
+import { storeToRefs } from "pinia";
 
-const store = useDataStore()
-const {numRecords, searchParameters, getGeoJson} = storeToRefs(store)
-const log = getLog("MapLausanneVue", 4, 2)
-const myLayerName = "GoelandThingLayer"
-const posMouseX = ref(0)
-const posMouseY = ref(0)
-const searchStreet = ref("")
-const layerSwitcherVisible = ref(false)
-const myOlMap = ref<OlMap | null>(null)
-let myMapOverlay: null | OlOverlay
-const mapTooltip = ref<HTMLDivElement | null>(null)
+const store = useDataStore();
+const { numRecords, searchParameters, getGeoJson } = storeToRefs(store);
+const log = getLog("MapLausanneVue", 4, 2);
+const myLayerName = "GoelandThingLayer";
+const posMouseX = ref(0);
+const posMouseY = ref(0);
+const searchStreet = ref("");
+const layerSwitcherVisible = ref(false);
+const myOlMap = ref<OlMap | null>(null);
+let myMapOverlay: null | OlOverlay;
+const mapTooltip = ref<HTMLDivElement | null>(null);
 const myProps = defineProps<{
-  zoom?: number | undefined
-  center?: number[] | undefined
-  geodata?: object | undefined
-}>()
+  zoom?: number | undefined;
+  center?: number[] | undefined;
+  geodata?: object | undefined;
+}>();
 
 //// EVENT SECTION
 
-const emit = defineEmits(["map-click", "map-error"])
+const emit = defineEmits(["map-click", "map-error"]);
 
 //// WATCH SECTION
 watch(
   () => myProps.zoom,
   (val, oldValue) => {
-    log.t(` watch myProps.zoom old: ${oldValue}, new val: ${val}`)
+    log.t(` watch myProps.zoom old: ${oldValue}, new val: ${val}`);
     if (val !== undefined) {
       if (val !== oldValue) {
         // set new zoom
@@ -262,13 +272,13 @@ watch(
         }
       }
     }
-  }
+  },
   //  { immediate: true }
-)
+);
 watch(
   () => myProps.center,
   (val, oldValue) => {
-    log.t(` watch myProps.center old: ${oldValue}, new val: ${val}`)
+    log.t(` watch myProps.center old: ${oldValue}, new val: ${val}`);
     if (val !== undefined) {
       if (val !== oldValue) {
         // do something
@@ -278,65 +288,80 @@ watch(
         }
       }
     }
-  }
+  },
   //  { immediate: true }
-)
+);
 watch(
   () => myProps.geodata,
   (val, oldValue) => {
-    log.t(` watch myProps.geodata old: ${oldValue}, new val: ${val}`)
+    log.t(` watch myProps.geodata old: ${oldValue}, new val: ${val}`);
     if (!isNullOrUndefined(val)) {
       if (val !== oldValue) {
         // do something
         if (myOlMap.value !== null) {
-          addGeoJsonLayer(myOlMap.value as OlMap, myLayerName, val as object)
+          addGeoJsonLayer(myOlMap.value as OlMap, myLayerName, val as object);
+          zoomToLayerContent(myOlMap.value as OlMap, myLayerName);
         }
       } else {
-        log.l(`in watch myProps.geodata 😴 😴 NOTHING TO DO old is same as new val: ${val}`)
+        log.l(
+          `in watch myProps.geodata 😴 😴 NOTHING TO DO old is same as new val: ${val}`,
+        );
       }
     }
-  }
+  },
   //  { immediate: true }
-)
+);
 //// COMPUTED SECTION
 const getNumRecords = (): number => {
   if (isNullOrUndefined(numRecords.value)) {
-    return 0
+    return 0;
   }
-  return numRecords.value
-}
+  return numRecords.value;
+};
 
 //// FUNCTIONS SECTION
 const toggleLayerSwitcher = () => {
-  log.t(`# toggleLayerSwitcher layerSwitcherVisible : ${layerSwitcherVisible.value}`)
+  log.t(
+    `# toggleLayerSwitcher layerSwitcherVisible : ${layerSwitcherVisible.value}`,
+  );
   layerSwitcherVisible.value = !layerSwitcherVisible.value;
-}
+};
 
 const initialize = async (center: [number, number]) => {
-  log.t(" #> entering initialize...")
-  myOlMap.value = await createLausanneMap("map", center, 4, "fonds_geo_osm_bdcad_couleur")
+  log.t(" #> entering initialize...");
+  myOlMap.value = await createLausanneMap(
+    "map",
+    center,
+    4,
+    "fonds_geo_osm_bdcad_couleur",
+  );
   if (myOlMap.value !== null) {
-    log.l("initialize() myOlMap is not null : ", myOlMap.value)
+    log.l("initialize() myOlMap is not null : ", myOlMap.value);
     myOlMap.value.on("pointermove", (evt) => {
-      posMouseX.value = +Number(evt.coordinate[0]).toFixed(0)
-      posMouseY.value = +Number(evt.coordinate[1]).toFixed(0)
-      const features = <any[]>[]
+      posMouseX.value = +Number(evt.coordinate[0]).toFixed(0);
+      posMouseY.value = +Number(evt.coordinate[1]).toFixed(0);
+      const features = <any[]>[];
       if (myOlMap.value instanceof OlMap) {
         myOlMap.value.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
-          let layerName = ""
+          let layerName = "";
           if (!isNullOrUndefined(layer)) {
-            layerName = layer.get("name")
+            layerName = layer.get("name");
           }
           // on veut les tooltip seulement pour la couche myLayerName
           if (!isNullOrUndefined(layerName)) {
             if (layerName.indexOf(myLayerName) > -1) {
-              log.l(`## Feature belongs to ${myLayerName} ! Feature :`, feature);
-              let featureProps = null
+              log.l(
+                `## Feature belongs to ${myLayerName} ! Feature :`,
+                feature,
+              );
+              let featureProps = null;
               if (feature.getProperties().hasOwnProperty("is_cluster_used")) {
-                featureProps = feature.get('cluster_getProperties').features[0].getProperties()
+                featureProps = feature
+                  .get("cluster_getProperties")
+                  .features[0].getProperties();
                 log.l(`Feature isCluster : featureProps :`, featureProps);
               } else {
-                featureProps = feature.getProperties()
+                featureProps = feature.getProperties();
                 log.l(`Feature not cluster : featureProps :`, featureProps);
               }
               if (!isNullOrUndefined(featureProps)) {
@@ -345,68 +370,68 @@ const initialize = async (center: [number, number]) => {
                   feature,
                   layer: layerName,
                   data: featureProps,
-                }
+                };
                 //log.l(`Feature id : ${featureProps.id}, feature:`, feature);
-                features.push(featureInfo)
+                features.push(featureInfo);
               } else {
                 features.push({
                   id: 0,
                   feature,
                   layer: layerName,
-                })
+                });
               }
             }
           }
           // return feature
-        })
+        });
       } // end of forEachFeatureAtPixel
       if (features.length > 0) {
         //log.w("##MapLausanne pointermove EVENT ->Array of features found :", features, mapTooltip.value)
-        let strToolTip = ""
-        let layerName = ""
+        let strToolTip = "";
+        let layerName = "";
         features.forEach((featInfo) => {
-          const currentTitle = featInfo.data.name
-          layerName += `${featInfo.layer} `
+          const currentTitle = featInfo.data.name;
+          layerName += `${featInfo.layer} `;
           if (!isNullOrUndefined(currentTitle)) {
-            strToolTip += `${currentTitle.replace(/(<([^>]+)>)/gi, "")}<br>`
+            strToolTip += `${currentTitle.replace(/(<([^>]+)>)/gi, "")}<br>`;
           }
-        })
+        });
         if (strToolTip.length > 0 && layerName.indexOf(myLayerName) > -1) {
           // log.w(`Before tooltip layer : ${layerName}`)
           if (myMapOverlay instanceof OlOverlay) {
-            myMapOverlay.setPosition(evt.coordinate)
+            myMapOverlay.setPosition(evt.coordinate);
           }
           if (mapTooltip.value instanceof HTMLDivElement) {
-            mapTooltip.value.style.display = "block"
-            mapTooltip.value.innerHTML = strToolTip
+            mapTooltip.value.style.display = "block";
+            mapTooltip.value.innerHTML = strToolTip;
           }
         } else {
           if (mapTooltip.value instanceof HTMLDivElement) {
-            mapTooltip.value.style.display = "none"
-            mapTooltip.value.innerHTML = ""
+            mapTooltip.value.style.display = "none";
+            mapTooltip.value.innerHTML = "";
           }
         }
       } else {
         if (mapTooltip.value instanceof HTMLDivElement) {
-          mapTooltip.value.style.display = "none"
-          mapTooltip.value.innerHTML = ""
+          mapTooltip.value.style.display = "none";
+          mapTooltip.value.innerHTML = "";
         }
       }
-    })
+    });
     myOlMap.value.on("click", (evt) => {
-      const x = +Number(evt.coordinate[0]).toFixed(2)
-      const y = +Number(evt.coordinate[1]).toFixed(2)
-      const features: mapFeatureInfo[] = []
+      const x = +Number(evt.coordinate[0]).toFixed(2);
+      const y = +Number(evt.coordinate[1]).toFixed(2);
+      const features: mapFeatureInfo[] = [];
       if (myOlMap.value instanceof OlMap) {
         myOlMap.value.forEachFeatureAtPixel(evt.pixel, (feature, layer) => {
-          let layerName = ""
+          let layerName = "";
           if (!isNullOrUndefined(layer)) {
-            layerName = layer.get("name")
+            layerName = layer.get("name");
           }
           // on veut les tooltip seulement pour la couche myLayerName
           if (!isNullOrUndefined(layerName)) {
             if (layerName.indexOf(myLayerName) > -1) {
-              const featureProps = feature.getProperties()
+              const featureProps = feature.getProperties();
               if (!isNullOrUndefined(featureProps)) {
                 const featureInfo: mapFeatureInfo = {
                   id: featureProps.id,
@@ -414,47 +439,60 @@ const initialize = async (center: [number, number]) => {
                   feature,
                   layer: layerName,
                   data: featureProps,
-                }
+                };
                 // log.l(`Feature id : ${feature_props.id}, info:`, info);
-                features.push(featureInfo)
+                features.push(featureInfo);
               } else {
                 // @ts-expect-error it's ok
-                features.push({ id: 0, feature, layer: layerName, data: null } as mapFeatureInfo)
+                features.push({
+                  id: 0,
+                  feature,
+                  layer: layerName,
+                  data: null,
+                } as mapFeatureInfo);
               }
             }
           }
           // return feature
-        })
+        });
       } // end of forEachFeatureAtPixel
       if (features.length > 0) {
         features.forEach((featInfo) => {
-          log.l("Feature found : ", featInfo)
-        })
+          log.l("Feature found : ", featInfo);
+        });
       }
-      emit("map-click", { x, y, features } as mapClickInfo)
-    })
+      emit("map-click", { x, y, features } as mapClickInfo);
+    });
 
-    const divToc = document.getElementById("divLayerSwitcher")
-    LayerSwitcher.renderPanel(myOlMap.value as OlMap, divToc as HTMLElement, {})
+    const divToc = document.getElementById("divLayerSwitcher");
+    LayerSwitcher.renderPanel(
+      myOlMap.value as OlMap,
+      divToc as HTMLElement,
+      {},
+    );
     if (mapTooltip.value !== null) {
       myMapOverlay = new OlOverlay({
         element: mapTooltip.value as HTMLDivElement,
         offset: [0, -40],
         positioning: "top-center",
-      })
-      myOlMap.value.addOverlay(myMapOverlay)
+      });
+      myOlMap.value.addOverlay(myMapOverlay);
     }
     if (getNumRecords() > 0) {
-      log.l("initialize() numRecords > 0")
-      addGeoJsonLayer(myOlMap.value as OlMap, myLayerName, getGeoJson.value,35)
+      log.l("initialize() numRecords > 0");
+      addGeoJsonLayer(
+        myOlMap.value as OlMap,
+        myLayerName,
+        getGeoJson.value,
+        35,
+      );
     }
-
   }
-}
+};
 
 onMounted(() => {
-  log.t("mounted()")
-  const placeStFrancoisM95:[number, number] = [2538202, 1152364]
-  initialize(placeStFrancoisM95)
-})
+  log.t("mounted()");
+  const placeStFrancoisM95: [number, number] = [2538202, 1152364];
+  initialize(placeStFrancoisM95);
+});
 </script>

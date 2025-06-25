@@ -27,12 +27,13 @@ import OlText from "ol/style/Text";
 import { register } from "ol/proj/proj4";
 import { Coordinate } from "ol/coordinate";
 import { createEmpty, extend, getHeight, getWidth } from "ol/extent";
-//import { Select, defaults as defaultInteractions } from "ol/interaction";
 import { getLog } from "@/config";
 import { isNullOrUndefined } from "@/tools/utils";
+import { isEmpty } from "ol/extent";
 
 const log = getLog("Map", 2, 2);
-const urlLausanneMN95 = "https://tilesmn95.lausanne.ch/tiles/1.0.0/LausanneWMTS.xml";
+const urlLausanneMN95 =
+  "https://tilesmn95.lausanne.ch/tiles/1.0.0/LausanneWMTS.xml";
 const urlSwissTopoMN95 = "/WMTSCapabilities_SwissTopo_en_small.xml";
 const MaxExtent = [2532500, 1149000, 2545625, 1161000];
 const lausanneGare: coordinate2dArray = [2537968.5, 1152088.0];
@@ -42,7 +43,7 @@ const defaultClusterDistance = 50;
 const defaultClusterMinDistance = 2;
 const defaultClusterFontStyle = "15px sans-serif";
 let maxFeatureCount = 0;
-export type coordinate2dArray = [number, number]
+export type coordinate2dArray = [number, number];
 
 export interface mapFeatureInfo {
   id: string;
@@ -112,7 +113,12 @@ function getWmtsSource(WMTSCapabilitiesParsed: object, layerName: string) {
   return new OlSourceWMTS(<Options>WMTSOptions);
 }
 
-function createBaseOlLayerTile(parsedWmtsCapabilities: object, title: string, layerName: string, visible = false) {
+function createBaseOlLayerTile(
+  parsedWmtsCapabilities: object,
+  title: string,
+  layerName: string,
+  visible = false,
+) {
   const tempTileLayer = new OlLayerTile({
     visible,
     source: getWmtsSource(parsedWmtsCapabilities, layerName),
@@ -121,7 +127,10 @@ function createBaseOlLayerTile(parsedWmtsCapabilities: object, title: string, la
   return tempTileLayer;
 }
 
-export async function getWmtsLausanneBaseLayers(url: string = urlLausanneMN95, initialBaseLayer: string = "fonds_geo_osm_bdcad_couleur") {
+export async function getWmtsLausanneBaseLayers(
+  url: string = urlLausanneMN95,
+  initialBaseLayer: string = "fonds_geo_osm_bdcad_couleur",
+) {
   const arrWmtsLayers = [];
   try {
     const WMTSCapabilities = await getWMTSCapabilitiesFromUrl(url);
@@ -159,7 +168,10 @@ export async function getWmtsLausanneBaseLayers(url: string = urlLausanneMN95, i
   }
 }
 
-async function getWmtsSwissTopoBaseLayers(url: string, initialBaseLayer: string) {
+async function getWmtsSwissTopoBaseLayers(
+  url: string,
+  initialBaseLayer: string,
+) {
   const arrWmtsLayers = [];
   try {
     const WMTSCapabilities = await getWMTSCapabilitiesFromUrl(url);
@@ -202,7 +214,10 @@ async function getWmtsSwissTopoBaseLayers(url: string, initialBaseLayer: string)
  * @param olMap to search for the layerName
  * @param layerName the name of the OlLayer to find
  */
-export const getLayerByName = (olMap: OlMap, layerName: string): null | OlLayer => {
+export const getLayerByName = (
+  olMap: OlMap,
+  layerName: string,
+): null | OlLayer => {
   log.t(`## in getLayerByName layerName: ${layerName} `);
   const localDebug = false;
   if (isNullOrUndefined(olMap)) {
@@ -212,16 +227,28 @@ export const getLayerByName = (olMap: OlMap, layerName: string): null | OlLayer 
 
   const allLayers = olMap.getAllLayers();
   for (const layer of allLayers) {
-    if (localDebug) log.l(`## in getLayerByName : layer) : [${typeof layer}] ${layer}`, layer, layer.getProperties());
+    if (localDebug)
+      log.l(
+        `## in getLayerByName : layer) : [${typeof layer}] ${layer}`,
+        layer,
+        layer.getProperties(),
+      );
     if (layer.get("name") !== undefined && layer.get("name") === layerName) {
       return layer; // This now returns from getLayerByName
     }
   }
-  log.l(`## in getLayerByName : the layer [${layerName}] was not found returning NULL `);
+  log.l(
+    `## in getLayerByName : the layer [${layerName}] was not found returning NULL `,
+  );
   return null;
 };
 
-export const addMarker2Layer = (olMap: OlMap, layerName: string, clearLayer = false, marker: IMarkerFeature) => {
+export const addMarker2Layer = (
+  olMap: OlMap,
+  layerName: string,
+  clearLayer = false,
+  marker: IMarkerFeature,
+) => {
   log.t("In addNewMarker markerPos:", marker.position);
   const iconFeature = new OlFeature({
     geometry: new OlPoint(marker.position),
@@ -262,13 +289,19 @@ export const addMarker2Layer = (olMap: OlMap, layerName: string, clearLayer = fa
 
 export const getPointStyle = (feature: OlFeature, resolution: number) => {
   const localDebug = false;
-  if (localDebug) log.t(`## Entering getPointStyle resolution : ${resolution}`, feature);
+  if (localDebug)
+    log.t(`## Entering getPointStyle resolution : ${resolution}`, feature);
   const defaultIconPath = "/img/gomarker_star_blue.png";
-  if (!isNullOrUndefined(feature) && !isNullOrUndefined(feature.getProperties())) {
+  if (
+    !isNullOrUndefined(feature) &&
+    !isNullOrUndefined(feature.getProperties())
+  ) {
     const props = feature.getProperties();
     // const geomType = props.geometry.getType()
     // const type_id = isNullOrUndefined(props.type_id) ? 0 : props.type_id
-    const iconPath = isNullOrUndefined(props.icon_path) ? defaultIconPath : props.icon_path;
+    const iconPath = isNullOrUndefined(props.icon_path)
+      ? defaultIconPath
+      : props.icon_path;
     return new Style({
       image: new Icon({
         anchor: [0.5, 46],
@@ -301,23 +334,36 @@ export const getPolygonStyle = (feature: OlFeature, resolution: number) => {
 
   let props = null;
   let theStyle = null;
-  if (!isNullOrUndefined(feature) && !isNullOrUndefined(feature.getProperties())) {
+  if (
+    !isNullOrUndefined(feature) &&
+    !isNullOrUndefined(feature.getProperties())
+  ) {
     props = feature.getProperties();
     // const geomType = props.geometry.getType()
     const id = isNullOrUndefined(props.id) ? "#INCONNU#" : props.id;
     if (localDebug) log.l(`id : ${id}`);
     theStyle = new OlStyle({
       fill: new OlFill({
-        color: isNullOrUndefined(props.fill_color) ? options.fill_color : props.fill_color,
+        color: isNullOrUndefined(props.fill_color)
+          ? options.fill_color
+          : props.fill_color,
       }),
       stroke: new OlStroke({
-        color: isNullOrUndefined(props.stroke_color) ? options.stroke_color : props.stroke_color,
-        width: isNullOrUndefined(props.stroke_width) ? options.stroke_width : props.stroke_width,
+        color: isNullOrUndefined(props.stroke_color)
+          ? options.stroke_color
+          : props.stroke_color,
+        width: isNullOrUndefined(props.stroke_width)
+          ? options.stroke_width
+          : props.stroke_width,
       }),
       image: new OlCircle({
-        radius: isNullOrUndefined(props.stroke_width) ? options.stroke_width : props.stroke_width,
+        radius: isNullOrUndefined(props.stroke_width)
+          ? options.stroke_width
+          : props.stroke_width,
         fill: new OlFill({
-          color: isNullOrUndefined(props.fill_color) ? options.fill_color : props.fill_color,
+          color: isNullOrUndefined(props.fill_color)
+            ? options.fill_color
+            : props.fill_color,
         }),
       }),
     });
@@ -352,6 +398,50 @@ const getVectorSourceGeoJson = (geoJsonData: object) => {
   });
 };
 /**
+ * Zooms the map to the extent of the specified layer's content.
+ * @param olMap The OpenLayers Map object
+ * @param layerName The name of the layer to zoom to
+ */
+export const zoomToLayerContent = (olMap: OlMap, layerName: string) => {
+  if (isNullOrUndefined(olMap)) {
+    log.w("zoomToLayerContent will do nothing because olMap isNullOrUndefined");
+    return;
+  }
+
+  const layer = getLayerByName(olMap, layerName);
+  if (isNullOrUndefined(layer)) {
+    log.w(`zoomToLayerContent will do nothing because layer ${layerName} not found`);
+    return;
+  }
+
+  // @ts-ignore
+  const source = layer.getSource();
+  if (isNullOrUndefined(source)) {
+    log.w(`zoomToLayerContent will do nothing because layer ${layerName} has no source`);
+    return;
+  }
+
+  // Get the extent of the underlying VectorSource (since source is a Cluster source)
+  const vectorSource = (source as OlSourceCluster).getSource();
+  if (isNullOrUndefined(vectorSource)) {
+    log.w(`zoomToLayerContent will do nothing because layer ${layerName} has no vector source`);
+    return;
+  }
+
+  // @ts-ignore
+  const extent = vectorSource.getExtent();
+  if (!isEmpty(extent) && extent.every(isFinite)) {
+    olMap.getView().fit(extent, {
+      padding: [50, 50, 50, 50], // Optional: Add padding around the extent
+      duration: 500, // Optional: Animation duration in milliseconds
+      maxZoom: 18, // Optional: Set a maximum zoom level
+    });
+  } else {
+    log.w(`zoomToLayerContent will do nothing because extent of layer ${layerName} is empty or invalid`);
+  }
+};
+
+/**
  * addGeoJsonLayer function
  * @param olMap the existing OpenLayers Map object (already created)
  * @param layerName seems obvious no (allows to check if it's already existing
@@ -359,25 +449,35 @@ const getVectorSourceGeoJson = (geoJsonData: object) => {
  * @param clusterDistance the distance in pixels within which features will be clustered together.
  * @param clusterMinDistance Minimum distance in pixels between clusters. Will be capped at the configured distance. By default no minimum distance is guaranteed. This config can be used to avoid overlapping icons. As a tradoff, the cluster feature's position will no longer be the center of all its features.
  */
-export const addGeoJsonLayer = (olMap: OlMap, layerName: string, geoJsonData: object, clusterDistance: number = defaultClusterDistance, clusterMinDistance: number = defaultClusterMinDistance) => {
+export const addGeoJsonLayer = (
+  olMap: OlMap,
+  layerName: string,
+  geoJsonData: object,
+  clusterDistance: number = defaultClusterDistance,
+  clusterMinDistance: number = defaultClusterMinDistance,
+) => {
   log.t(`> will try creating/updating features in layer : ${layerName}...`);
   if (!isNullOrUndefined(olMap)) {
     if (!isNullOrUndefined(geoJsonData)) {
       const olLayer = getLayerByName(olMap, layerName);
       if (olLayer == null) {
-        log.l(`In addGeoJsonLayer layer was not yet created so let's create it : ${layerName}`);
+        log.l(
+          `In addGeoJsonLayer layer was not yet created so let's create it : ${layerName}`,
+        );
         //const vectorSource = getVectorSourceGeoJson(geoJsonData);
         // let's add Cluster
         let vectorLayer: OlLayerVector;
-        const calculateClusterInfo = function(resolution:number) {
+        const calculateClusterInfo = function (resolution: number) {
           maxFeatureCount = 0;
           const features = vectorLayer.getSource()?.getFeatures();
           if (isNullOrUndefined(features)) {
-            log.w("calculateClusterInfo will do nothing because features isNullOrUndefined");
+            log.w(
+              "calculateClusterInfo will do nothing because features isNullOrUndefined",
+            );
             return;
           }
           let feature, radius;
-          const featureCount = (features || []).length -1;
+          const featureCount = (features || []).length - 1;
           for (let i = featureCount; i >= 0; --i) {
             feature = features?.[i];
             const originalFeatures = feature.get("features");
@@ -387,7 +487,10 @@ export const addGeoJsonLayer = (olMap: OlMap, layerName: string, geoJsonData: ob
               extend(extent, originalFeatures[j].getGeometry().getExtent());
             }
             maxFeatureCount = Math.max(maxFeatureCount, jj);
-            radius = Math.max(defaultMinClusterRadius, (0.2 * (getWidth(extent) + getHeight(extent))) / resolution);
+            radius = Math.max(
+              defaultMinClusterRadius,
+              (0.2 * (getWidth(extent) + getHeight(extent))) / resolution,
+            );
             feature.set("radius", radius);
             feature.set("is_cluster_used", true);
             //feature.set("cluster_features", originalFeatures);
@@ -395,17 +498,20 @@ export const addGeoJsonLayer = (olMap: OlMap, layerName: string, geoJsonData: ob
           }
         };
 
-        let currentResolution:number;
+        let currentResolution: number;
 
-        function styleFunction(feature:OlFeature, resolution:number) {
-          log.t(`In styleFunction resolution : ${resolution} feature :`, feature);
+        function styleFunction(feature: OlFeature, resolution: number) {
+          log.t(
+            `In styleFunction resolution : ${resolution} feature :`,
+            feature,
+          );
           if (resolution != currentResolution) {
             calculateClusterInfo(resolution);
             currentResolution = resolution;
           }
           let style, size;
           if (isNullOrUndefined(feature.get("features"))) {
-            size=0;
+            size = 0;
           } else {
             size = feature.get("features").length;
           }
@@ -415,7 +521,12 @@ export const addGeoJsonLayer = (olMap: OlMap, layerName: string, geoJsonData: ob
                 radius: feature.get("radius"),
                 fill: new OlFill({
                   // color: [255, 141, 161, Math.min(0.8, 0.4 + size / maxFeatureCount)], //pink
-                  color: [255, 237, 41, Math.min(0.8, 0.4 + size / maxFeatureCount)], //yellow
+                  color: [
+                    255,
+                    237,
+                    41,
+                    Math.min(0.8, 0.4 + size / maxFeatureCount),
+                  ], //yellow
                 }),
               }),
               text: new OlText({
@@ -432,28 +543,30 @@ export const addGeoJsonLayer = (olMap: OlMap, layerName: string, geoJsonData: ob
               const originalFeature = feature.get("features")[0];
               style = getPointStyle(originalFeature, resolution);
             }
-
           }
           return style;
         }
 
-
         const vectorSource = new OlSourceCluster({
-            distance: clusterDistance, //Distance in pixels within which features will be clustered together.
-            minDistance: clusterMinDistance,
-            source: getVectorSourceGeoJson(geoJsonData),
-          },
-        );
+          distance: clusterDistance, //Distance in pixels within which features will be clustered together.
+          minDistance: clusterMinDistance,
+          source: getVectorSourceGeoJson(geoJsonData),
+        });
         vectorLayer = new OlLayerVector({
           source: vectorSource,
           // @ts-expect-error it's what is in ol doc
           style: styleFunction,
         });
         vectorLayer.setProperties({ title: layerName, name: layerName });
-        log.l(`In addGeoJsonLayer adding layer ${layerName} to olMap`, vectorLayer);
+        log.l(
+          `In addGeoJsonLayer adding layer ${layerName} to olMap`,
+          vectorLayer,
+        );
         olMap.addLayer(vectorLayer);
       } else {
-        log.l(`In addGeoJsonLayer setting geoJson source to existing ${layerName}`);
+        log.l(
+          `In addGeoJsonLayer setting geoJson source to existing ${layerName}`,
+        );
         const oldVectorSource = olLayer.getSource() as OlSourceVector;
         if (oldVectorSource !== null) {
           oldVectorSource.clear();
@@ -461,7 +574,9 @@ export const addGeoJsonLayer = (olMap: OlMap, layerName: string, geoJsonData: ob
         olLayer.setSource(getVectorSourceGeoJson(geoJsonData));
       }
     } else {
-      log.w("addGeoJsonLayer will do nothing because geoJsonData isNullOrUndefined");
+      log.w(
+        "addGeoJsonLayer will do nothing because geoJsonData isNullOrUndefined",
+      );
     }
   } else {
     log.w("addGeoJsonLayer will do nothing because olMap isNullOrUndefined");
@@ -482,10 +597,17 @@ export async function createSwissMap(
   zoomLevel = 16,
   baseLayer = defaultBaseLayer,
 ) {
-  log.t(`createSwissMap(x,y: [${centerOfMap[0]},${centerOfMap[1]}]  zoom:${zoomLevel})`);
-  const arrBaseLayers = await getWmtsSwissTopoBaseLayers(urlSwissTopoMN95, baseLayer);
+  log.t(
+    `createSwissMap(x,y: [${centerOfMap[0]},${centerOfMap[1]}]  zoom:${zoomLevel})`,
+  );
+  const arrBaseLayers = await getWmtsSwissTopoBaseLayers(
+    urlSwissTopoMN95,
+    baseLayer,
+  );
   if (arrBaseLayers === null || arrBaseLayers.length < 1) {
-    log.w("arrBaseLayers cannot be null or empty to be able to see a nice map !");
+    log.w(
+      "arrBaseLayers cannot be null or empty to be able to see a nice map !",
+    );
     return null;
   }
   return new OlMap({
@@ -507,15 +629,22 @@ export async function createSwissMap(
  * @returns an instance of an OpenLayer Map
  */
 export async function createLausanneMap(
-    divOfMap: string,
-    centerOfMap = lausanneGare,
-    zoomLevel = 16,
-    baseLayer = defaultBaseLayer,
+  divOfMap: string,
+  centerOfMap = lausanneGare,
+  zoomLevel = 16,
+  baseLayer = defaultBaseLayer,
 ) {
-  log.t(`createLausanneMap(x,y: [${centerOfMap[0]},${centerOfMap[1]}]  zoom:${zoomLevel})`);
-  const arrBaseLayers = await getWmtsLausanneBaseLayers(urlLausanneMN95, baseLayer);
+  log.t(
+    `createLausanneMap(x,y: [${centerOfMap[0]},${centerOfMap[1]}]  zoom:${zoomLevel})`,
+  );
+  const arrBaseLayers = await getWmtsLausanneBaseLayers(
+    urlLausanneMN95,
+    baseLayer,
+  );
   if (arrBaseLayers === null || arrBaseLayers.length < 1) {
-    log.w("arrBaseLayers cannot be null or empty to be able to see a nice map !");
+    log.w(
+      "arrBaseLayers cannot be null or empty to be able to see a nice map !",
+    );
     return null;
   }
   return new OlMap({
