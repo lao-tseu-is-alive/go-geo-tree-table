@@ -9,6 +9,9 @@ import {
 
 const log = getLog("DataStore", 4, 2);
 
+const defaultXPosFieldName = "e"
+const defaultYPosFieldName = "n"
+
 export interface ITableHeader {
   title: string;
   align: "start" | "center" | "end";
@@ -51,8 +54,8 @@ export const useDataStore = defineStore("data", {
     nameIndex: -1,
     nameField: "titre",
     keyIndex: -1,
-    posXName: "e",
-    posYName: "n",
+    posXName: defaultXPosFieldName,
+    posYName: defaultYPosFieldName,
     doNotDisplayFieldsNames: [
       "x",
       "y",
@@ -184,8 +187,8 @@ export const useDataStore = defineStore("data", {
       this.nameIndex = -1;
       this.nameField = "name";
       this.keyIndex = -1;
-      this.posXName = "x";
-      this.posYName = "y";
+      this.posXName = defaultXPosFieldName;
+      this.posYName = defaultYPosFieldName;
       this.doNotDisplayFieldsIndexes = [];
     },
     setData(tableData: any[]) {
@@ -273,13 +276,14 @@ export const useDataStore = defineStore("data", {
           this.headers.push(currentHeader);
         }
       });
-      this.headers.push({
+
+      /*this.headers.push({
         title: "Actions",
         key: "actions",
         sortable: false,
         isVisible: true,
         frozenField: true,
-      } as ITableHeader);
+      } as ITableHeader);*/
       log.l("#> setHeaders after loop :", this.headers);
     },
     toggleVisibility(field: ITableHeader): void {

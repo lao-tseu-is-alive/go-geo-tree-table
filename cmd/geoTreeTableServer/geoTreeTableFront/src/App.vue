@@ -29,11 +29,11 @@
           appStore.getAppVersion
         }}</v-toolbar-title
       >
-      <v-btn v-if="DEV" @click="showDebug = !showDebug"
-        >{{ showDebug ? "Hide Debug" : "Show Debug" }}
-      </v-btn>
-      <v-spacer />
       <template v-if="appStore.getIsUserAuthenticated">
+        <v-btn v-if="DEV" @click="showDebug = !showDebug"
+          >{{ showDebug ? "Hide Debug" : "Show Debug" }}
+        </v-btn>
+        <v-spacer />
         <v-btn
           v-if="dataLoaded"
           icon
@@ -51,34 +51,40 @@
       </template>
     </v-app-bar>
     <template v-if="appStore.getIsUserAuthenticated">
-      <VResizeDrawer v-model="drawer" v-bind="drawerOptions">
-        <MyTable v-if="dataLoaded" @row-clicked="handleRowClicked" />
-      </VResizeDrawer>
+      <template v-if="dataLoaded">
+        <VResizeDrawer v-model="drawer" v-bind="drawerOptions">
+          <MyTable @row-clicked="handleRowClicked" />
+        </VResizeDrawer>
+      </template>
       <v-main>
         <v-container class="w-100 full-width full-height">
-          <v-row v-if="showDebug">
-            <v-col cols="12">
-              <v-code outlined rows="5" readonly disabled
-                >{{ getGeoJsonString() }}
-              </v-code>
-            </v-col>
-          </v-row>
-          <v-row>
+          <template v-if="!dataLoaded">
             <MyDataLoader
               v-if="!dataLoaded"
               @data-loaded="handleDataLoaded"
               @fields-settings-ready="handleFieldsSettingsReady"
             />
-            <!-- map-lausanne should be ready to display the geojson data -->
-            <map-lausanne
-              v-if="dataLoaded"
-              ref="myMap"
-              :zoom="mapZoom"
-              :center="mapCenter"
-              :geodata="getGeoJson"
-              @map-click="handleMapClickEvent"
-            />
-          </v-row>
+          </template>
+          <template v-else>
+            <v-row v-if="showDebug">
+              <v-col cols="12">
+                <v-code outlined rows="5" readonly disabled
+                  >{{ getGeoJsonString() }}
+                </v-code>
+              </v-col>
+            </v-row>
+            <v-row>
+              <!-- map-lausanne should be ready to display the geojson data -->
+              <map-lausanne
+                v-if="dataLoaded"
+                ref="myMap"
+                :zoom="mapZoom"
+                :center="mapCenter"
+                :geodata="getGeoJson"
+                @map-click="handleMapClickEvent"
+              />
+            </v-row>
+          </template>
         </v-container>
       </v-main>
     </template>
@@ -110,7 +116,7 @@ import { storeToRefs } from "pinia";
 import { AuthService } from "@/components/AuthService";
 
 let log = getLog("APP", 4, 2);
-const dataLoaded = ref(true);
+const dataLoaded = ref(false);
 const mapZoom = ref(14);
 const placeStFrancoisLausanne = [2538202, 1152364];
 const mapCenter = ref(placeStFrancoisLausanne);
@@ -119,7 +125,7 @@ const authService = new AuthService(appStore.getAppName);
 const dataStore = useDataStore();
 const { getGeoJson } = storeToRefs(dataStore);
 const showDebug = ref(false);
-const drawer = ref(true);
+const drawer = ref(false);
 const drawerOptions = ref({
   absolute: true,
   color: "",
@@ -229,12 +235,13 @@ const checkIsSessionTokenValid = () => {
 
 const handleDataLoaded = () => {
   log.t(`## handleDataLoaded entering...`);
-  // dataLoaded.value = true;
+  //dataLoaded.value = true;
 };
 
 const handleFieldsSettingsReady = () => {
   log.t(`## handleFieldsSettingsReady entering...`);
   dataLoaded.value = true;
+  drawer.value = true;
 };
 const handleMapClickEvent = (clickInfo: mapClickInfo) => {
   log.t(`## entering... pos:${clickInfo.x}, ${clickInfo.y}`);
@@ -249,7 +256,7 @@ const handleRowClicked = (item: Record<string, any>) => {
       log.t(`## selectedRow:`, selectedRow);
       //TODO a more robust approach would be o retrieve the coordinate from store
       mapCenter.value = [+selectedRow.e, +selectedRow.n];
-      mapZoom.value = 11;
+      mapZoom.value = 13;
     }
   } else {
     log.t(`## index was not found... item:}`, item);

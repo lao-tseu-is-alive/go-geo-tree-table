@@ -181,16 +181,8 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
     <v-toolbar density="compact" class="" color="secondary">
       &nbsp;{{ posMouseX }}, {{ posMouseY }}&nbsp;
       <v-spacer></v-spacer>
-      <v-text-field
-        prepend-icon="mdi-magnify"
-        hide-details
-        single-line
-        v-model="searchStreet"
-        placeholder="Search street"
-      ></v-text-field>
-
-      <v-btn icon>
-        <v-icon>mdi-crosshairs-gps</v-icon>
+      <v-btn icon @click="zoomExtent">
+        <v-icon>mdi-magnify</v-icon>
       </v-btn>
 
       <v-btn icon>
@@ -198,7 +190,7 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
       </v-btn>
       <template v-if="numRecords > 0">
         <div class="right-0">
-          Found {{ numRecords }} with :{{ searchParameters }}
+          {{ numRecords }} records
         </div>
       </template>
     </v-toolbar>
@@ -239,18 +231,17 @@ import { useDataStore } from "@/stores/DataStore";
 import { storeToRefs } from "pinia";
 
 const store = useDataStore();
-const { numRecords, searchParameters, getGeoJson } = storeToRefs(store);
+const { numRecords,  getGeoJson } = storeToRefs(store);
 const log = getLog("MapLausanneVue", 4, 2);
 const myLayerName = "GoelandThingLayer";
 const posMouseX = ref(0);
 const posMouseY = ref(0);
-const searchStreet = ref("");
 const layerSwitcherVisible = ref(false);
 const myOlMap = ref<OlMap | null>(null);
 let myMapOverlay: null | OlOverlay;
 const mapTooltip = ref<HTMLDivElement | null>(null);
 const myProps = defineProps<{
-  zoom?: number | undefined;
+  zoom: number ;
   center?: number[] | undefined;
   geodata?: object | undefined;
 }>();
@@ -285,6 +276,7 @@ watch(
         if (myOlMap.value !== null) {
           // recenter map
           myOlMap.value.getView().setCenter(val);
+          myOlMap.value.getView().setZoom(myProps.zoom);
         }
       }
     }
@@ -320,6 +312,12 @@ const getNumRecords = (): number => {
 };
 
 //// FUNCTIONS SECTION
+const zoomExtent = () => {
+  log.t(`# zoomExtent`);
+  if (myOlMap.value !== null) {
+    zoomToLayerContent(myOlMap.value as OlMap, myLayerName);
+  }
+}
 const toggleLayerSwitcher = () => {
   log.t(
     `# toggleLayerSwitcher layerSwitcherVisible : ${layerSwitcherVisible.value}`,

@@ -157,11 +157,11 @@ const getIsFieldVisible = (field: ITableHeader): boolean => {
 };
 
 const getIsFieldXPosition = (field: ITableHeader): boolean => {
-  return field.title == store.posXName;
+  return field.key == store.posXName;
 };
 
 const getIsFieldYPosition = (field: ITableHeader): boolean => {
-  return field.title == store.posYName;
+  return field.key == store.posYName;
 };
 
 const toggleFieldVisibility = (field: ITableHeader) => {
