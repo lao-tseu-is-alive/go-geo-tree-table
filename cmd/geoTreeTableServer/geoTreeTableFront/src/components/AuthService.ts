@@ -48,6 +48,7 @@ class SessionStorageManager {
   }
 
   get(key: string): string | null {
+    log.t(`session get called with key:${key}, appName:${this.appName}${key}`)
     return sessionStorage.getItem(`${this.appName}${key}`);
   }
 
@@ -180,6 +181,7 @@ export class AuthService {
     const expiration = this.session.get(SESSION_KEYS.DATE_EXPIRATION);
     if (expiration) {
       const dateExpire = new Date(parseInt(expiration, 10) * 1000);
+      log.l(`# IN doesCurrentSessionExist() dateExpire ${dateExpire.toString()}`);
       const now = new Date();
       if (now > dateExpire) {
         this.clearSessionStorage();
@@ -199,6 +201,8 @@ export class AuthService {
    * @returns The JWT token or an empty string.
    */
   public getLocalJwtTokenAuth(): string {
+    log.t(`# entering getLocalJwtTokenAuth...this.doesCurrentSessionExist()=${this.doesCurrentSessionExist()}`);
+    log.l(`JWT_TOKEN : ${this.session.get(SESSION_KEYS.JWT_TOKEN)}`)
     return this.doesCurrentSessionExist() ? this.session.get(SESSION_KEYS.JWT_TOKEN) ?? "" : "";
   }
 

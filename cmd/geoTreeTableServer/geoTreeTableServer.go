@@ -28,7 +28,7 @@ const (
 	defaultDBPort                = 5432
 	defaultDBIp                  = "127.0.0.1"
 	defaultDBSslMode             = "prefer"
-	defaultRestrictedUrlBasePath = "/api/v1"
+	defaultRestrictedUrlBasePath = "/goapi/v1"
 	defaultWebRootDir            = "geoTreeTableFront/dist/"
 	defaultSqlDbMigrationsPath   = "db/migrations"
 	defaultAdminUser             = "goadmin"

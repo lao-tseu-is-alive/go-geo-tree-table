@@ -112,6 +112,7 @@ import MapLausanne from "@/components/Map.vue";
 import { mapClickInfo } from "@/components/Map";
 import { useDataStore } from "@/stores/DataStore";
 import { useAppStore } from "@/stores/appStore";
+import { useGeoTreeStore } from "@/stores/geoTreeStore";
 import { storeToRefs } from "pinia";
 import { AuthService } from "@/components/AuthService";
 
@@ -123,6 +124,7 @@ const mapCenter = ref(placeStFrancoisLausanne);
 const appStore = useAppStore();
 const authService = new AuthService(appStore.getAppName);
 const dataStore = useDataStore();
+const geoTreeStore = useGeoTreeStore();
 const { getGeoJson } = storeToRefs(dataStore);
 const showDebug = ref(false);
 const drawer = ref(false);
@@ -170,6 +172,7 @@ const logout = () => {
   log.t("# IN logout()");
   authService.clearSessionStorage();
   appStore.setUserNotAuthenticated();
+  clearData();
   appStore.displayFeedBack(
     "Vous vous êtes déconnecté de l'application avec succès !",
     "success",
@@ -263,7 +266,7 @@ const handleRowClicked = (item: Record<string, any>) => {
   }
 };
 
-const handleLoginSuccess = (v: string) => {
+const handleLoginSuccess = async (v: string) => {
   log.t(`# entering... val:${v} `);
   appStore.setUserAuthenticated();
   appStore.hideFeedBack();
@@ -271,6 +274,17 @@ const handleLoginSuccess = (v: string) => {
     "Vous êtes authentifié sur l'application.",
     "success",
   );
+
+  // retrieve existing points from server
+  log.l(`appStore.getUserJwtToken :   ${appStore.getUserJwtToken}`)
+
+  geoTreeStore.setAuthToken(appStore.getUserJwtToken);
+  try {
+        await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
+        log.t(`retrieved ${geoTreeStore.geoTrees.length} records`,  geoTreeStore.geoTrees);
+      } catch (error) {
+        log.e("geoTreeStore.listGeoTrees got error : ",geoTreeStore.error);
+      }
   if (isNullOrUndefined(autoLogoutTimer)) {
     // check every 600 seconds(600'000 milliseconds) if jwt is still valid
     autoLogoutTimer = window.setInterval(checkIsSessionTokenValid, 600000);
@@ -295,6 +309,8 @@ const clearData = () => {
   log.t(`## entering...`);
   dataStore.clearData();
   dataLoaded.value = false;
+  drawer.value = false;
+  mapCenter.value = placeStFrancoisLausanne;
 };
 
 const toggleDrawer = () => {

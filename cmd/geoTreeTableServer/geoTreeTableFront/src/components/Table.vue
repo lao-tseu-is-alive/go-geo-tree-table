@@ -17,42 +17,23 @@
           prepend-icon="mdi-text-box-outline"
           rel="noopener noreferrer"
           rounded="lg"
-          title="Table data"
+          title="Données Points arbres"
           variant="text"
         >
-          <!--
           <template v-slot:text>
-            <v-text-field
-              v-model="search"
-              label="Search"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              hide-details
-              single-line
-            ></v-text-field>
+
           </template>
-          -->
 
           <template #default>
             <v-data-table
-              height="400"
+              height="650"
               fixed-header
               :headers="getFilteredHeaders"
-              :search="search"
               :items="getData"
               :row-props="getRowClass"
               @click:row="handleRowClick"
             >
-              <!--
-              <template v-slot:item.actions="{ item }">
-                <v-icon class="me-2" size="small" @click="editItem(item)">
-                  mdi-pencil
-                </v-icon>
-                <v-icon size="small" @click="deleteItem(item)">
-                  mdi-delete
-                </v-icon>
-              </template>
-              -->
+
             </v-data-table>
           </template>
         </v-card>
@@ -70,7 +51,6 @@ import { isNullOrUndefined } from "@/tools/utils";
 
 const store = useDataStore();
 const log = getLog("Table", 4, 2);
-const search = ref<string>("");
 const clickedRowIndex = ref(null);
 
 const { getHeaders, getData } = storeToRefs(store);
@@ -87,7 +67,6 @@ const getFilteredHeaders = computed(() => {
   return getHeaders.value.filter((header: ITableHeader) => header.isVisible);
 });
 
-
 const handleRowClick = (myEvent: Event, row: any) => {
   log.l("Row clicked:myEvent,row", myEvent, row);
   clickedRowIndex.value = row.index;
@@ -102,5 +81,4 @@ const getRowClass = (row: any) => {
     ? { class: { "clicked-row": true } }
     : { class: { "un-clicked-row": true } };
 };
-
 </script>

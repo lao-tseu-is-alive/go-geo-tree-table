@@ -39,6 +39,21 @@ export const useAppStore = defineStore("app", {
         return false
       }
     },
+    getUserJwtToken: (state): string => {
+      log.t(`# entering...isUserAuthenticated:${state.isUserAuthenticated}`);
+      if (state.isUserAuthenticated) {
+        const APP = state.appData.app;
+        const val = sessionStorage.getItem(`${APP}_goapi_jwt_session_token`);
+        if (val !== null) {
+          return val
+          }
+        log.w(`getUserJwtToken  sessionStorage.getItem(${APP}_goapi_jwt_session_token is null)`)
+        return ""
+      } else {
+        log.w("getUserJwtToken isUserAuthenticated is false")
+        return ""
+      }
+    }
   },
   actions: {
     setUserAuthenticated() {
