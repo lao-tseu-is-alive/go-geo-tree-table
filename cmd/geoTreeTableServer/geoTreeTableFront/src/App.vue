@@ -170,7 +170,7 @@ let autoLogoutTimer: number;
 
 const logout = () => {
   log.t("# IN logout()");
-  authService.clearSessionStorage();
+  authService.clearSession();
   appStore.setUserNotAuthenticated();
   clearData();
   appStore.displayFeedBack(

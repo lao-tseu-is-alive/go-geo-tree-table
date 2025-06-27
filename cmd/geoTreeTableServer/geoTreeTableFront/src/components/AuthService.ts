@@ -26,7 +26,7 @@ class AuthError extends Error {
   }
 }
 
-// Interface for JWT payload
+// Interface for the JWT payload from the backend
 interface JwtPayload {
   User: {
     user_id: number;
@@ -39,6 +39,20 @@ interface JwtPayload {
   exp: number;
 }
 
+// Interface for the user profile data stored in the session
+interface UserProfile {
+  jwtToken: string;
+  userId: number;
+  userExternalId: string;
+  name: string;
+  username: string;
+  email: string;
+  isAdmin: boolean;
+  dateExpiration: number;
+  sessionUuid: string;
+  groups: string | null;
+}
+
 // Session storage manager to encapsulate prefixing logic
 class SessionStorageManager {
   constructor(private appName: string) {}
@@ -48,7 +62,7 @@ class SessionStorageManager {
   }
 
   get(key: string): string | null {
-    log.t(`session get called with key:${key}, appName:${this.appName}${key}`)
+    log.t(`session get called with key:${key}, appName:${this.appName}${key}`);
     return sessionStorage.getItem(`${this.appName}${key}`);
   }
 
@@ -56,14 +70,17 @@ class SessionStorageManager {
     sessionStorage.removeItem(`${this.appName}${key}`);
   }
 
-  clear(keys: string[]): void {
-    keys.forEach((key) => this.remove(key));
+  clearAll(): void {
+    // Clear all keys associated with this app instance
+    Object.values(SESSION_KEYS).forEach((key) => this.remove(key));
+    log.t("Session storage cleared for app:", this.appName);
   }
 }
 
 export class AuthService {
   private readonly appName: string;
   private readonly session: SessionStorageManager;
+  private userProfileCache: UserProfile | null | undefined = undefined;
 
   /**
    * Initializes the AuthService with the application name.
@@ -80,7 +97,78 @@ export class AuthService {
   }
 
   /**
-   * Checks the status of the current JWT token.
+   * Clears all session storage data and the in-memory cache.
+   */
+  public clearSession(): void {
+    this.session.clearAll();
+    this.userProfileCache = null;
+    log.t("Session storage and cache cleared.");
+  }
+
+  /**
+   * Checks session validity, retrieves user data, and caches it.
+   * This is the single source of truth for session state.
+   * @returns {UserProfile | null} The user profile if the session is valid, otherwise null.
+   */
+  public getUserProfile(): UserProfile | null {
+    // Return from cache if already validated in this instance lifecycle
+    if (this.userProfileCache !== undefined) {
+      return this.userProfileCache;
+    }
+
+    log.t("# entering getUserProfile validation...");
+
+    const jwtToken = this.session.get(SESSION_KEYS.JWT_TOKEN);
+    const expiration = this.session.get(SESSION_KEYS.DATE_EXPIRATION);
+    const userId = this.session.get(SESSION_KEYS.USER_ID);
+    const email = this.session.get(SESSION_KEYS.EMAIL);
+
+    if (!jwtToken || !expiration || !userId || !email) {
+      log.w("# IN getUserProfile() - Missing one or more required session keys.");
+      this.userProfileCache = null;
+      return null;
+    }
+
+    const dateExpire = new Date(parseInt(expiration, 10) * 1000);
+    const now = new Date();
+
+    if (now > dateExpire) {
+      log.w(`# IN getUserProfile() - SESSION EXPIRED. Expiration was: ${dateExpire.toString()}`);
+      this.clearSession(); // Clear storage and cache
+      return null;
+    }
+
+    const minutesUntilExpire = Math.floor((dateExpire.getTime() - now.getTime()) / 1000 / 60);
+    log.l(`Yes, session exists and is valid for ${minutesUntilExpire} more minutes.`);
+
+    // All checks passed, assemble the profile object
+    const profile: UserProfile = {
+      jwtToken,
+      dateExpiration: parseInt(expiration, 10),
+      userId: parseInt(userId, 10),
+      email,
+      isAdmin: this.session.get(SESSION_KEYS.IS_ADMIN) === "true",
+      name: this.session.get(SESSION_KEYS.NAME) ?? "",
+      username: this.session.get(SESSION_KEYS.USERNAME) ?? "",
+      userExternalId: this.session.get(SESSION_KEYS.USER_EXTERNAL_ID) ?? "",
+      sessionUuid: this.session.get(SESSION_KEYS.SESSION_UUID) ?? "",
+      groups: this.session.get(SESSION_KEYS.GROUPS),
+    };
+
+    this.userProfileCache = profile; // Cache the valid profile
+    return profile;
+  }
+
+  /**
+   * Checks if a valid session exists.
+   * @returns True if the session is valid, false otherwise.
+   */
+  public doesCurrentSessionExist(): boolean {
+    return this.getUserProfile() !== null;
+  }
+
+  /**
+   * Checks the status of the current JWT token on the server.
    * @param baseServerUrl - The base URL of the server (defaults to BACKEND_URL).
    * @returns A promise resolving to an object with status, message, error, and data.
    */
@@ -91,119 +179,72 @@ export class AuthService {
     data: any;
   }> {
     log.t("# entering getTokenStatus...");
-    axios.defaults.headers.common.Authorization = `Bearer ${this.session.get(SESSION_KEYS.JWT_TOKEN)}`;
-    const axiosRequestConfig = {
-      timeout: defaultAxiosTimeout,
-      headers: { "X-Goeland-Token": this.getSessionId() },
-    };
+    const profile = this.getUserProfile();
+    if (!profile) {
+      return { msg: "No valid session found locally.", err: new AuthError("No session"), status: 401, data: null };
+    }
 
     try {
-      const res = await axios.get(`${baseServerUrl}/goapi/v1/status`, axiosRequestConfig);
+      const res = await axios.get(`${baseServerUrl}/goapi/v1/status`, {
+        headers: {
+          "Authorization": `Bearer ${profile.jwtToken}`,
+          "X-Goeland-Token": profile.sessionUuid
+        },
+        timeout: defaultAxiosTimeout,
+      });
+
       log.l("getTokenStatus() axios.get Success! response:", res);
       const dExpires = new Date(0);
       dExpires.setUTCSeconds(res.data.exp);
       const msg = `getTokenStatus() JWT token expiration: ${dExpires}`;
       log.l(msg);
-      return {
-        msg,
-        err: null,
-        status: res.status,
-        data: res.data,
-      };
+      return { msg, err: null, status: res.status, data: res.data };
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        log.w("getTokenStatus() ## Try Catch ERROR ## error:", error);
-        log.w("axios response was:", error.response);
-        log.w("axios message is:", error.message);
-        const msg = `Error in getTokenStatus() ## axios.get(${baseServerUrl}/goapi/v1/status) ERROR ## error: ${error.message}`;
-        log.w(msg);
-        return {
-          msg,
-          err: error,
-          status: error.response?.status,
-          data: null,
-        };
+        const msg = `Error in getTokenStatus(): ${error.message}`;
+        log.w(msg, error.response);
+        return { msg, err: error, status: error.response?.status, data: null };
       }
-      const msg = `Unexpected error in getTokenStatus() ## axios.get(${baseServerUrl}/goapi/v1/status) ERROR ## error: ${error}`;
+      const msg = `Unexpected error in getTokenStatus(): ${error}`;
       log.e(msg);
-      return {
-        msg,
-        err: error instanceof Error ? error : new Error(String(error)),
-        status: undefined,
-        data: null,
-      };
+      return { msg, err: error instanceof Error ? error : new Error(String(error)), status: undefined, data: null };
     }
   }
 
   /**
-   * Clears all session storage data related to the app.
-   */
-  public clearSessionStorage(): void {
-    this.session.clear(Object.values(SESSION_KEYS));
-    log.t("Session storage cleared.");
-  }
-
-  /**
-   * Logs out the user and clears session storage.
+   * Logs out the user on the server and clears the local session.
    * @param baseServerUrl - The base URL of the server.
    * @throws {AuthError} If the logout request fails.
    */
   public async logoutAndResetToken(baseServerUrl: string): Promise<void> {
     log.t("# IN logoutAndResetToken()");
-    axios.defaults.headers.common.Authorization = `Bearer ${this.session.get(SESSION_KEYS.JWT_TOKEN)}`;
+    const profile = this.getUserProfile();
+    // Always clear local session, even if server call fails
+    this.clearSession();
+
+    if (!profile) {
+      log.w("logoutAndResetToken called, but no local session was found.");
+      return; // Nothing to do on the server
+    }
+
     try {
-      const response = await axios.get(`${baseServerUrl}/goapi/v1/logout`);
-      log.l("logoutAndResetToken() Success! response:", response);
-      this.clearSessionStorage();
+      const response = await axios.get(`${baseServerUrl}/goapi/v1/logout`, {
+        headers: { "Authorization": `Bearer ${profile.jwtToken}` }
+      });
+      log.l("logoutAndResetToken() Server logout Success! response:", response);
     } catch (error) {
-      log.e("logoutAndResetToken() ## ERROR ##:", error);
-      throw new AuthError(`Logout failed: ${error instanceof Error ? error.message : String(error)}`);
+      log.e("logoutAndResetToken() ## SERVER LOGOUT ERROR ##:", error);
+      // We throw an error so the caller knows the server part failed,
+      // but the local session is already cleared.
+      throw new AuthError(`Server logout failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-  /**
-   * Checks if a valid session exists.
-   * @returns True if the session is valid, false otherwise.
-   */
-  public doesCurrentSessionExist(): boolean {
-    log.t("# entering doesCurrentSessionExist...");
-    const requiredKeys = [
-      SESSION_KEYS.JWT_TOKEN,
-      SESSION_KEYS.USER_ID,
-      SESSION_KEYS.IS_ADMIN,
-      SESSION_KEYS.EMAIL,
-    ];
+  // --- GETTERS ---
+  // All getters now rely on the centralized getUserProfile() method.
 
-    if (requiredKeys.some((key) => !this.session.get(key))) {
-      return false;
-    }
-
-    const expiration = this.session.get(SESSION_KEYS.DATE_EXPIRATION);
-    if (expiration) {
-      const dateExpire = new Date(parseInt(expiration, 10) * 1000);
-      log.l(`# IN doesCurrentSessionExist() dateExpire ${dateExpire.toString()}`);
-      const now = new Date();
-      if (now > dateExpire) {
-        this.clearSessionStorage();
-        log.w("# IN doesCurrentSessionExist() SESSION EXPIRED");
-        return false;
-      }
-      const minutesUntilExpire = Math.floor((dateExpire.getTime() - now.getTime()) / 1000 / 60);
-      log.l(`Yes session exists, valid for ${minutesUntilExpire} minutes...`);
-      return true;
-    }
-    log.w("# IN doesCurrentSessionExist() goapi_date_expiration was null");
-    return false;
-  }
-
-  /**
-   * Gets the JWT token if the session exists.
-   * @returns The JWT token or an empty string.
-   */
   public getLocalJwtTokenAuth(): string {
-    log.t(`# entering getLocalJwtTokenAuth...this.doesCurrentSessionExist()=${this.doesCurrentSessionExist()}`);
-    log.l(`JWT_TOKEN : ${this.session.get(SESSION_KEYS.JWT_TOKEN)}`)
-    return this.doesCurrentSessionExist() ? this.session.get(SESSION_KEYS.JWT_TOKEN) ?? "" : "";
+    return this.getUserProfile()?.jwtToken ?? "";
   }
 
   /**
@@ -211,9 +252,7 @@ export class AuthService {
    * @returns The expiration timestamp or 0 if no session exists.
    */
   public getDateExpiration(): number {
-    return this.doesCurrentSessionExist()
-        ? parseInt(this.session.get(SESSION_KEYS.DATE_EXPIRATION) ?? "0", 10)
-        : 0;
+    return this.getUserProfile()?.dateExpiration ?? 0;
   }
 
   /**
@@ -221,7 +260,7 @@ export class AuthService {
    * @returns The email or an empty string if no session exists.
    */
   public getUserEmail(): string {
-    return this.doesCurrentSessionExist() ? this.session.get(SESSION_KEYS.EMAIL) ?? "" : "";
+    return this.getUserProfile()?.email ?? "";
   }
 
   /**
@@ -229,9 +268,7 @@ export class AuthService {
    * @returns The user ID or 0 if no session exists.
    */
   public getUserId(): number {
-    return this.doesCurrentSessionExist()
-        ? parseInt(this.session.get(SESSION_KEYS.USER_ID) ?? "0", 10)
-        : 0;
+    return this.getUserProfile()?.userId ?? 0;
   }
 
   /**
@@ -239,7 +276,7 @@ export class AuthService {
    * @returns The name or an empty string if no session exists.
    */
   public getUserName(): string {
-    return this.doesCurrentSessionExist() ? this.session.get(SESSION_KEYS.NAME) ?? "" : "";
+    return this.getUserProfile()?.name ?? "";
   }
 
   /**
@@ -247,7 +284,7 @@ export class AuthService {
    * @returns The login or an empty string if no session exists.
    */
   public getUserLogin(): string {
-    return this.doesCurrentSessionExist() ? this.session.get(SESSION_KEYS.USERNAME) ?? "" : "";
+    return this.getUserProfile()?.username ?? "";
   }
 
   /**
@@ -255,31 +292,22 @@ export class AuthService {
    * @returns True if the user is an admin, false otherwise.
    */
   public getUserIsAdmin(): boolean {
-    return this.doesCurrentSessionExist()
-        ? this.session.get(SESSION_KEYS.IS_ADMIN) === "true"
-        : false;
+    return this.getUserProfile()?.isAdmin ?? false;
   }
 
-  /**
-   * Gets the first group ID for the user.
-   * @returns The first group ID or null if no session or groups exist.
-   */
-  public getUserFirstGroups(): number | null {
-    if (!this.doesCurrentSessionExist()) return null;
-    const groups = this.session.get(SESSION_KEYS.GROUPS);
-    if (!groups || groups === "null") return null;
-    return groups.includes(",") ? parseInt(groups.split(",")[0], 10) : parseInt(groups, 10);
+  public getSessionId(): string {
+    return this.getUserProfile()?.sessionUuid ?? "";
   }
 
-  /**
-   * Gets the array of user group IDs.
-   * @returns The group IDs or null if no session or groups exist.
-   */
   public getUserGroupsArray(): number[] | null {
-    if (!this.doesCurrentSessionExist()) return null;
-    const groups = this.session.get(SESSION_KEYS.GROUPS);
+    const groups = this.getUserProfile()?.groups;
     if (!groups || groups === "null") return null;
-    return groups.includes(",") ? groups.split(",").map((i) => parseInt(i, 10)) : [parseInt(groups, 10)];
+    return groups.split(",").map((i) => parseInt(i.trim(), 10));
+  }
+
+  public getUserFirstGroups(): number | null {
+    const groupsArray = this.getUserGroupsArray();
+    return groupsArray?.[0] ?? null;
   }
 
   /**
@@ -287,18 +315,8 @@ export class AuthService {
    * @returns True if the user has groups, false otherwise.
    */
   public isUserHavingGroups(): boolean {
-    if (!this.doesCurrentSessionExist()) return false;
-    const groups = this.session.get(SESSION_KEYS.GROUPS);
-    if (!groups || groups === "null") return false;
-    return groups.includes(",") || parseInt(groups, 10) > 0;
-  }
-
-  /**
-   * Gets the session UUID.
-   * @returns The session UUID or an empty string if no session exists.
-   */
-  public getSessionId(): string {
-    return this.doesCurrentSessionExist() ? this.session.get(SESSION_KEYS.SESSION_UUID) ?? "" : "";
+    const groups = this.getUserProfile()?.groups;
+    return !!groups && groups !== "null";
   }
 }
 
@@ -311,13 +329,15 @@ export class AuthService {
 const parseJwt = (token: string): JwtPayload => {
   try {
     const base64Url = token.split(".")[1];
-    if (!base64Url) throw new Error("Invalid JWT format");
+    if (!base64Url) throw new Error("Invalid JWT format: Missing payload.");
+
+    // Polyfill-like replacement for atob
     const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     const jsonPayload = decodeURIComponent(
-        atob(base64)
-            .split("")
-            .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
-            .join("")
+      window.atob(base64)
+        .split("")
+        .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join("")
     );
     return JSON.parse(jsonPayload) as JwtPayload;
   } catch (error) {
@@ -327,21 +347,21 @@ const parseJwt = (token: string): JwtPayload => {
 };
 
 /**
- * Authenticates a user and retrieves a JWT token.
+ * Authenticates a user, saves the session, and returns a JWT token.
  * @param appName - The application name for session storage.
  * @param baseServerUrl - The base server URL.
  * @param jwt_auth_url - The JWT authentication endpoint.
  * @param username - The user's username.
  * @param passwordHash - The hashed password.
  * @returns A promise resolving to an object with status, message, error, and data.
- * @throws {AuthError} If the authentication fails.
+ * @throws {AuthError} If required parameters are missing.
  */
 export async function getToken(
-    appName: string,
-    baseServerUrl: string,
-    jwt_auth_url: string,
-    username: string,
-    passwordHash: string
+  appName: string,
+  baseServerUrl: string,
+  jwt_auth_url: string,
+  username: string,
+  passwordHash: string
 ): Promise<{
   msg: string;
   err: Error | null;
@@ -361,28 +381,27 @@ export async function getToken(
     const response = await axios.post(login_url, data);
     log.l("getToken() axios.post Success! response:", response.data);
 
-    if (response.data.session) {
-      session  .set(SESSION_KEYS.SESSION_UUID, response.data.session);
-    }
-
     const jwtValues = parseJwt(response.data.token);
-    log.l("getToken() token values:", jwtValues);
+    log.l("getToken() parsed token values:", jwtValues);
+
     const dExpires = new Date(0);
     dExpires.setUTCSeconds(jwtValues.exp);
     log.l(`getToken() JWT token expiration: ${dExpires}`);
 
-    if (typeof Storage !== "undefined") {
-      session.set(SESSION_KEYS.JWT_TOKEN, response.data.token);
-      session.set(SESSION_KEYS.USER_ID, String(jwtValues.User.user_id));
-      session.set(SESSION_KEYS.USER_EXTERNAL_ID, jwtValues.User.external_id);
-      session.set(SESSION_KEYS.NAME, jwtValues.name);
-      session.set(SESSION_KEYS.USERNAME, jwtValues.User.login);
-      session.set(SESSION_KEYS.EMAIL, jwtValues.User.email);
-      session.set(SESSION_KEYS.IS_ADMIN, String(jwtValues.User.is_admin));
-      session.set(SESSION_KEYS.DATE_EXPIRATION, String(jwtValues.exp));
-    } else {
-      throw new AuthError("Session storage is not supported");
+    // Store all values in session storage
+    session.set(SESSION_KEYS.JWT_TOKEN, response.data.token);
+    if (response.data.session) {
+      session.set(SESSION_KEYS.SESSION_UUID, response.data.session);
     }
+    session.set(SESSION_KEYS.USER_ID, String(jwtValues.User.user_id));
+    session.set(SESSION_KEYS.USER_EXTERNAL_ID, jwtValues.User.external_id);
+    session.set(SESSION_KEYS.NAME, jwtValues.name);
+    session.set(SESSION_KEYS.USERNAME, jwtValues.User.login);
+    session.set(SESSION_KEYS.EMAIL, jwtValues.User.email);
+    session.set(SESSION_KEYS.IS_ADMIN, String(jwtValues.User.is_admin));
+    session.set(SESSION_KEYS.DATE_EXPIRATION, String(jwtValues.exp));
+    // Note: 'groups' are not in the standard JWT payload, so they won't be set here.
+    // They would need to be fetched and set separately if required after login.
 
     return {
       msg: "getToken() axios.post Success.",
@@ -392,21 +411,12 @@ export async function getToken(
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      log.w(`getToken() Try Catch Axios ERROR message: ${error.message}, error:`, error);
-      log.l("Axios error.response:", error.response);
-      return {
-        msg: `getToken() Try Catch Axios ERROR: ${error.message}!`,
-        err: error,
-        status: error.response?.status,
-        data: null,
-      };
+      const msg = `getToken() Axios Error: ${error.message}`;
+      log.w(msg, error.response);
+      return { msg, err: error, status: error.response?.status, data: null };
     }
-    log.e("getToken() unexpected error:", error);
-    return {
-      msg: `getToken() Try Catch unexpected ERROR: ${error}!`,
-      err: error instanceof Error ? error : new Error(String(error)),
-      status: undefined,
-      data: null,
-    };
+    const msg = `getToken() Unexpected Error: ${error}`;
+    log.e(msg);
+    return { msg, err: error instanceof Error ? error : new Error(String(error)), status: undefined, data: null };
   }
 }
