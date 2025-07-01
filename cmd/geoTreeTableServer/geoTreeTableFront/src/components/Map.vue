@@ -232,7 +232,7 @@ import { storeToRefs } from "pinia";
 
 const store = useDataStore();
 const { numRecords,  getGeoJson } = storeToRefs(store);
-const log = getLog("MapLausanneVue", 4, 2);
+const log = getLog("MapLausanneVue", 2, 2);
 const myLayerName = "GoelandThingLayer";
 const posMouseX = ref(0);
 const posMouseY = ref(0);

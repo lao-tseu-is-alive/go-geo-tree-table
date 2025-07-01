@@ -34,14 +34,22 @@
           >{{ showDebug ? "Hide Debug" : "Show Debug" }}
         </v-btn>
         <v-spacer />
-        <v-btn
-          v-if="dataLoaded"
-          icon
-          title="clear data and import a new file"
-          @click="clearData"
-        >
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
+        <template v-if="dataLoaded">
+          <v-btn
+            icon
+            title="sauvegarder les données dans la base de donées"
+            @click="saveDataToBackend"
+          >
+            <v-icon>mdi-database</v-icon>
+          </v-btn>
+          <v-btn
+            icon
+            title="Effacer les données à l'écran et importer un nouveau fichier"
+            @click="clearData"
+          >
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
         <v-btn
           variant="text"
           icon="mdi-logout"
@@ -115,6 +123,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useGeoTreeStore } from "@/stores/geoTreeStore";
 import { storeToRefs } from "pinia";
 import { AuthService } from "@/components/AuthService";
+import { GeoTree } from "@/stores/geoTree";
 
 let log = getLog("APP", 4, 2);
 const dataLoaded = ref(false);
@@ -263,6 +272,55 @@ const handleRowClicked = (item: Record<string, any>) => {
     }
   } else {
     log.t(`## index was not found... item:}`, item);
+  }
+};
+
+
+const saveDataToBackend = async () => {
+  log.t(`## entering saveDataToBackend...`);
+  const dataToSave = dataStore.getData; // Access the getter directly
+
+  if (!dataToSave || dataToSave.length === 0) {
+    appStore.displayFeedBack("No data to save.", "warning");
+    return;
+  }
+
+  let successCount = 0;
+  let errorCount = 0;
+  geoTreeStore.setAuthToken(appStore.getUserJwtToken);
+  for (const record of dataToSave) {
+    try {
+      // Map your DataStore record to the GeoTree interface
+      const geoTree: Omit<GeoTree, "id" | "created_at"> = {
+        cada_id: record.cada_id || 0,
+        cada_code: record.cada_code || 0,
+        cada_comment: record.cada_comment || "",
+        cada_date: record.cada_date || new Date().toISOString().split('T')[0],
+        created_by: appStore.getUserId || 0, // Assuming appStore has getUserId
+        pos_east: record.e || record.pos_east || 0,
+        pos_north: record.n || record.pos_north || 0,
+        tree_circumference_cm: record.tree_circumference_cm || undefined,
+        tree_crown_m: record.tree_crown_m || undefined,
+        cada_tree_type: record.cada_tree_type || undefined,
+        description: record.description || undefined,
+        pos_altitude: record.pos_altitude || undefined,
+      };
+      await geoTreeStore.createGeoTree(geoTree);
+      successCount++;
+    } catch (error) {
+      log.e("Error saving record:", record, error);
+      errorCount++;
+      appStore.displayFeedBack(`Error saving a record: ${geoTreeStore.error?.message || "Unknown error"}`, "error");
+    }
+  }
+
+  if (successCount > 0) {
+    appStore.displayFeedBack(`${successCount} records saved successfully!`, "success");
+    // Optionally, refresh the list of geoTrees after saving
+    await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
+  }
+  if (errorCount > 0) {
+    appStore.displayFeedBack(`${errorCount} records failed to save. Check console for details.`, "error");
   }
 };
 

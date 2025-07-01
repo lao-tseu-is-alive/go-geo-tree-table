@@ -39,6 +39,18 @@ export const useAppStore = defineStore("app", {
         return false
       }
     },
+    getUserId: (state):number => {
+      if (state.isUserAuthenticated) {
+        const APP = state.appData.app; // Use the internal appStore
+        const val = sessionStorage.getItem(`${APP}_goapi_idgouser`);
+        if (val !== null) {
+          return parseInt(val, 10);
+        }
+        return 0;
+      } else {
+        return 0
+      }
+    },
     getUserJwtToken: (state): string => {
       log.t(`# entering...isUserAuthenticated:${state.isUserAuthenticated}`);
       if (state.isUserAuthenticated) {
