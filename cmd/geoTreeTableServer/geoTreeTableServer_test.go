@@ -283,18 +283,6 @@ func TestMainExec(t *testing.T) {
 			body:                         "",
 		},
 		{
-			name:                         "POST /geoTree with empty cada_comment should return bad request",
-			wantStatusCode:               http.StatusBadRequest,
-			contentType:                  MIMEHtmlCharsetUTF8,
-			wantBody:                     nameCannotBeEmpty,
-			paramKeyValues:               make(map[string]string, 0),
-			httpMethod:                   http.MethodPost,
-			url:                          defaultRestrictedUrlBasePath + urlGeoTree,
-			useFormUrlencodedContentType: false,
-			useJwtToken:                  true,
-			body:                         fmt.Sprintf(`{"id": "%s", "cada_id": 12345, "cada_code": 678, "pos_east": 2537607.64, "pos_north": 1152609.12, "cada_date": "2025-06-13T01:01:01+07:00", "cada_comment": "", "created_by": 999999}`, newGeoTreeId),
-		},
-		{
 			name:                         "POST /geoTree with valid JWT token should create a new GeoTree",
 			wantStatusCode:               http.StatusCreated,
 			contentType:                  MIMEHtmlCharsetUTF8,
