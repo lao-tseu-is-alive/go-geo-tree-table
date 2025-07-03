@@ -105,17 +105,17 @@ func (s Service) login(ctx echo.Context) error {
 	}
 }
 
-func (s Service) restricted(ctx echo.Context) error {
-	s.Logger.TraceHttpRequest("restricted", ctx.Request())
+func (s Service) GetStatus(ctx echo.Context) error {
+	s.Logger.TraceHttpRequest("GetStatus", ctx.Request())
 	// get the current user from JWT TOKEN
 	claims := s.server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := claims.User.UserId
-	s.Logger.Info("in restricted : currentUserId: %d", currentUserId)
+	s.Logger.Info("in GetStatus : currentUserId: %d", currentUserId)
 	// you can check if the user is not active anymore and RETURN 401 Unauthorized
 	//if !s.Store.IsUserActive(currentUserId) {
 	//	return echo.NewHTTPError(http.StatusUnauthorized, "current calling user is not active anymore")
 	//}
-	return ctx.JSON(http.StatusCreated, claims)
+	return ctx.JSON(http.StatusOK, claims)
 }
 
 func main() {
@@ -240,7 +240,7 @@ func main() {
 	e.GET("/goAppInfo", server.GetAppInfoHandler())
 	e.POST(jwtAuthUrl, yourService.login)
 	r := server.GetRestrictedGroup()
-	r.GET("/secret", yourService.restricted)
+	r.GET("/status", yourService.GetStatus)
 
 	geoStore := geoTree.GetStorageInstanceOrPanic("pgx", db, l)
 

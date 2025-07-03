@@ -122,7 +122,7 @@ import { useDataStore } from "@/stores/DataStore";
 import { useAppStore } from "@/stores/appStore";
 import { useGeoTreeStore } from "@/stores/geoTreeStore";
 import { storeToRefs } from "pinia";
-import { AuthService } from "@/components/AuthService";
+import { doesCurrentSessionExist, getTokenStatus, logoutAndResetToken } from "@/components/AuthService";
 import { GeoTree } from "@/stores/geoTree";
 
 let log = getLog("APP", 4, 2);
@@ -131,7 +131,6 @@ const mapZoom = ref(14);
 const placeStFrancoisLausanne = [2538202, 1152364];
 const mapCenter = ref(placeStFrancoisLausanne);
 const appStore = useAppStore();
-const authService = new AuthService(appStore.getAppName);
 const dataStore = useDataStore();
 const geoTreeStore = useGeoTreeStore();
 const { getGeoJson } = storeToRefs(dataStore);
@@ -179,7 +178,7 @@ let autoLogoutTimer: number;
 
 const logout = () => {
   log.t("# IN logout()");
-  authService.clearSession();
+  logoutAndResetToken(appStore.getAppName, BACKEND_URL);
   appStore.setUserNotAuthenticated();
   clearData();
   appStore.displayFeedBack(
@@ -195,10 +194,9 @@ const logout = () => {
 };
 
 const checkIsSessionTokenValid = () => {
-  log.t("# entering...  ");
-  if (authService.doesCurrentSessionExist()) {
-    authService
-      .getTokenStatus()
+  log.t(`# entering...  ${appStore.getAppName}`);
+  if (doesCurrentSessionExist(appStore.getAppName)) {
+      getTokenStatus(appStore.getAppName, BACKEND_URL)
       .then((val) => {
         if (val.data == null) {
           log.e(`# getTokenStatus() ${val.msg}, ERROR is: `, val.err);
@@ -207,6 +205,7 @@ const checkIsSessionTokenValid = () => {
             "error",
             defaultFeedbackErrorTimeout,
           );
+          logout();
         } else {
           log.l(`# getTokenStatus() SUCCESS ${val.msg} data: `, val.data);
           if (isNullOrUndefined(val.err) && val.status === 200) {
@@ -310,7 +309,7 @@ const saveDataToBackend = async () => {
     } catch (error) {
       log.e("Error saving record:", record, error);
       errorCount++;
-      appStore.displayFeedBack(`Error saving a record: ${geoTreeStore.error?.message || "Unknown error"}`, "error");
+      appStore.displayFeedBack(`Error saving id [${record.cada_id}] : ${error} `, "error");
     }
   }
 
@@ -344,8 +343,8 @@ const handleLoginSuccess = async (v: string) => {
         log.e("geoTreeStore.listGeoTrees got error : ",geoTreeStore.error);
       }
   if (isNullOrUndefined(autoLogoutTimer)) {
-    // check every 600 seconds(600'000 milliseconds) if jwt is still valid
-    autoLogoutTimer = window.setInterval(checkIsSessionTokenValid, 600000);
+    // check every 60 seconds(60'000 milliseconds) if jwt is still valid
+    autoLogoutTimer = window.setInterval(checkIsSessionTokenValid, 60000);
   }
 };
 

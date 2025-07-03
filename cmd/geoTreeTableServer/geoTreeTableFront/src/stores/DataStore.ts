@@ -7,7 +7,7 @@ import {
   parseJsonWithDetailedError,
 } from "@/tools/utils";
 
-const log = getLog("DataStore", 4, 2);
+const log = getLog("DataStore", 2, 2);
 
 const defaultXPosFieldName = "e"
 const defaultYPosFieldName = "n"
