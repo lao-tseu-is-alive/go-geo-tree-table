@@ -48,7 +48,7 @@
       </v-col>
     </v-row>
     <!-- end of step-001-select-file -->
-    <v-row v-if="fileSelected" id="step-002-display-fields">
+    <v-row v-if="fileSelected && displayFieldsList" id="step-002-display-fields">
       <v-col cols="12">
         <v-card
           class="py-2"
@@ -134,6 +134,7 @@ import { isNullOrUndefined } from "@/tools/utils";
 const store = useDataStore();
 const log = getLog("DataLoader", 4, 2);
 const fileSelected = ref(false);
+const displayFieldsList = ref(false)
 const { getHeaders } = storeToRefs(store);
 
 //// EVENT SECTION
@@ -196,14 +197,24 @@ const handleFileUpload = (e: Event) => {
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       const sheetData = utils.sheet_to_json(sheet, { header: 1 });
-      // log.l("sheetData", sheetData);
-      store.setHeaders(sheetData.shift() as string[]);
-      store.setData(sheetData);
+      log.l("sheetData", sheetData);
+
+      // Filter out empty rows
+      const filteredSheetData = sheetData.filter(row =>
+        Array.isArray(row) && row.length > 0 && row.some(cell => cell !== undefined && cell !== null && cell !== '')
+      );
+
+      log.l("filteredSheetData", filteredSheetData);
+      store.setHeaders(filteredSheetData.shift() as string[]);
+      store.setData(filteredSheetData);
       log.l("getHeaders", getHeaders.value);
       emit("data-loaded", store.records);
     };
     reader.readAsArrayBuffer(inputFile);
     fileSelected.value = true;
+    if (!displayFieldsList.value) {
+       emit("fields-settings-ready", store.headers);
+    }
   }
 };
 

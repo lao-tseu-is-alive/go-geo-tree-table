@@ -11,6 +11,7 @@ import (
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/golog"
 	"net/http"
 	"strings"
+	"time"
 )
 
 type Service struct {
@@ -90,10 +91,18 @@ func (s Service) Create(ctx echo.Context) error {
 	}
 	s.Log.Info("Create GeoTree Bind ok : %+v ", newGeoTree)
 	if len(strings.Trim(newGeoTree.CadaComment, " ")) < 1 {
-
-		msg := fmt.Sprintf(FieldCannotBeEmpty, "CadaComment")
-		s.Log.Error(msg)
-		return ctx.JSON(http.StatusBadRequest, msg)
+		// store current timestamp
+		dateNow := time.Now()
+		newGeoTree.CadaComment = fmt.Sprintf("created by user: [%d] %s at %s",
+			currentUserId,
+			claims.User.Name,
+			dateNow.Format("2006-01-02 15:04:05	"),
+		)
+		/*
+			msg := fmt.Sprintf(FieldCannotBeEmpty, "CadaComment")
+			s.Log.Error(msg)
+			return ctx.JSON(http.StatusBadRequest, msg)
+		*/
 	}
 	if s.Store.Exist(newGeoTree.Id) {
 		msg := fmt.Sprintf("This id (%v) already exist !", newGeoTree.Id)

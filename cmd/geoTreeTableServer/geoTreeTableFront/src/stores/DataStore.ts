@@ -65,7 +65,7 @@ export const useDataStore = defineStore("data", {
       "lat",
       "longitude",
       "latitude",
-        "e","n",
+    //    "e","n",
       "icon_path",
     ],
     doNotDisplayFieldsIndexes: <number[]>[],
@@ -191,16 +191,24 @@ export const useDataStore = defineStore("data", {
       this.posYName = defaultYPosFieldName;
       this.doNotDisplayFieldsIndexes = [];
     },
+    setDbStatus(index: number, newDbStatus:string){
+      for (let i = 0; i < this.records.length; i++) {
+        if (this.records[i]._table_row_index === index) {
+          this.records[i].dbStatus = newDbStatus;
+        }
+      }
+    },
     setData(tableData: any[]) {
       log.t("#> entering setData ");
       this.records = [];
       tableData.forEach((row: any[], index: number) => {
         let currentRow: Record<string, any> = {};
         currentRow._table_row_index = index;
+        currentRow.dbStatus= "pas sauvé"
         row.forEach((cell, cellIndex: number) => {
           //const ;
           let doNotDisplay = false;
-          const currentField = this.headers[cellIndex].title.toLowerCase();
+          const currentField = this.headers[cellIndex+1].title.toLowerCase();
           doNotDisplay = this.doNotDisplayFieldsNames.includes(currentField);
           if (doNotDisplay) {
             //log.l(`setData:doNotDisplay : ${index} : ${cellIndex} : ${cell}`);
@@ -222,6 +230,17 @@ export const useDataStore = defineStore("data", {
     setHeaders(tableHeaders: string[]): void {
       log.t("#> setHeaders", tableHeaders);
       this.headers = [];
+
+      const statusHeader: ITableHeader = {
+        title: "dbStatus",
+        align: "start",
+        key: "dbStatus",
+        isVisible: true,
+        frozenField: true,
+      }
+
+      this.headers.push(statusHeader);
+
       this.columns = tableHeaders;
 
       tableHeaders.forEach((header, index: number) => {
@@ -273,7 +292,20 @@ export const useDataStore = defineStore("data", {
           }
           currentHeader.title = header.trim();
           currentHeader.key = `${headerName}`;
+
+          if (headerName.includes("couronne")) {
+            currentHeader.title = "diam_couronne"
+            currentHeader.key = "diam_couronne"
+          }
+          if (headerName.includes("tronc")) {
+            currentHeader.title = "circ_tronc"
+            currentHeader.key = "circ_tronc"
+          }
+
+
           this.headers.push(currentHeader);
+
+
         }
       });
 

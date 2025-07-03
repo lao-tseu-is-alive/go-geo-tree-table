@@ -15,6 +15,7 @@ const log = getLog("geoTreeStore", 4, 1);
 // const axiosRequestConfig = {  timeout: defaultAxiosTimeout,};
 const API_BASE_URL = `${BACKEND_URL}/goapi/v1`;
 
+const minDistanceTolerance = 0.1; //no trre can be closer then this distance (should be shorter than the check in database)
 export const useGeoTreeStore = defineStore("geoTree", {
   state: () => ({
     geoTrees: [] as GeoTreeList[],
@@ -29,6 +30,19 @@ export const useGeoTreeStore = defineStore("geoTree", {
         return 0;
       }
       return state.geoTrees.length;
+    },
+    treeByPosition: (state) => (east: number, north: number): GeoTreeList[] | null => {
+      log.t(`# entering treeByPosition getter with east: ${east}, north: ${north}`);
+      const nearbyTrees = state.geoTrees.filter((tree) => {
+        const treeEast = tree.pos_east || 0;
+        const treeNorth = tree.pos_north || 0;
+        const distance = Math.sqrt(
+          Math.pow(east - treeEast, 2) + Math.pow(north - treeNorth, 2)
+        );
+        return distance < minDistanceTolerance; //  threshold
+      });
+      log.l(`Found ${nearbyTrees.length} trees within 0.1m of (${east}, ${north})`, nearbyTrees);
+      return nearbyTrees.length > 0 ? nearbyTrees : null;
     },
   },
   actions: {

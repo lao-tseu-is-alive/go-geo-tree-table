@@ -58,6 +58,8 @@
         ></v-btn>
       </template>
     </v-app-bar>
+
+
     <template v-if="appStore.getIsUserAuthenticated">
       <template v-if="dataLoaded">
         <VResizeDrawer v-model="drawer" v-bind="drawerOptions">
@@ -65,6 +67,20 @@
         </VResizeDrawer>
       </template>
       <v-main>
+        <v-snackbar
+          v-model="appStore.feedbackVisible"
+          :timeout="appStore.feedbackTimeout"
+          rounded="pill"
+          :color="appStore.feedbackType"
+          location="top"
+        >
+          <v-alert
+            class="ma-4"
+            :type="appStore.feedbackType"
+            :text="appStore.feedbackMsg"
+            :color="appStore.feedbackType"
+          ></v-alert>
+        </v-snackbar>
         <v-container class="w-100 full-width full-height">
           <template v-if="!dataLoaded">
             <MyDataLoader
@@ -110,7 +126,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
-import { isNullOrUndefined } from "@/tools/utils";
+import { getTimeStampFromFrDate, isNullOrUndefined } from "@/tools/utils";
 import MyTable from "./components/Table.vue";
 import MyDataLoader from "./components/DataLoader.vue";
 import VResizeDrawer from "@wdns/vuetify-resize-drawer";
@@ -124,6 +140,7 @@ import { useGeoTreeStore } from "@/stores/geoTreeStore";
 import { storeToRefs } from "pinia";
 import { doesCurrentSessionExist, getTokenStatus, logoutAndResetToken } from "@/components/AuthService";
 import { GeoTree } from "@/stores/geoTree";
+
 
 let log = getLog("APP", 4, 2);
 const dataLoaded = ref(false);
@@ -278,7 +295,7 @@ const handleRowClicked = (item: Record<string, any>) => {
 const saveDataToBackend = async () => {
   log.t(`## entering saveDataToBackend...`);
   const dataToSave = dataStore.getData; // Access the getter directly
-
+  log.l(`dataToSave length : ${dataToSave.length}::`, dataToSave)
   if (!dataToSave || dataToSave.length === 0) {
     appStore.displayFeedBack("No data to save.", "warning");
     return;
@@ -287,28 +304,47 @@ const saveDataToBackend = async () => {
   let successCount = 0;
   let errorCount = 0;
   geoTreeStore.setAuthToken(appStore.getUserJwtToken);
-  for (const record of dataToSave) {
+  for (let i=0; i < dataToSave.length; i++) {
+    const record = dataToSave[i];
     try {
       // Map your DataStore record to the GeoTree interface
-      const geoTree: Omit<GeoTree, "id" | "created_at"> = {
-        cada_id: record.cada_id || 0,
-        cada_code: record.cada_code || 0,
-        cada_comment: record.cada_comment || "",
-        cada_date: record.cada_date || new Date().toISOString().split('T')[0],
+      log.l(`record number ${i}:`, record)
+      const geoTree: Omit<GeoTree, "created_at"> = {
+        id: crypto.randomUUID(),
+        cada_id: record.id_cadastre || record["_table_row_index"], // Map id_cadastre to cada_id
+        cada_code: record.type_point || 0, // Map type_point to cada_code
+        cada_comment: record.comment || "", // Map comment to cada_comment
+        cada_date: getTimeStampFromFrDate(record.date),
         created_by: appStore.getUserId || 0, // Assuming appStore has getUserId
-        pos_east: record.e || record.pos_east || 0,
-        pos_north: record.n || record.pos_north || 0,
-        tree_circumference_cm: record.tree_circumference_cm || undefined,
-        tree_crown_m: record.tree_crown_m || undefined,
-        cada_tree_type: record.cada_tree_type || undefined,
-        description: record.description || undefined,
-        pos_altitude: record.pos_altitude || undefined,
+        pos_east: +record.e || 0, // Map e to pos_east
+        pos_north: +record.n || 0, // Map n to pos_north
+        tree_circumference_cm:  +record["circ_tronc"] || 0,
+        tree_crown_m: +record["diam_couronne"] || undefined, // Keep as is if present
+        cada_tree_type: record["essence"] || undefined, // Map tree_type to cada_tree_type
+        description: record.description || undefined, // Keep as is if present
+        pos_altitude: +record.pos_altitude || undefined, // Keep as is if present
       };
+       // Check for existing trees within 0.1 meters using the getter
+      const nearbyTrees = geoTreeStore.treeByPosition(geoTree.pos_east, geoTree.pos_north);
+      if (nearbyTrees) {
+        log.w(`Tree at position (${geoTree.pos_east}, ${geoTree.pos_north}) is too close to existing tree(s).`, nearbyTrees);
+        errorCount++;
+        appStore.displayFeedBack(
+          `Tree with id [${geoTree.cada_id}] at (${geoTree.pos_east}, ${geoTree.pos_north}) is too close to an existing tree.`,
+          "error"
+        );
+        dataStore.setDbStatus(record._table_row_index , "Déja dans la BD")
+        continue; // Skip saving this tree
+      }
+
+      log.l("About to call geoTreeStore.createGeoTree for record:", geoTree)
       await geoTreeStore.createGeoTree(geoTree);
+      dataStore.setDbStatus(record._table_row_index , "Sauvegarde BD OK")
       successCount++;
     } catch (error) {
       log.e("Error saving record:", record, error);
       errorCount++;
+      dataStore.setDbStatus(record._table_row_index , "Erreur de sauvegarde")
       appStore.displayFeedBack(`Error saving id [${record.cada_id}] : ${error} `, "error");
     }
   }

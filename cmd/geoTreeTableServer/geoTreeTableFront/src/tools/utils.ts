@@ -19,6 +19,56 @@ export const isEmpty = (variable: any): boolean =>
   typeof variable === "undefined" || variable === null || variable === "";
 
 /**
+ * convert a date string from french europe dd-mm-yyyy to iso yyyy-mm-dd
+ * @param frDate string dd-mm-yyyy
+ * @returns date as string in format yyyy-mm-dd
+ */
+export const dateFr2Iso = function (frDate: string): string {
+  if (isEmpty(frDate)) {
+    return "";
+  }
+  let separator = "."
+  if (frDate.includes("-")){
+    separator = "-"
+  }
+  const  [d, m, y]= frDate.split(separator);
+  return [y, m, d].join("-");
+};
+
+/**
+ * convert a date string from french europe dd-mm-yyyy to timestamp
+ * @param frDate  Parse DD.MM.YYYY date format
+ */
+export const getTimeStampFromFrDate = (frDate: string): string => {
+  log.t(`#> entering : ${frDate}`);
+
+      let parsedDate: string;
+      if (frDate) {
+        let separator = "."
+        if (frDate.includes("-")){
+          separator = "-"
+        }
+        const [day, month, year] = frDate.split(separator);
+        if (day && month && year) {
+          // Create a Date object (month is 0-based in JavaScript, so subtract 1)
+          const date = new Date(Number(year), Number(month) - 1, Number(day));
+          if (isNaN(date.getTime())) {
+            throw new Error(`Invalid date format for frDate: ${frDate}`);
+          }
+          parsedDate = date.toISOString();
+        } else {
+          parsedDate = new Date().toISOString(); // Fallback to current date
+        }
+      } else {
+        parsedDate = new Date().toISOString(); // Fallback to current date
+      }
+  return parsedDate;
+};
+
+
+
+
+/**
  * convert a date string from iso yyyy-mm-dd in french europe dd-mm-yyyy
  * @param strIsoDate string yyyy-mm-dd
  * @returns date as string in format dd-mm-yyyy

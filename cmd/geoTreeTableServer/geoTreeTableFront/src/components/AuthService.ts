@@ -2,7 +2,7 @@ import axios from "axios";
 import { getLog, BACKEND_URL, defaultAxiosTimeout } from "@/config";
 
 // Logger setup
-const log = getLog("AuthService", 4, 1);
+const log = getLog("AuthService", 2, 1);
 
 // Centralized session storage keys
 const SESSION_KEYS = {
