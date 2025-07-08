@@ -61,7 +61,7 @@ type GeoTree struct {
 	PosEast             float64            `json:"pos_east"`
 	PosNorth            float64            `json:"pos_north"`
 	TreeCircumferenceCm *int32             `json:"tree_circumference_cm,omitempty"`
-	TreeCrownM          *int32             `json:"tree_crown_m,omitempty"`
+	TreeCrownM          *float64           `json:"tree_crown_m,omitempty"`
 }
 
 // GeoTreeGoelandThingId defines model for geoTreeGoelandThingId.
@@ -99,7 +99,7 @@ type GeoTreeList struct {
 	PosEast             float64            `json:"pos_east"`
 	PosNorth            float64            `json:"pos_north"`
 	TreeCircumferenceCm int32              `json:"tree_circumference_cm"`
-	TreeCrownM          int32              `json:"tree_crown_m"`
+	TreeCrownM          float64            `json:"tree_crown_m"`
 }
 
 // ListParams defines parameters for List.
@@ -136,6 +136,18 @@ type GeoJsonParams struct {
 
 	// CreatedBy id of the creator to filter by the geoTrees to return
 	CreatedBy *int32 `form:"created_by,omitempty" json:"created_by,omitempty"`
+}
+
+// ListByPositionParams defines parameters for ListByPosition.
+type ListByPositionParams struct {
+	// PosEast Coordonnées Est-Ouest - X de la liste de positions de départ
+	PosEast float64 `form:"pos_east" json:"pos_east"`
+
+	// PosNorth Coordonnées Nord-Sud - Y  de la liste de positions de départ
+	PosNorth float64 `form:"pos_north" json:"pos_north"`
+
+	// Radius rayon de recherche de la liste de positions de départ
+	Radius float64 `form:"radius" json:"radius"`
 }
 
 // CreateJSONRequestBody defines body for Create for application/json ContentType.

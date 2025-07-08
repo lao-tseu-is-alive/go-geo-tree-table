@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.cada_tree_position
     pos_north              double precision        not null,
     pos_altitude           double precision,
     tree_circumference_cm  integer,
-    tree_crown_m           integer,
+    tree_crown_m           double precision,
     cada_tree_type         text                    null,
     cada_date              timestamp               not null,
     cada_comment           text                    not null,

@@ -12,7 +12,7 @@
       "name": "Apache 2.0",
       "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
     },
-    "version": "0.0.9"
+    "version": "0.0.11"
   },
   "servers": [
     {
@@ -48,6 +48,17 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "name": "deleted",
+            "in": "query",
+            "description": "add records that are deleted to the list of geoTrees to return",
+            "required": false,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "boolean"
             }
           },
           {
@@ -156,6 +167,84 @@
         ]
       }
     },
+    "/geoTreeByPosition": {
+      "get": {
+        "summary": "List returns a list of geoTree by given position and radius",
+        "description": "Returns the geoTree in an array",
+        "operationId": "ListByPosition",
+        "parameters": [
+          {
+            "name": "pos_east",
+            "in": "query",
+            "description": "Coordonnées Est-Ouest - X de la liste de positions de départ",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "pos_north",
+            "in": "query",
+            "description": "Coordonnées Nord-Sud - Y  de la liste de positions de départ",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          },
+          {
+            "name": "radius",
+            "in": "query",
+            "description": "rayon de recherche de la liste de positions de départ",
+            "required": true,
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "get List of geoTree response by Position criteria",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/geoTreeList"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Access token is missing or invalid"
+          },
+          "default": {
+            "description": "unexpected Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JWTAuth": []
+          }
+        ]
+      }
+    },
     "/geoTree/geojson": {
       "get": {
         "summary": "List returns a geoJson of geoTrees found",
@@ -178,30 +267,6 @@
             "name": "created_by",
             "in": "query",
             "description": "id of the creator to filter by the geoTrees to return",
-            "required": false,
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "description": "maximum number of results to return",
-            "required": false,
-            "style": "form",
-            "explode": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "description": "offset rows to skip before returning rows",
             "required": false,
             "style": "form",
             "explode": true,
@@ -488,7 +553,7 @@
           }
         ],
         "requestBody": {
-          "description": "informations related to the geoTree",
+          "description": "informations related to the goeland_thing_id for this geoTree",
           "content": {
             "application/x-www-form-urlencoded": {
               "schema": {
@@ -578,8 +643,8 @@
             "title": "circonférence tronc en cm"
           },
           "tree_crown_m": {
-            "format": "int32",
-            "type": "integer",
+            "type": "number",
+            "format": "double",
             "title": "couronne arbre en m"
           },
           "cada_tree_type": {
@@ -627,7 +692,7 @@
             "description": "utilisateur ayant effectué la dernière saisie id thing arbre goéland correspondant a cette position"
           },
           "deleted": {
-            "default": "false,",
+            "default": false,
             "type": "boolean",
             "title": "effacé?",
             "description": "cet enregisrement a été marqué comme effacé"
@@ -670,6 +735,7 @@
           "cada_tree_type",
           "cada_date",
           "cada_comment",
+          "created_at",
           "created_by",
           "pos_east",
           "pos_north"
@@ -700,8 +766,8 @@
             "title": "circonférence tronc en cm"
           },
           "tree_crown_m": {
-            "format": "int32",
-            "type": "integer",
+            "type": "number",
+            "format": "double",
             "title": "couronne arbre en m"
           },
           "cada_tree_type": {
@@ -718,6 +784,12 @@
             "format": "date-time",
             "type": "string",
             "title": "date du levé par cadastre pour cet objet"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string",
+            "title": "date création",
+            "description": "date de création de cet enregistrement dans la base"
           },
           "created_by": {
             "format": "int32",
@@ -760,11 +832,11 @@
           "goeland_thing_saved_by": {
             "type": "integer",
             "format": "int32",
-            "title": "identifiant cadastre",
+            "title": "identifiant utilisateur spadom",
             "description": "FK sur la clé primaire de utilisateur spadom qui alimente l'info goéland Thing de type arbre pour cette position d'objet"
           }
         }
-        },
+      },
       "Error": {
         "required": [
           "code",

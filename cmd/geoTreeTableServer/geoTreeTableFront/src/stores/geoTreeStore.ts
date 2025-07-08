@@ -15,7 +15,7 @@ const log = getLog("geoTreeStore", 4, 1);
 // const axiosRequestConfig = {  timeout: defaultAxiosTimeout,};
 const API_BASE_URL = `${BACKEND_URL}/goapi/v1`;
 
-const minDistanceTolerance = 0.1; //no trre can be closer then this distance (should be shorter than the check in database)
+const minDistanceTolerance = 0.1; //no tree can be closer then this distance (should be shorter than the check in database)
 export const useGeoTreeStore = defineStore("geoTree", {
   state: () => ({
     geoTrees: [] as GeoTreeList[],

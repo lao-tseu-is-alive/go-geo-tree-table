@@ -22,6 +22,11 @@ type Service struct {
 	ListDefaultLimit int
 }
 
+func (s Service) ListByPosition(ctx echo.Context, params ListByPositionParams) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (s Service) GeoJson(ctx echo.Context, params GeoJsonParams) error {
 	handlerName := "GeoJson"
 	s.Log.TraceHttpRequest(handlerName, ctx.Request())
