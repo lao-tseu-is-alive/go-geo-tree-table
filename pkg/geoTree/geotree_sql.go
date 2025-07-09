@@ -49,7 +49,7 @@ SELECT
 	   st_x(geom) as pos_east,
        st_y(geom) as pos_north
 FROM cada_tree_position
-WHERE deleted = false AND geom IS NOT NULL 
+WHERE deleted = false AND geom IS NOT NULL AND goeland_thing_id IS NULL 
 `
 	geoTreeListOrderBy    = " ORDER BY created_at DESC LIMIT $1 OFFSET $2;"
 	listGeoTreeConditions = `
