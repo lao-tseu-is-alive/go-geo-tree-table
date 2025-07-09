@@ -103,6 +103,18 @@ const parseJwt = (token: string): JwtPayload => {
   }
 };
 
+export const getPasswordHashSHA256 = async (password:string, minLength:number = 8) => {
+  if (password.trim().length >= minLength) {
+    const encoder = new TextEncoder()
+    const data = encoder.encode(password)
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
+    const hashArray = Array.from(new Uint8Array(hashBuffer))
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+  } else {
+    throw new AuthError(`Password must be at least ${minLength} characters long`)
+  }
+}
+
 // Authenticates a user and saves the session
 export const getToken = async (
   appName: string,
