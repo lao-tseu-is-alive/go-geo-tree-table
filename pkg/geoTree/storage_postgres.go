@@ -76,6 +76,31 @@ func (db *PGX) GeoJson(params GeoJsonParams) (string, error) {
 	return emptyGeoJson, nil
 }
 
+// ListByPosition returns the list of existing geoTrees around given position with a radius search.
+func (db *PGX) ListByPosition(params ListByPositionParams) ([]*GeoTreeList, error) {
+	methodName := "ListByPosition"
+	db.log.Debug("trace : entering %s(params : %+v)", methodName, params)
+	var (
+		res []*GeoTreeList
+		err error
+	)
+
+	listGeoTreesByPosition := baseGeoTreeListQuery + listByPositionGeoTreeConditions + " ORDER BY created_at;"
+	db.log.Info("About to run sql listGeoTreesByPosition sql query : %s ", listGeoTreesByPosition)
+	err = pgxscan.Select(context.Background(), db.Conn, &res, listGeoTreesByPosition,
+		&params.PosEast, &params.PosNorth, &params.Radius)
+
+	if err != nil {
+		db.log.Error(SelectFailedInNWithErrorE, methodName, err)
+		return nil, err
+	}
+	if res == nil {
+		db.log.Info(FunctionNReturnedNoResults, methodName)
+		return nil, pgx.ErrNoRows
+	}
+	return res, nil
+}
+
 // List returns the list of existing geoTrees with the given offset and limit.
 func (db *PGX) List(offset, limit int, params ListParams) ([]*GeoTreeList, error) {
 	db.log.Debug("trace : entering List(params : %+v)", params)

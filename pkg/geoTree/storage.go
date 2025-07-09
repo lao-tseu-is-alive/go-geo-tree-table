@@ -10,6 +10,8 @@ import (
 type Storage interface {
 	// GeoJson returns a geoJson of existing geoTrees with the given offset and limit.
 	GeoJson(params GeoJsonParams) (string, error)
+	// ListByPosition returns the list of existing geoTrees at given position around radius
+	ListByPosition(params ListByPositionParams) ([]*GeoTreeList, error)
 	// List returns the list of existing geoTrees with the given offset and limit.
 	List(offset, limit int, params ListParams) ([]*GeoTreeList, error)
 	// Get returns the geoTree with the specified geoTrees ID.

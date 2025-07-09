@@ -56,6 +56,12 @@ WHERE deleted = false AND geom IS NOT NULL
  AND cada_date = coalesce($3, cada_date)
  AND created_by = coalesce($4, created_by)
 `
+	listByPositionGeoTreeConditions = `	AND ST_DWithin(
+      geom,
+      ST_SetSRID(ST_MakePoint($1, $2), 2056),
+      $3
+  )
+`
 	deleteGeoTree = `
 UPDATE cada_tree_position 
 SET deleted = true, deleted_at = CURRENT_TIMESTAMP, deleted_by = $1 

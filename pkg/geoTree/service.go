@@ -23,8 +23,22 @@ type Service struct {
 }
 
 func (s Service) ListByPosition(ctx echo.Context, params ListByPositionParams) error {
-	//TODO implement me
-	panic("implement me")
+	handlerName := "ListByPosition"
+	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	// get the current user from JWT TOKEN
+	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
+	currentUserId := claims.User.UserId
+	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
+	list, err := s.Store.ListByPosition(params)
+	if err != nil {
+		if !errors.Is(err, pgx.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("there was a problem when calling store.List :%v", err))
+		} else {
+			list = make([]*GeoTreeList, 0)
+			return ctx.JSON(http.StatusOK, list)
+		}
+	}
+	return ctx.JSON(http.StatusOK, list)
 }
 
 func (s Service) GeoJson(ctx echo.Context, params GeoJsonParams) error {
