@@ -29,6 +29,8 @@ const (
 	defaultDBIp                  = "127.0.0.1"
 	defaultDBSslMode             = "prefer"
 	defaultRestrictedUrlBasePath = "/goapi/v1"
+	defaultJwtStatusUrl          = "/status"
+	defaultJwtCookieName         = "goJWT_token"
 	defaultWebRootDir            = "geoTreeTableFront/dist/"
 	defaultSqlDbMigrationsPath   = "db/migrations"
 	defaultAdminUser             = "goadmin"
@@ -56,10 +58,10 @@ type UserLogin struct {
 	Username     string `json:"username"`
 }
 type Service struct {
-	Logger golog.MyLogger
-	//Store       Storage
-	dbConn database.DB
-	server *goHttpEcho.Server
+	Logger        golog.MyLogger
+	dbConn        database.DB
+	server        *goHttpEcho.Server
+	jwtCookieName string
 }
 
 // login is just a trivial stupid example to test this server
@@ -169,8 +171,17 @@ func main() {
 
 	// Get the ENV JWT_AUTH_URL value
 	jwtAuthUrl := config.GetJwtAuthUrlFromEnvOrPanic()
+	jwtStatusUrl := config.GetJwtStatusUrlFromEnv(defaultJwtStatusUrl)
 
-	myVersionReader := goHttpEcho.NewSimpleVersionReader(version.APP, version.VERSION, version.REPOSITORY, jwtAuthUrl)
+	myVersionReader := goHttpEcho.NewSimpleVersionReader(
+		version.APP,
+		version.VERSION,
+		version.REPOSITORY,
+		version.REVISION,
+		version.BuildStamp,
+		jwtAuthUrl,
+		jwtStatusUrl,
+	)
 	// Create a new JWT checker
 	myJwt := goHttpEcho.NewJwtChecker(
 		config.GetJwtSecretFromEnvOrPanic(),
@@ -207,8 +218,16 @@ func main() {
 			RestrictedUrl: defaultRestrictedUrlBasePath,
 		},
 	)
+	cookieNameForJWT := config.GetJwtCookieNameFromEnv(defaultJwtCookieName)
+	yourService := Service{
+		Logger:        l,
+		dbConn:        db,
+		server:        server,
+		jwtCookieName: cookieNameForJWT,
+	}
 
 	e := server.GetEcho()
+	e.Use(goHttpEcho.CookieToHeaderMiddleware(yourService.jwtCookieName))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"https://golux.lausanne.ch", "http://localhost:3000"},
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
@@ -232,11 +251,7 @@ func main() {
 		l.Info("%s DB version : %s", info, getVersion)
 		return true
 	}, "Connection to DB"))
-	yourService := Service{
-		Logger: l,
-		dbConn: db,
-		server: server,
-	}
+
 	e.GET("/goAppInfo", server.GetAppInfoHandler())
 	e.POST(jwtAuthUrl, yourService.login)
 	r := server.GetRestrictedGroup()
@@ -245,7 +260,7 @@ func main() {
 	geoStore := geoTree.GetStorageInstanceOrPanic("pgx", db, l)
 
 	// now with restricted group reference you can register your secured handlers defined in OpenApi things.yaml
-	thingService := geoTree.Service{
+	geoTreeService := geoTree.Service{
 		Log:              l,
 		DbConn:           db,
 		Store:            geoStore,
@@ -253,7 +268,7 @@ func main() {
 		ListDefaultLimit: 50,
 	}
 
-	geoTree.RegisterHandlers(r, &thingService)
+	geoTree.RegisterHandlers(r, &geoTreeService)
 
 	err = server.StartServer()
 	if err != nil {
