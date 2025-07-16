@@ -254,8 +254,18 @@ func main() {
 
 	e.GET("/goAppInfo", server.GetAppInfoHandler())
 	e.POST(jwtAuthUrl, yourService.login)
+	// Call the DevRoutes function conditionally
+	// This line will only compile if the 'dev' build tag is active.
+	// Conditional compilation of dev routes
+
+	if IsDevBuild {
+		l.Info("Attempting to register dev routes...")
+		DevRoutes(e, &yourService, jwtAuthUrl)
+	}
+
 	r := server.GetRestrictedGroup()
-	r.GET("/status", yourService.GetStatus)
+	r.Use(goHttpEcho.CookieToHeaderMiddleware(yourService.jwtCookieName))
+	r.GET(jwtStatusUrl, yourService.GetStatus)
 
 	geoStore := geoTree.GetStorageInstanceOrPanic("pgx", db, l)
 

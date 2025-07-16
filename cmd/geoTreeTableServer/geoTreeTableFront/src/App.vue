@@ -303,7 +303,9 @@ const saveDataToBackend = async () => {
 
   let successCount = 0;
   let errorCount = 0;
-  geoTreeStore.setAuthToken(appStore.getUserJwtToken);
+  if (!appStore.isHttpOnlyCookieJwt) {
+    geoTreeStore.setAuthToken(appStore.getUserJwtToken);
+  }
   for (let i=0; i < dataToSave.length; i++) {
     const record = dataToSave[i];
     try {
@@ -371,7 +373,9 @@ const handleLoginSuccess = async (v: string) => {
   // retrieve existing points from server
   log.l(`appStore.getUserJwtToken :   ${appStore.getUserJwtToken}`)
 
-  geoTreeStore.setAuthToken(appStore.getUserJwtToken);
+  if (!appStore.isHttpOnlyCookieJwt) {
+    geoTreeStore.setAuthToken(appStore.getUserJwtToken);
+  }
   try {
         await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
         log.t(`retrieved ${geoTreeStore.geoTrees.length} records`,  geoTreeStore.geoTrees);
@@ -417,6 +421,9 @@ onMounted(async () => {
     log.l(
       `App.vue ${appStore.getAppName} v${appStore.getAppVersion}, from ${appStore.getAppRepository}`,
     );
+       const areWeUsingHttpOnlyCookieJwt = await appStore.checkStatusRoute(false);
+    log.l(`areWeUsingHttpOnlyCookieJwt: ${areWeUsingHttpOnlyCookieJwt}`)
+
   } catch (error) {
     log.e("Error fetching app info:", error);
   }

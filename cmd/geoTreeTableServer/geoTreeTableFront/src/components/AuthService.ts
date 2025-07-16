@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getLog, BACKEND_URL, defaultAxiosTimeout } from "@/config";
+import { getLog, BACKEND_URL, defaultAxiosTimeout, API_URL } from "@/config";
 
 // Logger setup
 const log = getLog("AuthService", 2, 1);
@@ -278,7 +278,7 @@ export const getTokenStatus = async (
   }
 
   try {
-    const res = await axios.get(`${baseServerUrl}/goapi/v1/status`, {
+    const res = await axios.get(`${baseServerUrl}${API_URL}/status`, {
       headers: {
         Authorization: `Bearer ${profile.jwtToken}`,
         "X-Goeland-Token": profile.sessionUuid,
@@ -324,7 +324,7 @@ export const logoutAndResetToken = async (
   }
 
   try {
-    const response = await axios.get(`${baseServerUrl}/goapi/v1/logout`, {
+    const response = await axios.get(`${baseServerUrl}${API_URL}/logout`, {
       headers: { Authorization: `Bearer ${profile.jwtToken}` },
     });
     log.l("logoutAndResetToken() Server logout Success! response:", response);

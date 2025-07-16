@@ -33,3 +33,4 @@ go.work.sum
 /.env_for_github.txt
 /geoTreeTableServer-linux-amd64
 /data/.~lock.ARBRES.xlsx#
+/deployments/go-testing/app-secrets-go-geo-tree-table.yaml

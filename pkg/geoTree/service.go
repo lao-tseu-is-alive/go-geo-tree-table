@@ -108,6 +108,7 @@ func (s Service) Create(ctx echo.Context) error {
 		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
+	newGeoTree.CreatedBy = int32(currentUserId)
 	s.Log.Info("Create GeoTree Bind ok : %+v ", newGeoTree)
 	if len(strings.Trim(newGeoTree.CadaComment, " ")) < 1 {
 		// store current timestamp

@@ -1,0 +1,69 @@
+# Binaries and build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Go build cache and modules
+bin/
+**/bin/
+vendor/
+**/vendor/
+
+# Git files
+.git
+.gitignore
+
+# Editor and IDE files
+*.swp
+*.swo
+*.idea/
+*.vscode/
+*.project
+*.settings/
+*.classpath
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Frontend dependencies and build artifacts
+cmd/geoTreeTableServer/geoTreeTableFront/node_modules/
+cmd/geoTreeTableServer/geoTreeTableFront/build/
+cmd/geoTreeTableServer/geoTreeTableFront/.env
+cmd/geoTreeTableServer/geoTreeTableFront/.idea
+cmd/geoTreeTableServer/geoTreeTableFront/.vscode
+cmd/geoTreeTableServer/geoTreeTableFront/index.html
+cmd/geoTreeTableServer/geoTreeTableFront/package.json
+cmd/geoTreeTableServer/geoTreeTableFront/package-lock.json
+cmd/geoTreeTableServer/geoTreeTableFront/*.json
+cmd/geoTreeTableServer/geoTreeTableFront/.cache
+cmd/geoTreeTableServer/geoTreeTableFront/src/
+
+# Miscellaneous
+coverage.*
+.env
+.env_for_github.txt
+.env.*
+*.local
+
+# Editor/IDE
+.idea/
+.vscode/
+/.env_for_github.txt
+/db/config_pgsql.py
+/geoTreeTable.conf
+
+/deployments/
+/deployments/go-testing/app-secrets-go-geo-tree-table.yaml

@@ -8,12 +8,12 @@ import type {
   ErrorResponse,
   ListGeoTreesParams,
 } from "@/stores/geoTree";
-import { getLog, BACKEND_URL } from "@/config";
+import { getLog, BACKEND_URL, API_URL } from "@/config";
 // Logger setup
 const log = getLog("geoTreeStore", 4, 1);
 
 // const axiosRequestConfig = {  timeout: defaultAxiosTimeout,};
-const API_BASE_URL = `${BACKEND_URL}/goapi/v1`;
+const API_BASE_URL = `${BACKEND_URL}${API_URL}`;
 
 const minDistanceTolerance = 0.1; //no tree can be closer then this distance (should be shorter than the check in database)
 export const useGeoTreeStore = defineStore("geoTree", {
@@ -49,6 +49,7 @@ export const useGeoTreeStore = defineStore("geoTree", {
     // Set JWT token for all requests
     setAuthToken(token: string) {
       log.t(`# entering setAuthToken... ${token}`);
+
       if (token === null || token === undefined || token === ""){
         log.w("cannot set Authorization Header with null or undefined token")
       }

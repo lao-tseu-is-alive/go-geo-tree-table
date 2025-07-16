@@ -119,8 +119,7 @@
       loginForm.action = "/login";
     }
   }
-
-	loginForm.addEventListener("submit", async (e) => {
+  loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     console.log("in loginForm submit event :", e);
     const inputPassword = document.getElementById("password");
