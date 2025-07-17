@@ -1,7 +1,7 @@
 package geoTree
 
 const (
-	countGeoTree  = "SELECT COUNT(*) FROM cada_tree_position WHERE deleted = false "
+	countGeoTree  = "SELECT COUNT(*) FROM cada_tree_position WHERE deleted = false AND goeland_thing_id IS NULL"
 	createGeoTree = `
 insert into cada_tree_position
 (id, cada_id, cada_code, pos_east, pos_north, pos_altitude,
@@ -88,7 +88,7 @@ FROM (SELECT 'FeatureCollection'                         AS type,
                                              st_y(geom) as pos_north) AS l)) AS properties
             FROM cada_tree_position t
             WHERE deleted = false
-              AND geom IS NOT NULL
+              AND geom IS NOT NULL AND goeland_thing_id IS NULL
               AND cada_date = coalesce($1, cada_date)
               AND created_by = coalesce($2, created_by)
             ORDER BY created_at DESC) AS f) AS fc

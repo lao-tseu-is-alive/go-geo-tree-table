@@ -47,52 +47,6 @@ type testStruct struct {
 	body                         string
 }
 
-var exampleGeoTree = fmt.Sprintf(`
-{
-    "id": "%s",
-    "cada_id": 12345,
-    "cada_code": 678,
-    "pos_east": 2537607.64,
-    "pos_north": 1152609.12,
-    "pos_altitude": 500.5,
-    "tree_circumference_cm": 120,
-    "tree_crown_m": 5,
-    "cada_tree_type": "Oak",
-    "cada_date": "2025-06-13T01:01:01+07:00",
-    "cada_comment": "A majestic oak tree near the park",
-    "description": "Healthy tree with wide canopy",
-    "created_by": 999999,
-    "deleted": false
-}
-`, newGeoTreeId)
-
-var exampleGeoTreeUpdate = fmt.Sprintf(`
-{
-    "id": "%s",
-    "cada_id": 12345,
-    "cada_code": 678,
-    "pos_east": 2537607.64,
-    "pos_north": 1152609.12,
-    "pos_altitude": 500.5,
-    "tree_circumference_cm": 125,
-    "tree_crown_m": 6,
-    "cada_tree_type": "Oak",
-    "cada_date": "2025-06-13T01:01:01+07:00",
-    "cada_comment": "Updated: A majestic oak tree near the park with new measurements",
-    "description": "Healthy tree with wider canopy",
-    "created_by": 999999,
-    "deleted": false
-}
-`, newGeoTreeId)
-
-var exampleGeoTreeGoelandThingId = fmt.Sprintf(`
-{
-    "id": "%s",
-    "goeland_thing_id": 123,
-    "goeland_thing_saved_by": 999999
-}
-`, newGeoTreeId)
-
 func MakeHttpRequest(method, url, sendBody, token string, caCert []byte, l golog.MyLogger, defaultReadTimeout time.Duration) (string, error) {
 	var bearer = "Bearer " + token
 	req, err := http.NewRequest(method, url, strings.NewReader(sendBody))
@@ -231,6 +185,53 @@ func TestMainExec(t *testing.T) {
 			db.ExecActionQuery("DELETE FROM public.cada_tree_position WHERE id=$1", newGeoTreeId)
 		}
 	}
+	userID := config.GetAdminIdFromEnvOrPanic(defaultAdminId)
+
+	var exampleGeoTree = fmt.Sprintf(`
+{
+    "id": "%s",
+    "cada_id": 12345,
+    "cada_code": 678,
+    "pos_east": 2537607.64,
+    "pos_north": 1152609.12,
+    "pos_altitude": 500.5,
+    "tree_circumference_cm": 120,
+    "tree_crown_m": 5,
+    "cada_tree_type": "Oak",
+    "cada_date": "2025-06-13T01:01:01+07:00",
+    "cada_comment": "A majestic oak tree near the park",
+    "description": "Healthy tree with wide canopy",
+    "created_by": %d,
+    "deleted": false
+}
+`, newGeoTreeId, userID)
+
+	var exampleGeoTreeUpdate = fmt.Sprintf(`
+{
+    "id": "%s",
+    "cada_id": 12345,
+    "cada_code": 678,
+    "pos_east": 2537607.64,
+    "pos_north": 1152609.12,
+    "pos_altitude": 500.5,
+    "tree_circumference_cm": 125,
+    "tree_crown_m": 6,
+    "cada_tree_type": "Oak",
+    "cada_date": "2025-06-13T01:01:01+07:00",
+    "cada_comment": "Updated: A majestic oak tree near the park with new measurements",
+    "description": "Healthy tree with wider canopy",
+    "created_by": %d,
+    "deleted": false
+}
+`, newGeoTreeId, userID)
+
+	var exampleGeoTreeGoelandThingId = fmt.Sprintf(`
+{
+    "id": "%s",
+    "goeland_thing_id": 123,
+    "goeland_thing_saved_by": %d
+}
+`, newGeoTreeId, userID)
 
 	// Define test cases
 	tests := []testStruct{
@@ -313,7 +314,7 @@ func TestMainExec(t *testing.T) {
 			wantBody:                     bodyIdNewGeoTree,
 			paramKeyValues:               make(map[string]string),
 			httpMethod:                   http.MethodGet,
-			url:                          defaultRestrictedUrlBasePath + urlGeoTree + "?limit=1&offset=0&created_by=999999",
+			url:                          defaultRestrictedUrlBasePath + urlGeoTree + fmt.Sprintf("?limit=1&offset=0&created_by=%d", userID),
 			useFormUrlencodedContentType: false,
 			useJwtToken:                  true,
 			body:                         "",
@@ -325,7 +326,7 @@ func TestMainExec(t *testing.T) {
 			wantBody:                     "1",
 			paramKeyValues:               make(map[string]string),
 			httpMethod:                   http.MethodGet,
-			url:                          defaultRestrictedUrlBasePath + urlGeoTree + "/count?created_by=999999",
+			url:                          defaultRestrictedUrlBasePath + urlGeoTree + fmt.Sprintf("/count?created_by=%d", userID),
 			useFormUrlencodedContentType: false,
 			useJwtToken:                  true,
 			body:                         "",
@@ -337,7 +338,7 @@ func TestMainExec(t *testing.T) {
 			wantBody:                     bodyIdNewGeoTree,
 			paramKeyValues:               make(map[string]string),
 			httpMethod:                   http.MethodGet,
-			url:                          defaultRestrictedUrlBasePath + urlGeoTree + "/geojson?created_by=999999",
+			url:                          defaultRestrictedUrlBasePath + urlGeoTree + fmt.Sprintf("/geojson?created_by=%d", userID),
 			useFormUrlencodedContentType: false,
 			useJwtToken:                  true,
 			body:                         "",
@@ -400,7 +401,7 @@ func TestMainExec(t *testing.T) {
 			url:                          defaultRestrictedUrlBasePath + urlNewGeoTreeId,
 			useFormUrlencodedContentType: false,
 			useJwtToken:                  true,
-			body:                         fmt.Sprintf(`{"id": "%s", "cada_id": 12345, "cada_code": 678, "pos_east": 2537607.64, "pos_north": 1152609.12, "cada_date": "2025-06-13T01:01:01+07:00", "cada_comment": "", "created_by": 999999}`, newGeoTreeId),
+			body:                         fmt.Sprintf(`{"id": "%s", "cada_id": 12345, "cada_code": 678, "pos_east": 2537607.64, "pos_north": 1152609.12, "cada_date": "2025-06-13T01:01:01+07:00", "cada_comment": "", "created_by": %d}`, newGeoTreeId, userID),
 		},
 		{
 			name:                         "PUT /geoTree with existing id should update the GeoTree",
