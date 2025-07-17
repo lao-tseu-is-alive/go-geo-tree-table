@@ -47,7 +47,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5 # Action to set up the Go environment
         with:
-          go-version: '1.24.4' # Specify the Go version you want to use
+          go-version: '1.24.5' # Specify the Go version you want to use
       - run: go version
 
       - name: Build
@@ -56,12 +56,12 @@ jobs:
           # GOOS: target operating system
           # GOARCH: target architecture
           # CGO_ENABLED=0: Disable CGO for static linking (recommended for portability)
-          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-linux-amd64 ./cmd/geoTreeTableServer/geoTreeTableServer.go 
-          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-windows-amd64.exe ./cmd/geoTreeTableServer/geoTreeTableServer.go
-          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-darwin-amd64 ./cmd/geoTreeTableServer/geoTreeTableServer.go
-          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-linux-arm64 ./cmd/geoTreeTableServer/geoTreeTableServer.go
-          GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-windows-arm64.exe ./cmd/geoTreeTableServer/geoTreeTableServer.go
-          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-darwin-arm64 ./cmd/geoTreeTableServer/geoTreeTableServer.go
+          GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-linux-amd64 ./cmd/geoTreeTableServer 
+          GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-windows-amd64.exe ./cmd/geoTreeTableServer
+          GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-darwin-amd64 ./cmd/geoTreeTableServer
+          GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-linux-arm64 ./cmd/geoTreeTableServer
+          GOOS=windows GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-windows-arm64.exe ./cmd/geoTreeTableServer
+          GOOS=darwin GOARCH=arm64 CGO_ENABLED=0 go build -ldflags="$LDFLAGS" -o geoTreeTableServer-darwin-arm64 ./cmd/geoTreeTableServer
 
       - name: Create Archives
         run: |
