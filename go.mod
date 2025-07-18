@@ -8,7 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.5
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.18
+	github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs v0.3.20
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/stretchr/testify v1.10.0
 )

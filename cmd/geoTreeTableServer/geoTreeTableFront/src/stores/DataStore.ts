@@ -12,6 +12,11 @@ const log = getLog("DataStore", 2, 2);
 const defaultXPosFieldName = "e"
 const defaultYPosFieldName = "n"
 
+export interface IInvalidFieldHeader {
+  expected: string;
+  received: string;
+  key: number;
+}
 export interface ITableHeader {
   title: string;
   align: "start" | "center" | "end";

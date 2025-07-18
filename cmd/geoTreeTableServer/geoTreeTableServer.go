@@ -229,8 +229,9 @@ func main() {
 	e := server.GetEcho()
 	e.Use(goHttpEcho.CookieToHeaderMiddleware(yourService.jwtCookieName))
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"https://golux.lausanne.ch", "http://localhost:3000"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowOrigins:     []string{"https://golux.lausanne.ch", "http://localhost:3000"},
+		AllowMethods:     []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowCredentials: true,
 	}))
 	e.GET("/readiness", server.GetReadinessHandler(func(info string) bool {
 		ver, err := db.GetVersion()

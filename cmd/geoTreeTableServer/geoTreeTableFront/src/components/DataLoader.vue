@@ -19,13 +19,20 @@
           </template>
           <template #title>
             <h3 class="text-h5 font-weight-bold">
-              Get started with GeoTableau
+              Veuillez sélectionner un fichier de données à importer (xlsx, csv)
             </h3>
           </template>
           <template #subtitle>
             <div class="text-subtitle-1">
-              Upload your data file (xls,csv etc) above
+              le format doit respecter le schéma suivant :<br>
+              {{validHeaderRow.join(", ")}}
             </div>
+            <v-alert
+              v-if="isInvalidFile"
+              :title=isInvalidFileTitle
+              :text=isInvalidFileMsg
+              type="error"
+            ></v-alert>
           </template>
           <template #actions>
             <v-file-input
@@ -48,7 +55,10 @@
       </v-col>
     </v-row>
     <!-- end of step-001-select-file -->
-    <v-row v-if="fileSelected && displayFieldsList" id="step-002-display-fields">
+    <v-row
+      v-if="fileSelected && displayFieldsList"
+      id="step-002-display-fields"
+    >
       <v-col cols="12">
         <v-card
           class="py-2"
@@ -126,21 +136,26 @@
 import { onMounted, ref } from "vue";
 import { read, utils } from "xlsx";
 import { getLog } from "@/config";
-import { useDataStore } from "@/stores/DataStore";
+import { IInvalidFieldHeader, useDataStore } from "@/stores/DataStore";
 import type { ITableHeader } from "@/stores/DataStore";
+import { validHeaderRow } from "@/stores/geoTree";
 import { storeToRefs } from "pinia";
 import { isNullOrUndefined } from "@/tools/utils";
 
 const store = useDataStore();
 const log = getLog("DataLoader", 4, 2);
 const fileSelected = ref(false);
-const displayFieldsList = ref(false)
+const displayFieldsList = ref(false);
+const isInvalidFile = ref(false);
+const isInvalidFileTitle = ref("");
+const isInvalidFileMsg = ref("");
 const { getHeaders } = storeToRefs(store);
 
 //// EVENT SECTION
 
 const emit = defineEmits([
   "data-loaded",
+  "header-error",
   "data-error",
   "row-clicked",
   "fields-settings-ready",
@@ -185,10 +200,26 @@ const saveFieldSettings = () => {
   emit("fields-settings-ready", store.headers);
 };
 
+const setInvalidFile = (title: string, msg:string) =>{
+  isInvalidFile.value = true;
+  isInvalidFileTitle.value = title;
+  isInvalidFileMsg.value = msg
+}
+
+const resetInvalidFile = ()=> {
+  isInvalidFile.value = false;
+  isInvalidFileTitle.value = "";
+  isInvalidFileMsg.value = "";
+}
+
+
 const handleFileUpload = (e: Event) => {
   const inputFile = (e.target as HTMLInputElement).files?.[0];
   if (inputFile) {
     log.l("file selected :", inputFile);
+    resetInvalidFile();
+
+
     const reader = new FileReader();
     reader.onload = (e) => {
       const FileContent = new Uint8Array(e.target?.result as ArrayBuffer);
@@ -200,21 +231,59 @@ const handleFileUpload = (e: Event) => {
       log.l("sheetData", sheetData);
 
       // Filter out empty rows
-      const filteredSheetData = sheetData.filter(row =>
-        Array.isArray(row) && row.length > 0 && row.some(cell => cell !== undefined && cell !== null && cell !== '')
+      const filteredSheetData = sheetData.filter(
+        (row) =>
+          Array.isArray(row) &&
+          row.length > 0 &&
+          row.some(
+            (cell) => cell !== undefined && cell !== null && cell !== "",
+          ),
       );
 
       log.l("filteredSheetData", filteredSheetData);
-      store.setHeaders(filteredSheetData.shift() as string[]);
+      // check if the first row is a valid header row
+
+      const receivedHeaderRow = filteredSheetData.shift() as string[];
+      log.l("receivedHeaderRow", receivedHeaderRow);
+      const invalidHeaders = <IInvalidFieldHeader[]>[];
+      let isHeaderRowValid = true;
+      let invalidErrMSg = "";
+      for (let index = 0; index < validHeaderRow.length; index++) {
+        const cell = `${receivedHeaderRow[index]}`.trim().toLowerCase();
+        const valid = `${validHeaderRow[index]}`.trim().toLowerCase()
+        if (cell.includes(valid)) {
+          log.l(
+            `success in header num ${index}, expected: '${valid}', received: '${cell}'`,
+          );
+        } else {
+          log.w(
+            `error in header num ${index}, expected: ${validHeaderRow[index]}, received: ${cell}`,
+          );
+          invalidErrMSg += `col[${index+1}]: ${cell}, au lieu de :${validHeaderRow[index]} `
+          invalidHeaders.push({
+            key: index,
+            expected: validHeaderRow[index],
+            received: cell,
+          });
+          isHeaderRowValid = false;
+        }
+      }
+      if (!isHeaderRowValid) {
+        setInvalidFile("Entête du fichier invalide", invalidErrMSg)
+        emit("header-error", invalidHeaders);
+        return;
+      }
+
+      store.setHeaders(receivedHeaderRow);
       store.setData(filteredSheetData);
       log.l("getHeaders", getHeaders.value);
+      fileSelected.value = true;
+      if (!displayFieldsList.value) {
+        emit("fields-settings-ready", store.headers);
+      }
       emit("data-loaded", store.records);
     };
     reader.readAsArrayBuffer(inputFile);
-    fileSelected.value = true;
-    if (!displayFieldsList.value) {
-       emit("fields-settings-ready", store.headers);
-    }
   }
 };
 

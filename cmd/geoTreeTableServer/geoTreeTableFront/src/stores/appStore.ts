@@ -29,6 +29,7 @@ export const useAppStore = defineStore("app", {
   },
   getters: {
     getFeedbackType: (state): string => `${state.feedbackType}`,
+    getFeedbackVisible: (state): boolean => state.feedbackVisible,
     getAppName: (state): string => `${state.appData.app}`,
     getAppVersion: (state): string => `${state.appData.version}`,
     getAppRepository: (state): string => `${state.appData.repository}`,

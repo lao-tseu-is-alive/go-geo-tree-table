@@ -36,29 +36,36 @@
         <v-spacer />
         <template v-if="dataLoaded">
           <v-btn
-            icon
+            class="ml-1"
+            variant="outlined"
+            prepend-icon="mdi-database"
             title="sauvegarder les données dans la base de donées"
             @click="saveDataToBackend"
           >
-            <v-icon>mdi-database</v-icon>
+            Sauvegarder
           </v-btn>
           <v-btn
-            icon
+            class="ml-1"
+            variant="outlined"
+            prepend-icon="mdi-delete"
             title="Effacer les données à l'écran et importer un nouveau fichier"
             @click="clearData"
           >
-            <v-icon>mdi-delete</v-icon>
+            Effacer
           </v-btn>
         </template>
+        <!--
         <v-btn
+          v-if="DEV"
+          class="ml-1"
           variant="text"
           icon="mdi-logout"
           title="Logout"
           @click="logout"
         ></v-btn>
+        -->
       </template>
     </v-app-bar>
-
 
     <template v-if="appStore.getIsUserAuthenticated">
       <template v-if="dataLoaded">
@@ -86,6 +93,7 @@
             <MyDataLoader
               v-if="!dataLoaded"
               @data-loaded="handleDataLoaded"
+              @header-error="handleHeaderInvalid"
               @fields-settings-ready="handleFieldsSettingsReady"
             />
           </template>
@@ -130,17 +138,15 @@ import { getTimeStampFromFrDate, isNullOrUndefined } from "@/tools/utils";
 import MyTable from "./components/Table.vue";
 import MyDataLoader from "./components/DataLoader.vue";
 import VResizeDrawer from "@wdns/vuetify-resize-drawer";
-import { BACKEND_URL, DEV, getLog, HOME } from "@/config";
+import { BACKEND_URL, DEV, getLog } from "@/config";
 import Login from "@/components/Login.vue";
 import MapLausanne from "@/components/Map.vue";
 import { mapClickInfo } from "@/components/Map";
-import { useDataStore } from "@/stores/DataStore";
+import { IInvalidFieldHeader, useDataStore } from "@/stores/DataStore";
 import { useAppStore } from "@/stores/appStore";
 import { useGeoTreeStore } from "@/stores/geoTreeStore";
 import { storeToRefs } from "pinia";
-import { doesCurrentSessionExist, getTokenStatus, logoutAndResetToken } from "@/components/AuthService";
 import { GeoTree } from "@/stores/geoTree";
-
 
 let log = getLog("APP", 4, 2);
 const dataLoaded = ref(false);
@@ -190,6 +196,7 @@ const drawerOptions = ref({
   theme: "light",
   width: "350px",
 });
+/*
 const defaultFeedbackErrorTimeout = 5000; // default display time 5sec
 let autoLogoutTimer: number;
 
@@ -213,7 +220,7 @@ const logout = () => {
 const checkIsSessionTokenValid = () => {
   log.t(`# entering...  ${appStore.getAppName}`);
   if (doesCurrentSessionExist(appStore.getAppName)) {
-      getTokenStatus(appStore.getAppName, BACKEND_URL)
+    getTokenStatus(appStore.getAppName, BACKEND_URL)
       .then((val) => {
         if (val.data == null) {
           log.e(`# getTokenStatus() ${val.msg}, ERROR is: `, val.err);
@@ -260,10 +267,18 @@ const checkIsSessionTokenValid = () => {
     logout();
   }
 };
-
+*/
 const handleDataLoaded = () => {
   log.t(`## handleDataLoaded entering...`);
   //dataLoaded.value = true;
+};
+
+const handleHeaderInvalid = (invalidHeaders: IInvalidFieldHeader[]) => {
+  log.t(`## handleHeaderInvalid entering...`);
+  dataLoaded.value = false;
+  drawer.value = false;
+  log.w(`Invalid headers`, invalidHeaders);
+  clearData();
 };
 
 const handleFieldsSettingsReady = () => {
@@ -291,11 +306,10 @@ const handleRowClicked = (item: Record<string, any>) => {
   }
 };
 
-
 const saveDataToBackend = async () => {
   log.t(`## entering saveDataToBackend...`);
   const dataToSave = dataStore.getData; // Access the getter directly
-  log.l(`dataToSave length : ${dataToSave.length}::`, dataToSave)
+  log.l(`dataToSave length : ${dataToSave.length}::`, dataToSave);
   if (!dataToSave || dataToSave.length === 0) {
     appStore.displayFeedBack("No data to save.", "warning");
     return;
@@ -306,11 +320,11 @@ const saveDataToBackend = async () => {
   if (!appStore.isHttpOnlyCookieJwt) {
     geoTreeStore.setAuthToken(appStore.getUserJwtToken);
   }
-  for (let i=0; i < dataToSave.length; i++) {
+  for (let i = 0; i < dataToSave.length; i++) {
     const record = dataToSave[i];
     try {
       // Map your DataStore record to the GeoTree interface
-      log.l(`record number ${i}:`, record)
+      log.l(`record number ${i}:`, record);
       const geoTree: Omit<GeoTree, "created_at"> = {
         id: crypto.randomUUID(),
         cada_id: record.id_cadastre || record["_table_row_index"], // Map id_cadastre to cada_id
@@ -320,44 +334,59 @@ const saveDataToBackend = async () => {
         created_by: appStore.getUserId || 0, // Assuming appStore has getUserId
         pos_east: +record.e || 0, // Map e to pos_east
         pos_north: +record.n || 0, // Map n to pos_north
-        tree_circumference_cm:  +record["circ_tronc"] || 0,
+        tree_circumference_cm: +record["circ_tronc"] || 0,
         tree_crown_m: +record["diam_couronne"] || undefined, // Keep as is if present
         cada_tree_type: record["essence"] || undefined, // Map tree_type to cada_tree_type
         description: record.description || undefined, // Keep as is if present
         pos_altitude: +record.pos_altitude || undefined, // Keep as is if present
       };
-       // Check for existing trees within 0.1 meters using the getter
-      const nearbyTrees = geoTreeStore.treeByPosition(geoTree.pos_east, geoTree.pos_north);
+      // Check for existing trees within 0.1 meters using the getter
+      const nearbyTrees = geoTreeStore.treeByPosition(
+        geoTree.pos_east,
+        geoTree.pos_north,
+      );
       if (nearbyTrees) {
-        log.w(`Tree at position (${geoTree.pos_east}, ${geoTree.pos_north}) is too close to existing tree(s).`, nearbyTrees);
+        log.w(
+          `Tree at position (${geoTree.pos_east}, ${geoTree.pos_north}) is too close to existing tree(s).`,
+          nearbyTrees,
+        );
         errorCount++;
         appStore.displayFeedBack(
           `Tree with id [${geoTree.cada_id}] at (${geoTree.pos_east}, ${geoTree.pos_north}) is too close to an existing tree.`,
-          "error"
+          "error",
         );
-        dataStore.setDbStatus(record._table_row_index , "Déja dans la BD")
+        dataStore.setDbStatus(record._table_row_index, "Déja dans la BD");
         continue; // Skip saving this tree
       }
 
-      log.l("About to call geoTreeStore.createGeoTree for record:", geoTree)
+      log.l("About to call geoTreeStore.createGeoTree for record:", geoTree);
       await geoTreeStore.createGeoTree(geoTree);
-      dataStore.setDbStatus(record._table_row_index , "Sauvegarde BD OK")
+      dataStore.setDbStatus(record._table_row_index, "Sauvegarde BD OK");
       successCount++;
     } catch (error) {
       log.e("Error saving record:", record, error);
       errorCount++;
-      dataStore.setDbStatus(record._table_row_index , "Erreur de sauvegarde")
-      appStore.displayFeedBack(`Error saving id [${record.cada_id}] : ${error} `, "error");
+      dataStore.setDbStatus(record._table_row_index, "Erreur de sauvegarde");
+      appStore.displayFeedBack(
+        `Error saving id [${record.cada_id}] : ${error} `,
+        "error",
+      );
     }
   }
 
   if (successCount > 0) {
-    appStore.displayFeedBack(`${successCount} records saved successfully!`, "success");
+    appStore.displayFeedBack(
+      `${successCount} records saved successfully!`,
+      "success",
+    );
     // Optionally, refresh the list of geoTrees after saving
     await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
   }
   if (errorCount > 0) {
-    appStore.displayFeedBack(`${errorCount} records failed to save. Check console for details.`, "error");
+    appStore.displayFeedBack(
+      `${errorCount} records failed to save. Check console for details.`,
+      "error",
+    );
   }
 };
 
@@ -371,21 +400,27 @@ const handleLoginSuccess = async (v: string) => {
   );
 
   // retrieve existing points from server
-  log.l(`appStore.getUserJwtToken :   ${appStore.getUserJwtToken}`)
+  log.l(`appStore.getUserJwtToken :   ${appStore.getUserJwtToken}`);
 
   if (!appStore.isHttpOnlyCookieJwt) {
     geoTreeStore.setAuthToken(appStore.getUserJwtToken);
   }
   try {
-        await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
-        log.t(`retrieved ${geoTreeStore.geoTrees.length} records`,  geoTreeStore.geoTrees);
-      } catch (error) {
-        log.e("geoTreeStore.listGeoTrees got error : ",geoTreeStore.error);
-      }
+    await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
+    log.t(
+      `retrieved ${geoTreeStore.geoTrees.length} records`,
+      geoTreeStore.geoTrees,
+    );
+  } catch (error) {
+    log.e("geoTreeStore.listGeoTrees got error : ", geoTreeStore.error);
+  }
+  /*
   if (isNullOrUndefined(autoLogoutTimer)) {
     // check every 60 seconds(60'000 milliseconds) if jwt is still valid
-    autoLogoutTimer = window.setInterval(checkIsSessionTokenValid, 60000);
+    //autoLogoutTimer = window.setInterval(checkIsSessionTokenValid, 60000);
   }
+
+   */
 };
 
 const handleLoginFailure = (v: string) => {
@@ -421,9 +456,8 @@ onMounted(async () => {
     log.l(
       `App.vue ${appStore.getAppName} v${appStore.getAppVersion}, from ${appStore.getAppRepository}`,
     );
-       const areWeUsingHttpOnlyCookieJwt = await appStore.checkStatusRoute(false);
-    log.l(`areWeUsingHttpOnlyCookieJwt: ${areWeUsingHttpOnlyCookieJwt}`)
-
+    const areWeUsingHttpOnlyCookieJwt = await appStore.checkStatusRoute(false);
+    log.l(`areWeUsingHttpOnlyCookieJwt: ${areWeUsingHttpOnlyCookieJwt}`);
   } catch (error) {
     log.e("Error fetching app info:", error);
   }

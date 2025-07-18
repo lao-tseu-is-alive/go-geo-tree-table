@@ -54,3 +54,15 @@ export interface ListGeoTreesParams {
   limit?: number;
   offset?: number;
 }
+
+export const validHeaderRow = [
+  "id_cadastre",
+  "type_point",
+  "e",
+  "n",
+  "circ_tronc_[cm]",
+  "Ø_couronne_[m]",
+  "essence ",
+  "date",
+  "commentaire",
+];
