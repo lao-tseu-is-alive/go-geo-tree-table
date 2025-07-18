@@ -126,13 +126,16 @@ export const useAppStore = defineStore("app", {
       }
     },
     async checkStatusRoute(authRouteChecked = false): Promise<boolean> {
+      const currentUrl = new URL(location.toString())
+      let BASE_URL =  currentUrl.origin
       try {
         let statusUrl = this.appData.statusUrl
 
         if (DEV || (GO_DEV_URL.includes(window.location.host))) {
+          BASE_URL =  BACKEND_URL
           statusUrl = `${this.appData.statusUrl}`.includes("goapi")?`${this.appData.statusUrl}`:`${API_URL}${this.appData.statusUrl}`;
         }
-        const jwtClaims = await fetchJwtStatus(`${BACKEND_URL}${statusUrl}`);
+        const jwtClaims = await fetchJwtStatus(`${BASE_URL}${statusUrl}`);
         log.l(
           `fetchJwtStatus returned ${JSON.stringify(jwtClaims)}`,
           jwtClaims,
@@ -144,7 +147,7 @@ export const useAppStore = defineStore("app", {
       } catch (error) {
         if (!authRouteChecked) {
           const authUrl = this.appData.authUrl;
-          const res = await fetchAuthUrl(`${BACKEND_URL}${authUrl}`);
+          const res = await fetchAuthUrl(`${BASE_URL}${authUrl}`);
           if (`${res}`.toLowerCase().includes("success")) {
             log.l(`successfully checked auth url ${res} `);
             // let's retry just once after a successful auth url check, maybe we have got an jwt cookie
