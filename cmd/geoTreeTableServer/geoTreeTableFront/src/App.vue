@@ -148,7 +148,7 @@ import { useGeoTreeStore } from "@/stores/geoTreeStore";
 import { storeToRefs } from "pinia";
 import { GeoTree } from "@/stores/geoTree";
 
-let log = getLog("APP", 4, 2);
+let log = getLog("APP", 4, 4);
 const dataLoaded = ref(false);
 const mapZoom = ref(14);
 const placeStFrancoisLausanne = [2538202, 1152364];
@@ -319,6 +319,10 @@ const saveDataToBackend = async () => {
   let errorCount = 0;
   if (!appStore.isHttpOnlyCookieJwt) {
     geoTreeStore.setAuthToken(appStore.getUserJwtToken);
+  } else {
+    //// Set the default for all future requests because we have a http only cookie
+    //axios.defaults.withCredentials = true;
+    geoTreeStore.setAxiosWithCredentials(true)
   }
   for (let i = 0; i < dataToSave.length; i++) {
     const record = dataToSave[i];
@@ -380,7 +384,8 @@ const saveDataToBackend = async () => {
       "success",
     );
     // Optionally, refresh the list of geoTrees after saving
-    await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
+
+    await getListOfTreesPositionFromDB();
   }
   if (errorCount > 0) {
     appStore.displayFeedBack(
@@ -399,21 +404,9 @@ const handleLoginSuccess = async (v: string) => {
     "success",
   );
 
-  // retrieve existing points from server
   log.l(`appStore.getUserJwtToken :   ${appStore.getUserJwtToken}`);
+  await getListOfTreesPositionFromDB()
 
-  if (!appStore.isHttpOnlyCookieJwt) {
-    geoTreeStore.setAuthToken(appStore.getUserJwtToken);
-  }
-  try {
-    await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
-    log.t(
-      `retrieved ${geoTreeStore.geoTrees.length} records`,
-      geoTreeStore.geoTrees,
-    );
-  } catch (error) {
-    log.e("geoTreeStore.listGeoTrees got error : ", geoTreeStore.error);
-  }
   /*
   if (isNullOrUndefined(autoLogoutTimer)) {
     // check every 60 seconds(60'000 milliseconds) if jwt is still valid
@@ -437,6 +430,25 @@ const getGeoJsonString = () => {
   return JSON.stringify(getGeoJson.value);
 };
 
+// retrieve existing points from server
+const getListOfTreesPositionFromDB = async () => {
+  log.t(`## entering...`);
+  if (!appStore.isHttpOnlyCookieJwt) {
+    geoTreeStore.setAuthToken(appStore.getUserJwtToken);
+  } else {
+    geoTreeStore.setAxiosWithCredentials(true)
+  }
+  try {
+    await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
+    log.t(
+      `retrieved ${geoTreeStore.geoTrees.length} records`,
+      geoTreeStore.geoTrees,
+    );
+  } catch (error) {
+    log.e("geoTreeStore.listGeoTrees got error : ", geoTreeStore.error);
+  }
+};
+
 const clearData = () => {
   log.t(`## entering...`);
   dataStore.clearData();
@@ -458,6 +470,9 @@ onMounted(async () => {
     );
     const areWeUsingHttpOnlyCookieJwt = await appStore.checkStatusRoute(false);
     log.l(`areWeUsingHttpOnlyCookieJwt: ${areWeUsingHttpOnlyCookieJwt}`);
+    if (areWeUsingHttpOnlyCookieJwt) {
+      await getListOfTreesPositionFromDB()
+    }
   } catch (error) {
     log.e("Error fetching app info:", error);
   }

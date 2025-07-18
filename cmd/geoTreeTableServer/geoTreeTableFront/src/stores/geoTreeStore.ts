@@ -55,6 +55,10 @@ export const useGeoTreeStore = defineStore("geoTree", {
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     },
+    setAxiosWithCredentials(val:boolean) {
+      log.t(`# entering setAxiosWithCredentials(${val})`);
+      axios.defaults.withCredentials = val;
+    },
 
     // List geoTrees
     async listGeoTrees(params: ListGeoTreesParams = {}) {
@@ -158,6 +162,9 @@ export const useGeoTreeStore = defineStore("geoTree", {
         const response = await axios.post<GeoTree>(
           `${API_BASE_URL}/geoTree`,
           geoTree,
+          {
+            withCredentials: true
+          }
         );
         this.selectedGeoTree = response.data;
         return response.data;

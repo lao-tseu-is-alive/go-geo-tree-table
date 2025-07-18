@@ -53,7 +53,7 @@ export const useDataStore = defineStore("data", {
     records: <any[]>[],
     headers: <ITableHeader[]>[],
     columns: <string[]>[],
-    defaultIconValue: "/img/gomarker_tree_ok.png",
+    defaultIconValue: "img/gomarker_tree_ok.png",
     xIndex: -1,
     yIndex: -1,
     nameIndex: -1,
