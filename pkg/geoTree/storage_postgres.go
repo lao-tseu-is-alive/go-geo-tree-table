@@ -320,6 +320,7 @@ func (db *PGX) UpdateGoelandThingId(id uuid.UUID, geoTreeGoelandThingId GeoTreeG
 	db.log.Info("UpdateGoelandThingId(id:%q) successfully updated goeland_thing_id for %d row(s)", id, rowsAffected)
 
 	return &GeoTreeGoelandThingId{
+		Id:                  id,
 		GoelandThingId:      geoTreeGoelandThingId.GoelandThingId,
 		GoelandThingSavedBy: geoTreeGoelandThingId.GoelandThingSavedBy,
 	}, nil

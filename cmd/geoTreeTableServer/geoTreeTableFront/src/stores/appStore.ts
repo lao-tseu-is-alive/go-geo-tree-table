@@ -122,7 +122,7 @@ export const useAppStore = defineStore("app", {
           version:
             "ous pouvez essayer de rafraîchir cette page avec la touche F5",
         };
-        log.e("Error fetching app info:", error);
+        log.e(`Error fetching app info from ${BACKEND_URL}/goAppInfo} :`, error);
       }
     },
     async checkStatusRoute(authRouteChecked = false): Promise<boolean> {

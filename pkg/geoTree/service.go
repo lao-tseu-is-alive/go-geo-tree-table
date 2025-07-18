@@ -256,7 +256,8 @@ func (s Service) Update(ctx echo.Context, geoTreeId uuid.UUID) error {
 }
 
 // UpdateGoelandThingId will change the goeland_thing_id value for the geoTree identified by the given geoTreeId
-// curl -s -XPUT -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"id": "3999971f-53d7-4eb6-8898-97f257ea5f27","goeland_thing_id": 3,"goeland_thing_saved_by": 3456,   }' 'http://localhost:9090/goapi/v1/geoTree/setGoelandThingId/3999971f-53d7-4eb6-8898-97f257ea5f27' |jq
+// curl -s -XPUT   -H "Authorization: Bearer $TOKEN" -d '{"id": "3999971f-53d7-4eb6-8898-97f257ea5f27","goeland_thing_id": 3,"goeland_thing_saved_by": 3456,   }' 'http://localhost:9090/goapi/v1/geoTree/setGoelandThingId/3999971f-53d7-4eb6-8898-97f257ea5f27' |jq
+// curl -X PUT -H "Content-Type: application/json" -v -b cookies.txt -d '{"id":"52e1a220-7652-41f3-abe1-a6f3c7587f33","goeland_thing_id":69, "goeland_thing_saved_by":34}'  cookies.txt http://localhost:7979/goapi/v1/geoTree/setGoelandThingId/52e1a220-7652-41f3-abe1-a6f3c7587f33
 func (s Service) UpdateGoelandThingId(ctx echo.Context, geoTreeId uuid.UUID) error {
 	handlerName := "UpdateGoelandThingId"
 	s.Log.TraceHttpRequest(handlerName, ctx.Request())
@@ -276,7 +277,7 @@ func (s Service) UpdateGoelandThingId(ctx echo.Context, geoTreeId uuid.UUID) err
 		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
-
+	s.Log.Info("about to call UpdateGoelandThingId(%v, %+v)", geoTreeId, *updateGeoTreeGoelandThingId)
 	geoTreeUpdated, err := s.Store.UpdateGoelandThingId(geoTreeId, *updateGeoTreeGoelandThingId)
 	if err != nil {
 		msg := fmt.Sprintf("UpdateGoelandThingId had an error saving updateGeoTreeGoelandThingId:%#v, err:%#v", *updateGeoTreeGoelandThingId, err)
