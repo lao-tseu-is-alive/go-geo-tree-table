@@ -68,7 +68,7 @@ spec:
       automountServiceAccountToken: false
       containers:
       - name: go-geo-tree-table
-        image: ghcr.io/lao-tseu-is-alive/go-geo-tree-table:v0.0.9
+        image: ghcr.io/lao-tseu-is-alive/go-geo-tree-table:v0.0.17
         imagePullPolicy: Always
         securityContext:
           seccompProfile:
@@ -82,7 +82,7 @@ spec:
               - 'ALL'
           readOnlyRootFilesystem: true
         ports:
-          - containerPort: 8787  # Should match the PORT env variable above  that the Go application listens on
+          - containerPort: 7979  # Should match the PORT env variable above  that the Go application listens on
         resources:
           limits:            # resource limit imposed to the pod, the container cannot utilize more res than specified
             cpu: 1000m       # 1000 millicpu or millicores 1 or 100% of a CPU core of a running node
@@ -95,7 +95,7 @@ spec:
         livenessProbe:           # To check the health of the Pod
           httpGet:
             path: /health
-            port: 8787
+            port: 7979
             scheme: HTTP
           initialDelaySeconds: 5
           periodSeconds: 15
@@ -103,7 +103,7 @@ spec:
         readinessProbe:          # To check if the Pod is ready to serve traffic or not
           httpGet:
             path: /readiness
-            port: 8787
+            port: 7979
             scheme: HTTP
           initialDelaySeconds: 5
           timeoutSeconds: 2
