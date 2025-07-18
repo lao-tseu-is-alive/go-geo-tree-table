@@ -42,5 +42,5 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-  base: '/geotreetable/', // Add this line to set the base URL
+  base: './',
 })
