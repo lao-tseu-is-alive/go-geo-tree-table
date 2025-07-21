@@ -30,6 +30,7 @@
         }}</v-toolbar-title
       >
       <template v-if="appStore.getIsUserAuthenticated">
+        {{ getLoginName }}
         <v-btn v-if="DEV" @click="showDebug = !showDebug"
           >{{ showDebug ? "Hide Debug" : "Show Debug" }}
         </v-btn>
@@ -133,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, computed } from "vue";
 import { getTimeStampFromFrDate, isNullOrUndefined } from "@/tools/utils";
 import MyTable from "./components/Table.vue";
 import MyDataLoader from "./components/DataLoader.vue";
@@ -272,6 +273,10 @@ const handleDataLoaded = () => {
   log.t(`## handleDataLoaded entering...`);
   //dataLoaded.value = true;
 };
+
+const getLoginName = computed(()=>{
+  return appStore.getUsername
+})
 
 const handleHeaderInvalid = (invalidHeaders: IInvalidFieldHeader[]) => {
   log.t(`## handleHeaderInvalid entering...`);
@@ -468,8 +473,6 @@ onMounted(async () => {
     log.l(
       `App.vue ${appStore.getAppName} v${appStore.getAppVersion}, from ${appStore.getAppRepository}`,
     );
-
-
 
     const areWeUsingHttpOnlyCookieJwt = await appStore.checkStatusRoute(false);
     log.l(`areWeUsingHttpOnlyCookieJwt: ${areWeUsingHttpOnlyCookieJwt}`);
