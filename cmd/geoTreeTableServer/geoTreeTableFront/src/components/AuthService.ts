@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getLog, BACKEND_URL, defaultAxiosTimeout, API_URL } from "@/config";
+import { isNullOrUndefined } from "@/tools/utils";
 
 // Logger setup
 const log = getLog("AuthService", 2, 1);
@@ -137,9 +138,6 @@ export const getToken = async (
   passwordHash: string,
   isF5: boolean = false,
 ): Promise<IGetTokenResponse> => {
-  if (!appName?.trim() || !username?.trim() || !passwordHash?.trim()) {
-    throw new AuthError("appName, username, and passwordHash are required");
-  }
 
   const loginUrl = `${baseServerUrl}${jwtAuthUrl}`;
   log.t(
@@ -152,12 +150,47 @@ export const getToken = async (
       response = await axios.get(loginUrl);
       log.l("getToken() isF5 axios.get Success! response:", response.data);
     } else {
+      if (!appName?.trim() || !username?.trim() || !passwordHash?.trim()) {
+        throw new AuthError("appName, username, and passwordHash are required");
+      }
       response = await axios.post(loginUrl, {
         username,
         password_hash: passwordHash,
       });
       log.l("getToken() axios.post Success! response:", response.data);
     }
+
+    //check attributes of response.data
+    if (isNullOrUndefined(response.data)) {
+      return {
+        msg: "getToken() backend did not send data.",
+        err: new AuthError("backend did not send data"),
+        status: response.status,
+        data: response.data,
+        receivedValidToken: false,
+      };
+    }
+    if (isNullOrUndefined(response.data.jwtStatus)) {
+      return {
+        msg: "getToken() backend did not send jwtStatus.",
+        err: new AuthError("backend did not send jwtStatus"),
+        status: response.status,
+        data: response.data,
+        receivedValidToken: false,
+      };
+    }
+    if (response.data.jwtStatus !== "success") {
+      return {
+        msg: `getToken() backend got problem jwtStatus : ${response.data.jwtStatus}`,
+        err: new AuthError(`backend got problem jwtStatus : ${response.data.jwtStatus}`),
+        status: response.status,
+        data: response.data,
+        receivedValidToken: false,
+      };
+
+    }
+
+
 
     const jwtValues = parseJwt(response.data.token);
     log.l("getToken() parsed token values:", jwtValues);

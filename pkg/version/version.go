@@ -3,7 +3,7 @@ package version
 var (
 	APP        = "geoTreeTable"
 	AppSnake   = "go-geo-tree-table"
-	VERSION    = "0.0.24"
+	VERSION    = "0.0.25"
 	REPOSITORY = "https://github.com/lao-tseu-is-alive/go-geo-tree-table"
 	REVISION   = "unknown"
 	BuildStamp = "unknown"

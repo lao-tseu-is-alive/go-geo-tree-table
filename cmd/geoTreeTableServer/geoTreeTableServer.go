@@ -76,7 +76,9 @@ func (s Service) login(ctx echo.Context) error {
 	// maybe it was not a form but a fetch data post
 	if len(strings.Trim(login, " ")) < 1 {
 		if err := ctx.Bind(uLogin); err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, "invalid user login or json format in request body")
+			myErrMsg := "error invalid user login or json format in request body"
+			s.Logger.Warn(myErrMsg)
+			return ctx.JSON(http.StatusUnauthorized, map[string]string{"jwtStatus": myErrMsg, "token": ""})
 		}
 	} else {
 		uLogin.Username = login
@@ -86,24 +88,27 @@ func (s Service) login(ctx echo.Context) error {
 	if s.server.Authenticator.AuthenticateUser(uLogin.Username, uLogin.PasswordHash) {
 		userInfo, err := s.server.Authenticator.GetUserInfoFromLogin(login)
 		if err != nil {
-			errGetUInfFromLogin := fmt.Sprintf("Error getting user info from login: %v", err)
-			s.Logger.Error(errGetUInfFromLogin)
-			return ctx.JSON(http.StatusInternalServerError, errGetUInfFromLogin)
+			myErrMsg := fmt.Sprintf("Error getting user info from login: %v", err)
+			s.Logger.Error(myErrMsg)
+			return ctx.JSON(http.StatusUnauthorized, map[string]string{"jwtStatus": myErrMsg, "token": ""})
 		}
 		token, err := s.server.JwtCheck.GetTokenFromUserInfo(userInfo)
 		if err != nil {
-			errGetUInfFromLogin := fmt.Sprintf("Error getting jwt token from user info: %v", err)
-			s.Logger.Error(errGetUInfFromLogin)
-			return ctx.JSON(http.StatusInternalServerError, errGetUInfFromLogin)
+			myErrMsg := fmt.Sprintf("Error getting jwt token from user info: %v", err)
+			s.Logger.Error(myErrMsg)
+			return ctx.JSON(http.StatusInternalServerError, map[string]string{"jwtStatus": myErrMsg, "token": ""})
 		}
 		// Prepare the response
 		response := map[string]string{
-			"token": token.String(),
+			"jwtStatus": "success",
+			"token":     token.String(),
 		}
 		s.Logger.Info("LoginUser(%s) successful login", login)
 		return ctx.JSON(http.StatusOK, response)
 	} else {
-		return ctx.JSON(http.StatusUnauthorized, "username not found or password invalid")
+		myErrMsg := "username not found or password invalid"
+		s.Logger.Warn(myErrMsg)
+		return ctx.JSON(http.StatusUnauthorized, map[string]string{"jwtStatus": myErrMsg, "token": ""})
 	}
 }
 
