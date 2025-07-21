@@ -76,7 +76,8 @@ const removeSessionItem = (appName: string, key: string): void => {
   sessionStorage.removeItem(getSessionKey(appName, key));
 };
 
-const clearSession = (appName: string): void => {
+export const clearSession = (appName: string): void => {
+  log.t(  `# entering clearSession... ${appName} ` );
   Object.values(SESSION_KEYS).forEach((key) => removeSessionItem(appName, key));
   log.t("Session storage cleared for app:", appName);
 };

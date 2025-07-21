@@ -148,6 +148,7 @@ import { useAppStore } from "@/stores/appStore";
 import { useGeoTreeStore } from "@/stores/geoTreeStore";
 import { storeToRefs } from "pinia";
 import { GeoTree } from "@/stores/geoTree";
+import { clearSession } from "@/components/AuthService";
 
 let log = getLog("APP", 4, 4);
 const dataLoaded = ref(false);
@@ -274,9 +275,9 @@ const handleDataLoaded = () => {
   //dataLoaded.value = true;
 };
 
-const getLoginName = computed(()=>{
-  return appStore.getUsername
-})
+const getLoginName = computed(() => {
+  return appStore.getUsername;
+});
 
 const handleHeaderInvalid = (invalidHeaders: IInvalidFieldHeader[]) => {
   log.t(`## handleHeaderInvalid entering...`);
@@ -327,7 +328,7 @@ const saveDataToBackend = async () => {
   } else {
     //// Set the default for all future requests because we have a http only cookie
     //axios.defaults.withCredentials = true;
-    geoTreeStore.setAxiosWithCredentials(true)
+    geoTreeStore.setAxiosWithCredentials(true);
   }
   for (let i = 0; i < dataToSave.length; i++) {
     const record = dataToSave[i];
@@ -410,7 +411,7 @@ const handleLoginSuccess = async (v: string) => {
   );
 
   log.l(`appStore.getUserJwtToken :   ${appStore.getUserJwtToken}`);
-  await getListOfTreesPositionFromDB()
+  await getListOfTreesPositionFromDB();
 
   /*
   if (isNullOrUndefined(autoLogoutTimer)) {
@@ -441,7 +442,7 @@ const getListOfTreesPositionFromDB = async () => {
   if (!appStore.isHttpOnlyCookieJwt) {
     geoTreeStore.setAuthToken(appStore.getUserJwtToken);
   } else {
-    geoTreeStore.setAxiosWithCredentials(true)
+    geoTreeStore.setAxiosWithCredentials(true);
   }
   try {
     await geoTreeStore.listGeoTrees({ limit: 1000, offset: 0 });
@@ -473,12 +474,11 @@ onMounted(async () => {
     log.l(
       `App.vue ${appStore.getAppName} v${appStore.getAppVersion}, from ${appStore.getAppRepository}`,
     );
-
+    // clear old stuff
+    clearSession(appStore.getAppName)
     const areWeUsingHttpOnlyCookieJwt = await appStore.checkStatusRoute(false);
     log.l(`areWeUsingHttpOnlyCookieJwt: ${areWeUsingHttpOnlyCookieJwt}`);
-    if (areWeUsingHttpOnlyCookieJwt) {
-      await getListOfTreesPositionFromDB()
-    }
+    await getListOfTreesPositionFromDB();
   } catch (error) {
     log.e("Error fetching app info:", error);
   }

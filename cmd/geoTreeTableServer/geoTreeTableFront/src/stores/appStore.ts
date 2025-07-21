@@ -24,7 +24,7 @@ export const useAppStore = defineStore("app", {
       feedbackType: "success" as LevelAlert,
       feedbackVisible: false,
       appData: <AppInfo>{},
-      jwtStatus: <JwtCustomClaims>{},
+      jwtClaims: <JwtCustomClaims>{},
     };
   },
   getters: {
@@ -51,7 +51,7 @@ export const useAppStore = defineStore("app", {
     getUserId: (state): number => {
       if (state.isUserAuthenticated) {
         if (state.isHttpOnlyCookieJwt) {
-          return state.jwtStatus.User?.user_id || 0;
+          return state.jwtClaims.User?.user_id || 0;
         }
         const APP = state.appData.app; // Use the internal appStore
         const val = sessionStorage.getItem(`${APP}_goapi_idgouser`);
@@ -153,12 +153,16 @@ export const useAppStore = defineStore("app", {
           BASE_URL =  BACKEND_URL
           statusUrl = `${this.appData.statusUrl}`.includes("goapi")?`${this.appData.statusUrl}`:`${API_URL}${this.appData.statusUrl}`;
         }
+        //let's test first if we have a local token
+
+
+
         const jwtClaims = await fetchJwtStatus(`${BASE_URL}${statusUrl}`);
         log.l(
           `fetchJwtStatus returned ${JSON.stringify(jwtClaims)}`,
           jwtClaims,
         );
-        this.jwtStatus = jwtClaims;
+        this.jwtClaims = jwtClaims;
         this.setUserAuthenticated();
         this.isHttpOnlyCookieJwt = true;
         return true;
