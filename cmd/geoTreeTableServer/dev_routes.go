@@ -38,22 +38,26 @@ func (s *Service) fakeDevF5(ctx echo.Context) error {
 	}
 	token, err := s.server.JwtCheck.GetTokenFromUserInfo(userInfo)
 	if err != nil {
-		myErrMsg := fmt.Sprintf("fakeDevF5 failed to get jwt token from user info: %v", err)
+		myErrMsg := fmt.Sprintf("error in fakeDevF5 failed to get jwt token from user info: %v", err)
 		s.Logger.Error(myErrMsg)
-		return ctx.JSON(http.StatusInternalServerError, map[string]string{"status": myErrMsg})
+		return ctx.JSON(http.StatusInternalServerError, map[string]string{"jwtStatus": myErrMsg, "token": ""})
 	}
 	// Prepare the http only cookie for jwt token
 	cookie := new(http.Cookie)
 	cookie.Name = s.jwtCookieName
 	cookie.Path = "/"
 	cookie.Value = token.String()
-	cookie.Expires = time.Now().Add(24 * time.Hour) // Set expiration
-	cookie.HttpOnly = true                          // ⭐ Most important part: prevents JS access
-	cookie.Secure = true                            // to allow working in dev with vite
-	cookie.SameSite = http.SameSiteLaxMode          // CSRF protection
+	cookie.Expires = time.Now().Add(4 * time.Hour) // Set expiration
+	cookie.HttpOnly = true                         // ⭐ Most important part: prevents JS access
+	cookie.Secure = true                           // to allow working in dev with vite
+	cookie.SameSite = http.SameSiteNoneMode        // CSRF protection
 	ctx.SetCookie(cookie)
-	myMsg := fmt.Sprintf("fakeDevF5(%s) successful, token set in HTTP-Only cookie.", login)
-	s.Logger.Info(myMsg)
-	return ctx.JSON(http.StatusOK, myMsg)
+	// Prepare the response
+	response := map[string]string{
+		"jwtStatus": "success",
+		"token":     token.String(),
+	}
+	s.Logger.Info(fmt.Sprintf("getJwtCookieFromF5(%s) successful, token set in HTTP-Only cookie.", login))
+	return ctx.JSON(http.StatusOK, response)
 
 }

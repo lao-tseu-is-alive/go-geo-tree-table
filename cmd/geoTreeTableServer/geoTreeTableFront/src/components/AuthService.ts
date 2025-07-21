@@ -81,7 +81,7 @@ const clearSession = (appName: string): void => {
 };
 
 // Parses a JWT token to extract its payload
-const parseJwt = (token: string): JwtPayload => {
+export const parseJwt = (token: string): JwtPayload => {
   try {
     const base64Url = token.split(".")[1];
     if (!base64Url) throw new Error("Invalid JWT format: Missing payload.");
@@ -103,16 +103,29 @@ const parseJwt = (token: string): JwtPayload => {
   }
 };
 
-export const getPasswordHashSHA256 = async (password:string, minLength:number = 8) => {
+export const getPasswordHashSHA256 = async (
+  password: string,
+  minLength: number = 8,
+) => {
   if (password.trim().length >= minLength) {
-    const encoder = new TextEncoder()
-    const data = encoder.encode(password)
-    const hashBuffer = await crypto.subtle.digest("SHA-256", data)
-    const hashArray = Array.from(new Uint8Array(hashBuffer))
-    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("")
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
   } else {
-    throw new AuthError(`Password must be at least ${minLength} characters long`)
+    throw new AuthError(
+      `Password must be at least ${minLength} characters long`,
+    );
   }
+};
+
+export interface IGetTokenResponse {
+  msg: string;
+  err: Error | null;
+  status: number | undefined;
+  receivedValidToken: boolean;
+  data: any;
 }
 
 // Authenticates a user and saves the session
@@ -122,25 +135,29 @@ export const getToken = async (
   jwtAuthUrl: string,
   username: string,
   passwordHash: string,
-): Promise<{
-  msg: string;
-  err: Error | null;
-  status: number | undefined;
-  data: any;
-}> => {
+  isF5: boolean = false,
+): Promise<IGetTokenResponse> => {
   if (!appName?.trim() || !username?.trim() || !passwordHash?.trim()) {
     throw new AuthError("appName, username, and passwordHash are required");
   }
 
   const loginUrl = `${baseServerUrl}${jwtAuthUrl}`;
-  log.t(`# entering getToken... ${loginUrl} data:`, { username });
+  log.t(
+    `# entering getToken... ${loginUrl} isF5: ${isF5}, username: ${username}`,
+  );
 
   try {
-    const response = await axios.post(loginUrl, {
-      username,
-      password_hash: passwordHash,
-    });
-    log.l("getToken() axios.post Success! response:", response.data);
+    let response = null;
+    if (isF5) {
+      response = await axios.get(loginUrl);
+      log.l("getToken() isF5 axios.get Success! response:", response.data);
+    } else {
+      response = await axios.post(loginUrl, {
+        username,
+        password_hash: passwordHash,
+      });
+      log.l("getToken() axios.post Success! response:", response.data);
+    }
 
     const jwtValues = parseJwt(response.data.token);
     log.l("getToken() parsed token values:", jwtValues);
@@ -183,12 +200,13 @@ export const getToken = async (
       err: null,
       status: response.status,
       data: response.data,
+      receivedValidToken: true,
     };
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const msg = `getToken() Axios Error: ${error.message}`;
       log.w(msg, error.response);
-      return { msg, err: error, status: error.response?.status, data: null };
+      return { msg, err: error, status: error.response?.status, data: null, receivedValidToken: false, };
     }
     const msg = `getToken() Unexpected Error: ${error}`;
     log.e(msg);
@@ -197,6 +215,7 @@ export const getToken = async (
       err: error instanceof Error ? error : new Error(String(error)),
       status: undefined,
       data: null,
+      receivedValidToken: false,
     };
   }
 };

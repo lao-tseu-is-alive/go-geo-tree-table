@@ -19,6 +19,11 @@ export interface AppInfo {
     statusUrl: string;
 }
 
+export interface JwtResponse {
+  status: string,
+  token: string,
+}
+
 /****
  * @function fetchAppInfo
  * @description Fetches application information from a specified URL.
@@ -63,20 +68,5 @@ export async function fetchJwtStatus(url: string): Promise<JwtCustomClaims> {
     // Log the error and re-throw it so the caller can handle it
     log.w("Could not fetch app information from " + url + ":", error);
     throw new Error(`Failed to fetch status information: ${error.message}`);
-  }
-}
-
-export async function fetchAuthUrl(url: string): Promise<string> {
-  log.t(`about to fetch jwt auth url from ${url} ... `);
-  try {
-    const response: Response = await fetch(url);
-    if (!response.ok) {
-      return`HTTP error! status: ${response.status} when fetch ${url}`
-    }
-    // Parse the JSON response containing the AppInfo type and return it
-    return await response.text();
-  } catch (error: any) { // Explicitly type error as 'any' for broader error handling
-    log.e("Could not fetch auth url from " + url + ":", error);
-    return `error doing fetch auth url : ${error.message}`;
   }
 }

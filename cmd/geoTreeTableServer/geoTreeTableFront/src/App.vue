@@ -468,6 +468,9 @@ onMounted(async () => {
     log.l(
       `App.vue ${appStore.getAppName} v${appStore.getAppVersion}, from ${appStore.getAppRepository}`,
     );
+
+
+
     const areWeUsingHttpOnlyCookieJwt = await appStore.checkStatusRoute(false);
     log.l(`areWeUsingHttpOnlyCookieJwt: ${areWeUsingHttpOnlyCookieJwt}`);
     if (areWeUsingHttpOnlyCookieJwt) {

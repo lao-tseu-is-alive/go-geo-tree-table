@@ -4,10 +4,10 @@ import {
   fetchAppInfo,
   AppInfo,
   fetchJwtStatus,
-  fetchAuthUrl,
 } from "@/tools/appInfo";
 import { API_URL, BACKEND_URL, DEV, getLog, GO_DEV_URL } from "@/config";
 import { JwtCustomClaims } from "@/tools/jwt";
+import { getToken } from "@/components/AuthService";
 
 const log = getLog("appStore", 4, 4);
 type LevelAlert = "error" | "success" | "warning" | "info";
@@ -147,13 +147,19 @@ export const useAppStore = defineStore("app", {
       } catch (error) {
         if (!authRouteChecked) {
           const authUrl = this.appData.authUrl;
-          const res = await fetchAuthUrl(`${BASE_URL}${authUrl}`);
-          if (`${res}`.toLowerCase().includes("success")) {
-            log.l(`successfully checked auth url ${res} `);
-            // let's retry just once after a successful auth url check, maybe we have got an jwt cookie
-            return await this.checkStatusRoute(true);
+          const url = `${BASE_URL}${authUrl}`
+          const res = await getToken(this.appData.app,BASE_URL,authUrl,"f5-user","",true);
+          if (res) {
+            log.l(`successfully checked auth url ${res.status} `, res);
+            if (res.receivedValidToken) {
+              this.isHttpOnlyCookieJwt = false;
+              this.setUserAuthenticated();
+            } else {
+              // let's retry just once after a successful auth url check, maybe we have got a jwt cookie
+              return await this.checkStatusRoute(true);
+            }
           } else {
-            log.w(`problem checking auth url ${authUrl} : ${res} `);
+            log.w(`problem doing loginF5Jwt(${url}) : ${res} `);
           }
         }
         log.e("Error fetching status info:", error);
