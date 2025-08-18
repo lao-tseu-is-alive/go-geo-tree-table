@@ -56,12 +56,12 @@ export interface ListGeoTreesParams {
 }
 
 export const validHeaderRow = [
-  "id_cadastre",
-  "type_point",
+  "id",
+  "code",
   "e",
   "n",
   "circ_tronc_[cm]",
-  "Ø_couronne_[m]",
+  "couronne_[m]",
   "essence ",
   "date",
   "commentaire",

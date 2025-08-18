@@ -1,38 +1,38 @@
-var dt = Object.defineProperty;
-var pt = (e, t, n) => t in e ? dt(e, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : e[t] = n;
-var le = (e, t, n) => pt(e, typeof t != "symbol" ? t + "" : t, n);
-function je(e, t) {
+var ht = Object.defineProperty;
+var mt = (e, t, n) => t in e ? ht(e, t, { enumerable: !0, configurable: !0, writable: !0, value: n }) : e[t] = n;
+var le = (e, t, n) => mt(e, typeof t != "symbol" ? t + "" : t, n);
+function qe(e, t) {
   return function() {
     return e.apply(t, arguments);
   };
 }
-const { toString: ht } = Object.prototype, { getPrototypeOf: Se } = Object, { iterator: ne, toStringTag: $e } = Symbol, re = /* @__PURE__ */ ((e) => (t) => {
-  const n = ht.call(t);
+const { toString: gt } = Object.prototype, { getPrototypeOf: be } = Object, { iterator: ne, toStringTag: Me } = Symbol, re = /* @__PURE__ */ ((e) => (t) => {
+  const n = gt.call(t);
   return e[n] || (e[n] = n.slice(8, -1).toLowerCase());
-})(/* @__PURE__ */ Object.create(null)), N = (e) => (e = e.toLowerCase(), (t) => re(t) === e), se = (e) => (t) => typeof t === e, { isArray: q } = Array, J = se("undefined");
-function mt(e) {
+})(/* @__PURE__ */ Object.create(null)), C = (e) => (e = e.toLowerCase(), (t) => re(t) === e), se = (e) => (t) => typeof t === e, { isArray: M } = Array, J = se("undefined");
+function wt(e) {
   return e !== null && !J(e) && e.constructor !== null && !J(e.constructor) && x(e.constructor.isBuffer) && e.constructor.isBuffer(e);
 }
-const qe = N("ArrayBuffer");
-function gt(e) {
+const He = C("ArrayBuffer");
+function Et(e) {
   let t;
-  return typeof ArrayBuffer < "u" && ArrayBuffer.isView ? t = ArrayBuffer.isView(e) : t = e && e.buffer && qe(e.buffer), t;
+  return typeof ArrayBuffer < "u" && ArrayBuffer.isView ? t = ArrayBuffer.isView(e) : t = e && e.buffer && He(e.buffer), t;
 }
-const Et = se("string"), x = se("function"), Me = se("number"), oe = (e) => e !== null && typeof e == "object", wt = (e) => e === !0 || e === !1, G = (e) => {
+const yt = se("string"), x = se("function"), ve = se("number"), oe = (e) => e !== null && typeof e == "object", St = (e) => e === !0 || e === !1, G = (e) => {
   if (re(e) !== "object")
     return !1;
-  const t = Se(e);
-  return (t === null || t === Object.prototype || Object.getPrototypeOf(t) === null) && !($e in e) && !(ne in e);
-}, yt = N("Date"), St = N("File"), bt = N("Blob"), Rt = N("FileList"), Tt = (e) => oe(e) && x(e.pipe), At = (e) => {
+  const t = be(e);
+  return (t === null || t === Object.prototype || Object.getPrototypeOf(t) === null) && !(Me in e) && !(ne in e);
+}, bt = C("Date"), Rt = C("File"), Tt = C("Blob"), At = C("FileList"), Ot = (e) => oe(e) && x(e.pipe), _t = (e) => {
   let t;
   return e && (typeof FormData == "function" && e instanceof FormData || x(e.append) && ((t = re(e)) === "formdata" || // detect form-data instance
   t === "object" && x(e.toString) && e.toString() === "[object FormData]"));
-}, Ot = N("URLSearchParams"), [_t, xt, Ut, Ct] = ["ReadableStream", "Request", "Response", "Headers"].map(N), Nt = (e) => e.trim ? e.trim() : e.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-function v(e, t, { allOwnKeys: n = !1 } = {}) {
+}, xt = C("URLSearchParams"), [Ut, kt, Ct, Nt] = ["ReadableStream", "Request", "Response", "Headers"].map(C), Pt = (e) => e.trim ? e.trim() : e.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
+function z(e, t, { allOwnKeys: n = !1 } = {}) {
   if (e === null || typeof e > "u")
     return;
   let r, s;
-  if (typeof e != "object" && (e = [e]), q(e))
+  if (typeof e != "object" && (e = [e]), M(e))
     for (r = 0, s = e.length; r < s; r++)
       t.call(null, e[r], r, e);
   else {
@@ -42,7 +42,7 @@ function v(e, t, { allOwnKeys: n = !1 } = {}) {
       c = o[r], t.call(null, e[c], c, e);
   }
 }
-function He(e, t) {
+function Je(e, t) {
   t = t.toLowerCase();
   const n = Object.keys(e);
   let r = n.length, s;
@@ -51,71 +51,71 @@ function He(e, t) {
       return s;
   return null;
 }
-const B = typeof globalThis < "u" ? globalThis : typeof self < "u" ? self : typeof window < "u" ? window : global, Je = (e) => !J(e) && e !== B;
-function he() {
-  const { caseless: e } = Je(this) && this || {}, t = {}, n = (r, s) => {
-    const o = e && He(t, s) || s;
-    G(t[o]) && G(r) ? t[o] = he(t[o], r) : G(r) ? t[o] = he({}, r) : q(r) ? t[o] = r.slice() : t[o] = r;
+const B = typeof globalThis < "u" ? globalThis : typeof self < "u" ? self : typeof window < "u" ? window : global, ze = (e) => !J(e) && e !== B;
+function me() {
+  const { caseless: e } = ze(this) && this || {}, t = {}, n = (r, s) => {
+    const o = e && Je(t, s) || s;
+    G(t[o]) && G(r) ? t[o] = me(t[o], r) : G(r) ? t[o] = me({}, r) : M(r) ? t[o] = r.slice() : t[o] = r;
   };
   for (let r = 0, s = arguments.length; r < s; r++)
-    arguments[r] && v(arguments[r], n);
+    arguments[r] && z(arguments[r], n);
   return t;
 }
-const kt = (e, t, n, { allOwnKeys: r } = {}) => (v(t, (s, o) => {
-  n && x(s) ? e[o] = je(s, n) : e[o] = s;
-}, { allOwnKeys: r }), e), Pt = (e) => (e.charCodeAt(0) === 65279 && (e = e.slice(1)), e), Lt = (e, t, n, r) => {
+const Lt = (e, t, n, { allOwnKeys: r } = {}) => (z(t, (s, o) => {
+  n && x(s) ? e[o] = qe(s, n) : e[o] = s;
+}, { allOwnKeys: r }), e), Dt = (e) => (e.charCodeAt(0) === 65279 && (e = e.slice(1)), e), It = (e, t, n, r) => {
   e.prototype = Object.create(t.prototype, r), e.prototype.constructor = e, Object.defineProperty(e, "super", {
     value: t.prototype
   }), n && Object.assign(e.prototype, n);
-}, Dt = (e, t, n, r) => {
+}, Ft = (e, t, n, r) => {
   let s, o, i;
   const c = {};
   if (t = t || {}, e == null) return t;
   do {
     for (s = Object.getOwnPropertyNames(e), o = s.length; o-- > 0; )
       i = s[o], (!r || r(i, e, t)) && !c[i] && (t[i] = e[i], c[i] = !0);
-    e = n !== !1 && Se(e);
+    e = n !== !1 && be(e);
   } while (e && (!n || n(e, t)) && e !== Object.prototype);
   return t;
-}, It = (e, t, n) => {
+}, jt = (e, t, n) => {
   e = String(e), (n === void 0 || n > e.length) && (n = e.length), n -= t.length;
   const r = e.indexOf(t, n);
   return r !== -1 && r === n;
-}, Ft = (e) => {
+}, Bt = (e) => {
   if (!e) return null;
-  if (q(e)) return e;
+  if (M(e)) return e;
   let t = e.length;
-  if (!Me(t)) return null;
+  if (!ve(t)) return null;
   const n = new Array(t);
   for (; t-- > 0; )
     n[t] = e[t];
   return n;
-}, Bt = /* @__PURE__ */ ((e) => (t) => e && t instanceof e)(typeof Uint8Array < "u" && Se(Uint8Array)), jt = (e, t) => {
+}, $t = /* @__PURE__ */ ((e) => (t) => e && t instanceof e)(typeof Uint8Array < "u" && be(Uint8Array)), qt = (e, t) => {
   const r = (e && e[ne]).call(e);
   let s;
   for (; (s = r.next()) && !s.done; ) {
     const o = s.value;
     t.call(e, o[0], o[1]);
   }
-}, $t = (e, t) => {
+}, Mt = (e, t) => {
   let n;
   const r = [];
   for (; (n = e.exec(t)) !== null; )
     r.push(n);
   return r;
-}, qt = N("HTMLFormElement"), Mt = (e) => e.toLowerCase().replace(
+}, Ht = C("HTMLFormElement"), vt = (e) => e.toLowerCase().replace(
   /[-_\s]([a-z\d])(\w*)/g,
   function(n, r, s) {
     return r.toUpperCase() + s;
   }
-), Ae = (({ hasOwnProperty: e }) => (t, n) => e.call(t, n))(Object.prototype), Ht = N("RegExp"), ve = (e, t) => {
+), Oe = (({ hasOwnProperty: e }) => (t, n) => e.call(t, n))(Object.prototype), Jt = C("RegExp"), Ve = (e, t) => {
   const n = Object.getOwnPropertyDescriptors(e), r = {};
-  v(n, (s, o) => {
+  z(n, (s, o) => {
     let i;
     (i = t(s, o, e)) !== !1 && (r[o] = i || s);
   }), Object.defineProperties(e, r);
-}, Jt = (e) => {
-  ve(e, (t, n) => {
+}, zt = (e) => {
+  Ve(e, (t, n) => {
     if (x(e) && ["arguments", "caller", "callee"].indexOf(n) !== -1)
       return !1;
     const r = e[n];
@@ -129,100 +129,100 @@ const kt = (e, t, n, { allOwnKeys: r } = {}) => (v(t, (s, o) => {
       });
     }
   });
-}, vt = (e, t) => {
+}, Vt = (e, t) => {
   const n = {}, r = (s) => {
     s.forEach((o) => {
       n[o] = !0;
     });
   };
-  return q(e) ? r(e) : r(String(e).split(t)), n;
-}, zt = () => {
-}, Vt = (e, t) => e != null && Number.isFinite(e = +e) ? e : t;
-function Wt(e) {
-  return !!(e && x(e.append) && e[$e] === "FormData" && e[ne]);
+  return M(e) ? r(e) : r(String(e).split(t)), n;
+}, Wt = () => {
+}, Kt = (e, t) => e != null && Number.isFinite(e = +e) ? e : t;
+function Xt(e) {
+  return !!(e && x(e.append) && e[Me] === "FormData" && e[ne]);
 }
-const Kt = (e) => {
+const Gt = (e) => {
   const t = new Array(10), n = (r, s) => {
     if (oe(r)) {
       if (t.indexOf(r) >= 0)
         return;
       if (!("toJSON" in r)) {
         t[s] = r;
-        const o = q(r) ? [] : {};
-        return v(r, (i, c) => {
-          const f = n(i, s + 1);
-          !J(f) && (o[c] = f);
+        const o = M(r) ? [] : {};
+        return z(r, (i, c) => {
+          const u = n(i, s + 1);
+          !J(u) && (o[c] = u);
         }), t[s] = void 0, o;
       }
     }
     return r;
   };
   return n(e, 0);
-}, Xt = N("AsyncFunction"), Gt = (e) => e && (oe(e) || x(e)) && x(e.then) && x(e.catch), ze = ((e, t) => e ? setImmediate : t ? ((n, r) => (B.addEventListener("message", ({ source: s, data: o }) => {
+}, Qt = C("AsyncFunction"), Yt = (e) => e && (oe(e) || x(e)) && x(e.then) && x(e.catch), We = ((e, t) => e ? setImmediate : t ? ((n, r) => (B.addEventListener("message", ({ source: s, data: o }) => {
   s === B && o === n && r.length && r.shift()();
 }, !1), (s) => {
   r.push(s), B.postMessage(n, "*");
 }))(`axios@${Math.random()}`, []) : (n) => setTimeout(n))(
   typeof setImmediate == "function",
   x(B.postMessage)
-), Qt = typeof queueMicrotask < "u" ? queueMicrotask.bind(B) : typeof process < "u" && process.nextTick || ze, Yt = (e) => e != null && x(e[ne]), a = {
-  isArray: q,
-  isArrayBuffer: qe,
-  isBuffer: mt,
-  isFormData: At,
-  isArrayBufferView: gt,
-  isString: Et,
-  isNumber: Me,
-  isBoolean: wt,
+), Zt = typeof queueMicrotask < "u" ? queueMicrotask.bind(B) : typeof process < "u" && process.nextTick || We, en = (e) => e != null && x(e[ne]), a = {
+  isArray: M,
+  isArrayBuffer: He,
+  isBuffer: wt,
+  isFormData: _t,
+  isArrayBufferView: Et,
+  isString: yt,
+  isNumber: ve,
+  isBoolean: St,
   isObject: oe,
   isPlainObject: G,
-  isReadableStream: _t,
-  isRequest: xt,
-  isResponse: Ut,
-  isHeaders: Ct,
+  isReadableStream: Ut,
+  isRequest: kt,
+  isResponse: Ct,
+  isHeaders: Nt,
   isUndefined: J,
-  isDate: yt,
-  isFile: St,
-  isBlob: bt,
-  isRegExp: Ht,
+  isDate: bt,
+  isFile: Rt,
+  isBlob: Tt,
+  isRegExp: Jt,
   isFunction: x,
-  isStream: Tt,
-  isURLSearchParams: Ot,
-  isTypedArray: Bt,
-  isFileList: Rt,
-  forEach: v,
-  merge: he,
-  extend: kt,
-  trim: Nt,
-  stripBOM: Pt,
-  inherits: Lt,
-  toFlatObject: Dt,
+  isStream: Ot,
+  isURLSearchParams: xt,
+  isTypedArray: $t,
+  isFileList: At,
+  forEach: z,
+  merge: me,
+  extend: Lt,
+  trim: Pt,
+  stripBOM: Dt,
+  inherits: It,
+  toFlatObject: Ft,
   kindOf: re,
-  kindOfTest: N,
-  endsWith: It,
-  toArray: Ft,
-  forEachEntry: jt,
-  matchAll: $t,
-  isHTMLForm: qt,
-  hasOwnProperty: Ae,
-  hasOwnProp: Ae,
+  kindOfTest: C,
+  endsWith: jt,
+  toArray: Bt,
+  forEachEntry: qt,
+  matchAll: Mt,
+  isHTMLForm: Ht,
+  hasOwnProperty: Oe,
+  hasOwnProp: Oe,
   // an alias to avoid ESLint no-prototype-builtins detection
-  reduceDescriptors: ve,
-  freezeMethods: Jt,
-  toObjectSet: vt,
-  toCamelCase: Mt,
-  noop: zt,
-  toFiniteNumber: Vt,
-  findKey: He,
+  reduceDescriptors: Ve,
+  freezeMethods: zt,
+  toObjectSet: Vt,
+  toCamelCase: vt,
+  noop: Wt,
+  toFiniteNumber: Kt,
+  findKey: Je,
   global: B,
-  isContextDefined: Je,
-  isSpecCompliantForm: Wt,
-  toJSONObject: Kt,
-  isAsyncFn: Xt,
-  isThenable: Gt,
-  setImmediate: ze,
-  asap: Qt,
-  isIterable: Yt
+  isContextDefined: ze,
+  isSpecCompliantForm: Xt,
+  toJSONObject: Gt,
+  isAsyncFn: Qt,
+  isThenable: Yt,
+  setImmediate: We,
+  asap: Zt,
+  isIterable: en
 };
 function m(e, t, n, r, s) {
   Error.call(this), Error.captureStackTrace ? Error.captureStackTrace(this, this.constructor) : this.stack = new Error().stack, this.message = e, this.name = "AxiosError", t && (this.code = t), n && (this.config = n), r && (this.request = r), s && (this.response = s, this.status = s.status ? s.status : null);
@@ -248,7 +248,7 @@ a.inherits(m, Error, {
     };
   }
 });
-const Ve = m.prototype, We = {};
+const Ke = m.prototype, Xe = {};
 [
   "ERR_BAD_OPTION_VALUE",
   "ERR_BAD_OPTION",
@@ -264,32 +264,32 @@ const Ve = m.prototype, We = {};
   "ERR_INVALID_URL"
   // eslint-disable-next-line func-names
 ].forEach((e) => {
-  We[e] = { value: e };
+  Xe[e] = { value: e };
 });
-Object.defineProperties(m, We);
-Object.defineProperty(Ve, "isAxiosError", { value: !0 });
+Object.defineProperties(m, Xe);
+Object.defineProperty(Ke, "isAxiosError", { value: !0 });
 m.from = (e, t, n, r, s, o) => {
-  const i = Object.create(Ve);
-  return a.toFlatObject(e, i, function(f) {
-    return f !== Error.prototype;
+  const i = Object.create(Ke);
+  return a.toFlatObject(e, i, function(u) {
+    return u !== Error.prototype;
   }, (c) => c !== "isAxiosError"), m.call(i, e.message, t, n, r, s), i.cause = e, i.name = e.name, o && Object.assign(i, o), i;
 };
-const Zt = null;
-function me(e) {
+const tn = null;
+function ge(e) {
   return a.isPlainObject(e) || a.isArray(e);
 }
-function Ke(e) {
+function Ge(e) {
   return a.endsWith(e, "[]") ? e.slice(0, -2) : e;
 }
-function Oe(e, t, n) {
+function _e(e, t, n) {
   return e ? e.concat(t).map(function(s, o) {
-    return s = Ke(s), !n && o ? "[" + s + "]" : s;
+    return s = Ge(s), !n && o ? "[" + s + "]" : s;
   }).join(n ? "." : "") : t;
 }
-function en(e) {
-  return a.isArray(e) && !e.some(me);
+function nn(e) {
+  return a.isArray(e) && !e.some(ge);
 }
-const tn = a.toFlatObject(a, {}, null, function(t) {
+const rn = a.toFlatObject(a, {}, null, function(t) {
   return /^is[A-Z]/.test(t);
 });
 function ie(e, t, n) {
@@ -302,7 +302,7 @@ function ie(e, t, n) {
   }, !1, function(g, h) {
     return !a.isUndefined(h[g]);
   });
-  const r = n.metaTokens, s = n.visitor || u, o = n.dots, i = n.indexes, f = (n.Blob || typeof Blob < "u" && Blob) && a.isSpecCompliantForm(t);
+  const r = n.metaTokens, s = n.visitor || f, o = n.dots, i = n.indexes, u = (n.Blob || typeof Blob < "u" && Blob) && a.isSpecCompliantForm(t);
   if (!a.isFunction(s))
     throw new TypeError("visitor must be a function");
   function l(d) {
@@ -311,30 +311,30 @@ function ie(e, t, n) {
       return d.toISOString();
     if (a.isBoolean(d))
       return d.toString();
-    if (!f && a.isBlob(d))
+    if (!u && a.isBlob(d))
       throw new m("Blob is not supported. Use a Buffer instead.");
-    return a.isArrayBuffer(d) || a.isTypedArray(d) ? f && typeof Blob == "function" ? new Blob([d]) : Buffer.from(d) : d;
+    return a.isArrayBuffer(d) || a.isTypedArray(d) ? u && typeof Blob == "function" ? new Blob([d]) : Buffer.from(d) : d;
   }
-  function u(d, g, h) {
+  function f(d, g, h) {
     let S = d;
     if (d && !h && typeof d == "object") {
       if (a.endsWith(g, "{}"))
         g = r ? g : g.slice(0, -2), d = JSON.stringify(d);
-      else if (a.isArray(d) && en(d) || (a.isFileList(d) || a.endsWith(g, "[]")) && (S = a.toArray(d)))
-        return g = Ke(g), S.forEach(function(A, L) {
+      else if (a.isArray(d) && nn(d) || (a.isFileList(d) || a.endsWith(g, "[]")) && (S = a.toArray(d)))
+        return g = Ge(g), S.forEach(function(A, L) {
           !(a.isUndefined(A) || A === null) && t.append(
             // eslint-disable-next-line no-nested-ternary
-            i === !0 ? Oe([g], L, o) : i === null ? g : g + "[]",
+            i === !0 ? _e([g], L, o) : i === null ? g : g + "[]",
             l(A)
           );
         }), !1;
     }
-    return me(d) ? !0 : (t.append(Oe(h, g, o), l(d)), !1);
+    return ge(d) ? !0 : (t.append(_e(h, g, o), l(d)), !1);
   }
-  const p = [], E = Object.assign(tn, {
-    defaultVisitor: u,
+  const p = [], w = Object.assign(rn, {
+    defaultVisitor: f,
     convertValue: l,
-    isVisitable: me
+    isVisitable: ge
   });
   function R(d, g) {
     if (!a.isUndefined(d)) {
@@ -346,7 +346,7 @@ function ie(e, t, n) {
           S,
           a.isString(T) ? T.trim() : T,
           g,
-          E
+          w
         )) === !0 && R(S, g ? g.concat(T) : [T]);
       }), p.pop();
     }
@@ -355,7 +355,7 @@ function ie(e, t, n) {
     throw new TypeError("data must be an object");
   return R(e), t;
 }
-function _e(e) {
+function xe(e) {
   const t = {
     "!": "%21",
     "'": "%27",
@@ -369,40 +369,40 @@ function _e(e) {
     return t[r];
   });
 }
-function be(e, t) {
+function Re(e, t) {
   this._pairs = [], e && ie(e, this, t);
 }
-const Xe = be.prototype;
-Xe.append = function(t, n) {
+const Qe = Re.prototype;
+Qe.append = function(t, n) {
   this._pairs.push([t, n]);
 };
-Xe.toString = function(t) {
+Qe.toString = function(t) {
   const n = t ? function(r) {
-    return t.call(this, r, _e);
-  } : _e;
+    return t.call(this, r, xe);
+  } : xe;
   return this._pairs.map(function(s) {
     return n(s[0]) + "=" + n(s[1]);
   }, "").join("&");
 };
-function nn(e) {
+function sn(e) {
   return encodeURIComponent(e).replace(/%3A/gi, ":").replace(/%24/g, "$").replace(/%2C/gi, ",").replace(/%20/g, "+").replace(/%5B/gi, "[").replace(/%5D/gi, "]");
 }
-function Ge(e, t, n) {
+function Ye(e, t, n) {
   if (!t)
     return e;
-  const r = n && n.encode || nn;
+  const r = n && n.encode || sn;
   a.isFunction(n) && (n = {
     serialize: n
   });
   const s = n && n.serialize;
   let o;
-  if (s ? o = s(t, n) : o = a.isURLSearchParams(t) ? t.toString() : new be(t, n).toString(r), o) {
+  if (s ? o = s(t, n) : o = a.isURLSearchParams(t) ? t.toString() : new Re(t, n).toString(r), o) {
     const i = e.indexOf("#");
     i !== -1 && (e = e.slice(0, i)), e += (e.indexOf("?") === -1 ? "?" : "&") + o;
   }
   return e;
 }
-class xe {
+class Ue {
   constructor() {
     this.handlers = [];
   }
@@ -456,41 +456,41 @@ class xe {
     });
   }
 }
-const Qe = {
+const Ze = {
   silentJSONParsing: !0,
   forcedJSONParsing: !0,
   clarifyTimeoutError: !1
-}, rn = typeof URLSearchParams < "u" ? URLSearchParams : be, sn = typeof FormData < "u" ? FormData : null, on = typeof Blob < "u" ? Blob : null, an = {
+}, on = typeof URLSearchParams < "u" ? URLSearchParams : Re, an = typeof FormData < "u" ? FormData : null, cn = typeof Blob < "u" ? Blob : null, ln = {
   isBrowser: !0,
   classes: {
-    URLSearchParams: rn,
-    FormData: sn,
-    Blob: on
+    URLSearchParams: on,
+    FormData: an,
+    Blob: cn
   },
   protocols: ["http", "https", "file", "blob", "url", "data"]
-}, Re = typeof window < "u" && typeof document < "u", ge = typeof navigator == "object" && navigator || void 0, cn = Re && (!ge || ["ReactNative", "NativeScript", "NS"].indexOf(ge.product) < 0), ln = typeof WorkerGlobalScope < "u" && // eslint-disable-next-line no-undef
-self instanceof WorkerGlobalScope && typeof self.importScripts == "function", un = Re && window.location.href || "http://localhost", fn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+}, Te = typeof window < "u" && typeof document < "u", we = typeof navigator == "object" && navigator || void 0, un = Te && (!we || ["ReactNative", "NativeScript", "NS"].indexOf(we.product) < 0), fn = typeof WorkerGlobalScope < "u" && // eslint-disable-next-line no-undef
+self instanceof WorkerGlobalScope && typeof self.importScripts == "function", dn = Te && window.location.href || "http://localhost", pn = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
-  hasBrowserEnv: Re,
-  hasStandardBrowserEnv: cn,
-  hasStandardBrowserWebWorkerEnv: ln,
-  navigator: ge,
-  origin: un
+  hasBrowserEnv: Te,
+  hasStandardBrowserEnv: un,
+  hasStandardBrowserWebWorkerEnv: fn,
+  navigator: we,
+  origin: dn
 }, Symbol.toStringTag, { value: "Module" })), O = {
-  ...fn,
-  ...an
+  ...pn,
+  ...ln
 };
-function dn(e, t) {
+function hn(e, t) {
   return ie(e, new O.classes.URLSearchParams(), Object.assign({
     visitor: function(n, r, s, o) {
       return O.isNode && a.isBuffer(n) ? (this.append(r, n.toString("base64")), !1) : o.defaultVisitor.apply(this, arguments);
     }
   }, t));
 }
-function pn(e) {
+function mn(e) {
   return a.matchAll(/\w+|\[(\w*)]/g, e).map((t) => t[0] === "[]" ? "" : t[1] || t[0]);
 }
-function hn(e) {
+function gn(e) {
   const t = {}, n = Object.keys(e);
   let r;
   const s = n.length;
@@ -499,22 +499,22 @@ function hn(e) {
     o = n[r], t[o] = e[o];
   return t;
 }
-function Ye(e) {
+function et(e) {
   function t(n, r, s, o) {
     let i = n[o++];
     if (i === "__proto__") return !0;
-    const c = Number.isFinite(+i), f = o >= n.length;
-    return i = !i && a.isArray(s) ? s.length : i, f ? (a.hasOwnProp(s, i) ? s[i] = [s[i], r] : s[i] = r, !c) : ((!s[i] || !a.isObject(s[i])) && (s[i] = []), t(n, r, s[i], o) && a.isArray(s[i]) && (s[i] = hn(s[i])), !c);
+    const c = Number.isFinite(+i), u = o >= n.length;
+    return i = !i && a.isArray(s) ? s.length : i, u ? (a.hasOwnProp(s, i) ? s[i] = [s[i], r] : s[i] = r, !c) : ((!s[i] || !a.isObject(s[i])) && (s[i] = []), t(n, r, s[i], o) && a.isArray(s[i]) && (s[i] = gn(s[i])), !c);
   }
   if (a.isFormData(e) && a.isFunction(e.entries)) {
     const n = {};
     return a.forEachEntry(e, (r, s) => {
-      t(pn(r), s, n, 0);
+      t(mn(r), s, n, 0);
     }), n;
   }
   return null;
 }
-function mn(e, t, n) {
+function wn(e, t, n) {
   if (a.isString(e))
     try {
       return (t || JSON.parse)(e), a.trim(e);
@@ -524,13 +524,13 @@ function mn(e, t, n) {
     }
   return (n || JSON.stringify)(e);
 }
-const z = {
-  transitional: Qe,
+const V = {
+  transitional: Ze,
   adapter: ["xhr", "http", "fetch"],
   transformRequest: [function(t, n) {
     const r = n.getContentType() || "", s = r.indexOf("application/json") > -1, o = a.isObject(t);
     if (o && a.isHTMLForm(t) && (t = new FormData(t)), a.isFormData(t))
-      return s ? JSON.stringify(Ye(t)) : t;
+      return s ? JSON.stringify(et(t)) : t;
     if (a.isArrayBuffer(t) || a.isBuffer(t) || a.isStream(t) || a.isFile(t) || a.isBlob(t) || a.isReadableStream(t))
       return t;
     if (a.isArrayBufferView(t))
@@ -540,20 +540,20 @@ const z = {
     let c;
     if (o) {
       if (r.indexOf("application/x-www-form-urlencoded") > -1)
-        return dn(t, this.formSerializer).toString();
+        return hn(t, this.formSerializer).toString();
       if ((c = a.isFileList(t)) || r.indexOf("multipart/form-data") > -1) {
-        const f = this.env && this.env.FormData;
+        const u = this.env && this.env.FormData;
         return ie(
           c ? { "files[]": t } : t,
-          f && new f(),
+          u && new u(),
           this.formSerializer
         );
       }
     }
-    return o || s ? (n.setContentType("application/json", !1), mn(t)) : t;
+    return o || s ? (n.setContentType("application/json", !1), wn(t)) : t;
   }],
   transformResponse: [function(t) {
-    const n = this.transitional || z.transitional, r = n && n.forcedJSONParsing, s = this.responseType === "json";
+    const n = this.transitional || V.transitional, r = n && n.forcedJSONParsing, s = this.responseType === "json";
     if (a.isResponse(t) || a.isReadableStream(t))
       return t;
     if (t && a.isString(t) && (r && !this.responseType || s)) {
@@ -591,9 +591,9 @@ const z = {
   }
 };
 a.forEach(["delete", "get", "head", "post", "put", "patch"], (e) => {
-  z.headers[e] = {};
+  V.headers[e] = {};
 });
-const gn = a.toObjectSet([
+const En = a.toObjectSet([
   "age",
   "authorization",
   "content-length",
@@ -611,28 +611,28 @@ const gn = a.toObjectSet([
   "referer",
   "retry-after",
   "user-agent"
-]), En = (e) => {
+]), yn = (e) => {
   const t = {};
   let n, r, s;
   return e && e.split(`
 `).forEach(function(i) {
-    s = i.indexOf(":"), n = i.substring(0, s).trim().toLowerCase(), r = i.substring(s + 1).trim(), !(!n || t[n] && gn[n]) && (n === "set-cookie" ? t[n] ? t[n].push(r) : t[n] = [r] : t[n] = t[n] ? t[n] + ", " + r : r);
+    s = i.indexOf(":"), n = i.substring(0, s).trim().toLowerCase(), r = i.substring(s + 1).trim(), !(!n || t[n] && En[n]) && (n === "set-cookie" ? t[n] ? t[n].push(r) : t[n] = [r] : t[n] = t[n] ? t[n] + ", " + r : r);
   }), t;
-}, Ue = Symbol("internals");
-function H(e) {
+}, ke = Symbol("internals");
+function v(e) {
   return e && String(e).trim().toLowerCase();
 }
 function Q(e) {
   return e === !1 || e == null ? e : a.isArray(e) ? e.map(Q) : String(e);
 }
-function wn(e) {
+function Sn(e) {
   const t = /* @__PURE__ */ Object.create(null), n = /([^\s,;=]+)\s*(?:=\s*([^,;]+))?/g;
   let r;
   for (; r = n.exec(e); )
     t[r[1]] = r[2];
   return t;
 }
-const yn = (e) => /^[-_a-zA-Z0-9^`|~,!#$%&'*+.]+$/.test(e.trim());
+const bn = (e) => /^[-_a-zA-Z0-9^`|~,!#$%&'*+.]+$/.test(e.trim());
 function ue(e, t, n, r, s) {
   if (a.isFunction(r))
     return r.call(this, t, n);
@@ -643,10 +643,10 @@ function ue(e, t, n, r, s) {
       return r.test(t);
   }
 }
-function Sn(e) {
+function Rn(e) {
   return e.trim().toLowerCase().replace(/([a-z\d])(\w*)/g, (t, n, r) => n.toUpperCase() + r);
 }
-function bn(e, t) {
+function Tn(e, t) {
   const n = a.toCamelCase(" " + t);
   ["get", "set", "has"].forEach((r) => {
     Object.defineProperty(e, r + n, {
@@ -663,24 +663,24 @@ let U = class {
   }
   set(t, n, r) {
     const s = this;
-    function o(c, f, l) {
-      const u = H(f);
-      if (!u)
+    function o(c, u, l) {
+      const f = v(u);
+      if (!f)
         throw new Error("header name must be a non-empty string");
-      const p = a.findKey(s, u);
-      (!p || s[p] === void 0 || l === !0 || l === void 0 && s[p] !== !1) && (s[p || f] = Q(c));
+      const p = a.findKey(s, f);
+      (!p || s[p] === void 0 || l === !0 || l === void 0 && s[p] !== !1) && (s[p || u] = Q(c));
     }
-    const i = (c, f) => a.forEach(c, (l, u) => o(l, u, f));
+    const i = (c, u) => a.forEach(c, (l, f) => o(l, f, u));
     if (a.isPlainObject(t) || t instanceof this.constructor)
       i(t, n);
-    else if (a.isString(t) && (t = t.trim()) && !yn(t))
-      i(En(t), n);
+    else if (a.isString(t) && (t = t.trim()) && !bn(t))
+      i(yn(t), n);
     else if (a.isObject(t) && a.isIterable(t)) {
-      let c = {}, f, l;
-      for (const u of t) {
-        if (!a.isArray(u))
+      let c = {}, u, l;
+      for (const f of t) {
+        if (!a.isArray(f))
           throw TypeError("Object iterator must return a key-value pair");
-        c[l = u[0]] = (f = c[l]) ? a.isArray(f) ? [...f, u[1]] : [f, u[1]] : u[1];
+        c[l = f[0]] = (u = c[l]) ? a.isArray(u) ? [...u, f[1]] : [u, f[1]] : f[1];
       }
       i(c, n);
     } else
@@ -688,14 +688,14 @@ let U = class {
     return this;
   }
   get(t, n) {
-    if (t = H(t), t) {
+    if (t = v(t), t) {
       const r = a.findKey(this, t);
       if (r) {
         const s = this[r];
         if (!n)
           return s;
         if (n === !0)
-          return wn(s);
+          return Sn(s);
         if (a.isFunction(n))
           return n.call(this, s, r);
         if (a.isRegExp(n))
@@ -705,7 +705,7 @@ let U = class {
     }
   }
   has(t, n) {
-    if (t = H(t), t) {
+    if (t = v(t), t) {
       const r = a.findKey(this, t);
       return !!(r && this[r] !== void 0 && (!n || ue(this, this[r], r, n)));
     }
@@ -715,7 +715,7 @@ let U = class {
     const r = this;
     let s = !1;
     function o(i) {
-      if (i = H(i), i) {
+      if (i = v(i), i) {
         const c = a.findKey(r, i);
         c && (!n || ue(r, r[c], c, n)) && (delete r[c], s = !0);
       }
@@ -739,7 +739,7 @@ let U = class {
         n[i] = Q(s), delete n[o];
         return;
       }
-      const c = t ? Sn(o) : String(o).trim();
+      const c = t ? Rn(o) : String(o).trim();
       c !== o && delete n[o], n[c] = Q(s), r[c] = !0;
     }), this;
   }
@@ -773,12 +773,12 @@ let U = class {
     return n.forEach((s) => r.set(s)), r;
   }
   static accessor(t) {
-    const r = (this[Ue] = this[Ue] = {
+    const r = (this[ke] = this[ke] = {
       accessors: {}
     }).accessors, s = this.prototype;
     function o(i) {
-      const c = H(i);
-      r[c] || (bn(s, i), r[c] = !0);
+      const c = v(i);
+      r[c] || (Tn(s, i), r[c] = !0);
     }
     return a.isArray(t) ? t.forEach(o) : o(t), this;
   }
@@ -795,22 +795,22 @@ a.reduceDescriptors(U.prototype, ({ value: e }, t) => {
 });
 a.freezeMethods(U);
 function fe(e, t) {
-  const n = this || z, r = t || n, s = U.from(r.headers);
+  const n = this || V, r = t || n, s = U.from(r.headers);
   let o = r.data;
   return a.forEach(e, function(c) {
     o = c.call(n, o, s.normalize(), t ? t.status : void 0);
   }), s.normalize(), o;
 }
-function Ze(e) {
+function tt(e) {
   return !!(e && e.__CANCEL__);
 }
-function M(e, t, n) {
+function H(e, t, n) {
   m.call(this, e ?? "canceled", m.ERR_CANCELED, t, n), this.name = "CanceledError";
 }
-a.inherits(M, m, {
+a.inherits(H, m, {
   __CANCEL__: !0
 });
-function et(e, t, n) {
+function nt(e, t, n) {
   const r = n.config.validateStatus;
   !n.status || !r || r(n.status) ? e(n) : t(new m(
     "Request failed with status code " + n.status,
@@ -820,51 +820,51 @@ function et(e, t, n) {
     n
   ));
 }
-function Rn(e) {
+function An(e) {
   const t = /^([-+\w]{1,25})(:?\/\/|:)/.exec(e);
   return t && t[1] || "";
 }
-function Tn(e, t) {
+function On(e, t) {
   e = e || 10;
   const n = new Array(e), r = new Array(e);
   let s = 0, o = 0, i;
-  return t = t !== void 0 ? t : 1e3, function(f) {
-    const l = Date.now(), u = r[o];
-    i || (i = l), n[s] = f, r[s] = l;
-    let p = o, E = 0;
+  return t = t !== void 0 ? t : 1e3, function(u) {
+    const l = Date.now(), f = r[o];
+    i || (i = l), n[s] = u, r[s] = l;
+    let p = o, w = 0;
     for (; p !== s; )
-      E += n[p++], p = p % e;
+      w += n[p++], p = p % e;
     if (s = (s + 1) % e, s === o && (o = (o + 1) % e), l - i < t)
       return;
-    const R = u && l - u;
-    return R ? Math.round(E * 1e3 / R) : void 0;
+    const R = f && l - f;
+    return R ? Math.round(w * 1e3 / R) : void 0;
   };
 }
-function An(e, t) {
+function _n(e, t) {
   let n = 0, r = 1e3 / t, s, o;
-  const i = (l, u = Date.now()) => {
-    n = u, s = null, o && (clearTimeout(o), o = null), e.apply(null, l);
+  const i = (l, f = Date.now()) => {
+    n = f, s = null, o && (clearTimeout(o), o = null), e.apply(null, l);
   };
   return [(...l) => {
-    const u = Date.now(), p = u - n;
-    p >= r ? i(l, u) : (s = l, o || (o = setTimeout(() => {
+    const f = Date.now(), p = f - n;
+    p >= r ? i(l, f) : (s = l, o || (o = setTimeout(() => {
       o = null, i(s);
     }, r - p)));
   }, () => s && i(s)];
 }
 const Z = (e, t, n = 3) => {
   let r = 0;
-  const s = Tn(50, 250);
-  return An((o) => {
-    const i = o.loaded, c = o.lengthComputable ? o.total : void 0, f = i - r, l = s(f), u = i <= c;
+  const s = On(50, 250);
+  return _n((o) => {
+    const i = o.loaded, c = o.lengthComputable ? o.total : void 0, u = i - r, l = s(u), f = i <= c;
     r = i;
     const p = {
       loaded: i,
       total: c,
       progress: c ? i / c : void 0,
-      bytes: f,
+      bytes: u,
       rate: l || void 0,
-      estimated: l && c && u ? (c - i) / l : void 0,
+      estimated: l && c && f ? (c - i) / l : void 0,
       event: o,
       lengthComputable: c != null,
       [t ? "download" : "upload"]: !0
@@ -878,10 +878,10 @@ const Z = (e, t, n = 3) => {
     total: e,
     loaded: r
   }), t[1]];
-}, Ne = (e) => (...t) => a.asap(() => e(...t)), On = O.hasStandardBrowserEnv ? /* @__PURE__ */ ((e, t) => (n) => (n = new URL(n, O.origin), e.protocol === n.protocol && e.host === n.host && (t || e.port === n.port)))(
+}, Ne = (e) => (...t) => a.asap(() => e(...t)), xn = O.hasStandardBrowserEnv ? /* @__PURE__ */ ((e, t) => (n) => (n = new URL(n, O.origin), e.protocol === n.protocol && e.host === n.host && (t || e.port === n.port)))(
   new URL(O.origin),
   O.navigator && /(msie|trident)/i.test(O.navigator.userAgent)
-) : () => !0, _n = O.hasStandardBrowserEnv ? (
+) : () => !0, Un = O.hasStandardBrowserEnv ? (
   // Standard browser envs support document.cookie
   {
     write(e, t, n, r, s, o) {
@@ -908,46 +908,46 @@ const Z = (e, t, n = 3) => {
     }
   }
 );
-function xn(e) {
+function kn(e) {
   return /^([a-z][a-z\d+\-.]*:)?\/\//i.test(e);
 }
-function Un(e, t) {
+function Cn(e, t) {
   return t ? e.replace(/\/?\/$/, "") + "/" + t.replace(/^\/+/, "") : e;
 }
-function tt(e, t, n) {
-  let r = !xn(t);
-  return e && (r || n == !1) ? Un(e, t) : t;
+function rt(e, t, n) {
+  let r = !kn(t);
+  return e && (r || n == !1) ? Cn(e, t) : t;
 }
-const ke = (e) => e instanceof U ? { ...e } : e;
-function $(e, t) {
+const Pe = (e) => e instanceof U ? { ...e } : e;
+function q(e, t) {
   t = t || {};
   const n = {};
-  function r(l, u, p, E) {
-    return a.isPlainObject(l) && a.isPlainObject(u) ? a.merge.call({ caseless: E }, l, u) : a.isPlainObject(u) ? a.merge({}, u) : a.isArray(u) ? u.slice() : u;
+  function r(l, f, p, w) {
+    return a.isPlainObject(l) && a.isPlainObject(f) ? a.merge.call({ caseless: w }, l, f) : a.isPlainObject(f) ? a.merge({}, f) : a.isArray(f) ? f.slice() : f;
   }
-  function s(l, u, p, E) {
-    if (a.isUndefined(u)) {
+  function s(l, f, p, w) {
+    if (a.isUndefined(f)) {
       if (!a.isUndefined(l))
-        return r(void 0, l, p, E);
-    } else return r(l, u, p, E);
+        return r(void 0, l, p, w);
+    } else return r(l, f, p, w);
   }
-  function o(l, u) {
-    if (!a.isUndefined(u))
-      return r(void 0, u);
+  function o(l, f) {
+    if (!a.isUndefined(f))
+      return r(void 0, f);
   }
-  function i(l, u) {
-    if (a.isUndefined(u)) {
+  function i(l, f) {
+    if (a.isUndefined(f)) {
       if (!a.isUndefined(l))
         return r(void 0, l);
-    } else return r(void 0, u);
+    } else return r(void 0, f);
   }
-  function c(l, u, p) {
+  function c(l, f, p) {
     if (p in t)
-      return r(l, u);
+      return r(l, f);
     if (p in e)
       return r(void 0, l);
   }
-  const f = {
+  const u = {
     url: o,
     method: o,
     data: o,
@@ -976,42 +976,42 @@ function $(e, t) {
     socketPath: i,
     responseEncoding: i,
     validateStatus: c,
-    headers: (l, u, p) => s(ke(l), ke(u), p, !0)
+    headers: (l, f, p) => s(Pe(l), Pe(f), p, !0)
   };
-  return a.forEach(Object.keys(Object.assign({}, e, t)), function(u) {
-    const p = f[u] || s, E = p(e[u], t[u], u);
-    a.isUndefined(E) && p !== c || (n[u] = E);
+  return a.forEach(Object.keys(Object.assign({}, e, t)), function(f) {
+    const p = u[f] || s, w = p(e[f], t[f], f);
+    a.isUndefined(w) && p !== c || (n[f] = w);
   }), n;
 }
-const nt = (e) => {
-  const t = $({}, e);
+const st = (e) => {
+  const t = q({}, e);
   let { data: n, withXSRFToken: r, xsrfHeaderName: s, xsrfCookieName: o, headers: i, auth: c } = t;
-  t.headers = i = U.from(i), t.url = Ge(tt(t.baseURL, t.url, t.allowAbsoluteUrls), e.params, e.paramsSerializer), c && i.set(
+  t.headers = i = U.from(i), t.url = Ye(rt(t.baseURL, t.url, t.allowAbsoluteUrls), e.params, e.paramsSerializer), c && i.set(
     "Authorization",
     "Basic " + btoa((c.username || "") + ":" + (c.password ? unescape(encodeURIComponent(c.password)) : ""))
   );
-  let f;
+  let u;
   if (a.isFormData(n)) {
     if (O.hasStandardBrowserEnv || O.hasStandardBrowserWebWorkerEnv)
       i.setContentType(void 0);
-    else if ((f = i.getContentType()) !== !1) {
-      const [l, ...u] = f ? f.split(";").map((p) => p.trim()).filter(Boolean) : [];
-      i.setContentType([l || "multipart/form-data", ...u].join("; "));
+    else if ((u = i.getContentType()) !== !1) {
+      const [l, ...f] = u ? u.split(";").map((p) => p.trim()).filter(Boolean) : [];
+      i.setContentType([l || "multipart/form-data", ...f].join("; "));
     }
   }
-  if (O.hasStandardBrowserEnv && (r && a.isFunction(r) && (r = r(t)), r || r !== !1 && On(t.url))) {
-    const l = s && o && _n.read(o);
+  if (O.hasStandardBrowserEnv && (r && a.isFunction(r) && (r = r(t)), r || r !== !1 && xn(t.url))) {
+    const l = s && o && Un.read(o);
     l && i.set(s, l);
   }
   return t;
-}, Cn = typeof XMLHttpRequest < "u", Nn = Cn && function(e) {
+}, Nn = typeof XMLHttpRequest < "u", Pn = Nn && function(e) {
   return new Promise(function(n, r) {
-    const s = nt(e);
+    const s = st(e);
     let o = s.data;
     const i = U.from(s.headers).normalize();
-    let { responseType: c, onUploadProgress: f, onDownloadProgress: l } = s, u, p, E, R, d;
+    let { responseType: c, onUploadProgress: u, onDownloadProgress: l } = s, f, p, w, R, d;
     function g() {
-      R && R(), d && d(), s.cancelToken && s.cancelToken.unsubscribe(u), s.signal && s.signal.removeEventListener("abort", u);
+      R && R(), d && d(), s.cancelToken && s.cancelToken.unsubscribe(f), s.signal && s.signal.removeEventListener("abort", f);
     }
     let h = new XMLHttpRequest();
     h.open(s.method.toUpperCase(), s.url, !0), h.timeout = s.timeout;
@@ -1028,10 +1028,10 @@ const nt = (e) => {
         config: e,
         request: h
       };
-      et(function(F) {
-        n(F), g();
-      }, function(F) {
-        r(F), g();
+      nt(function(j) {
+        n(j), g();
+      }, function(j) {
+        r(j), g();
       }, _), h = null;
     }
     "onloadend" in h ? h.onloadend = S : h.onreadystatechange = function() {
@@ -1042,7 +1042,7 @@ const nt = (e) => {
       r(new m("Network Error", m.ERR_NETWORK, e, h)), h = null;
     }, h.ontimeout = function() {
       let L = s.timeout ? "timeout of " + s.timeout + "ms exceeded" : "timeout exceeded";
-      const _ = s.transitional || Qe;
+      const _ = s.transitional || Ze;
       s.timeoutErrorMessage && (L = s.timeoutErrorMessage), r(new m(
         L,
         _.clarifyTimeoutError ? m.ETIMEDOUT : m.ECONNABORTED,
@@ -1051,25 +1051,25 @@ const nt = (e) => {
       )), h = null;
     }, o === void 0 && i.setContentType(null), "setRequestHeader" in h && a.forEach(i.toJSON(), function(L, _) {
       h.setRequestHeader(_, L);
-    }), a.isUndefined(s.withCredentials) || (h.withCredentials = !!s.withCredentials), c && c !== "json" && (h.responseType = s.responseType), l && ([E, d] = Z(l, !0), h.addEventListener("progress", E)), f && h.upload && ([p, R] = Z(f), h.upload.addEventListener("progress", p), h.upload.addEventListener("loadend", R)), (s.cancelToken || s.signal) && (u = (A) => {
-      h && (r(!A || A.type ? new M(null, e, h) : A), h.abort(), h = null);
-    }, s.cancelToken && s.cancelToken.subscribe(u), s.signal && (s.signal.aborted ? u() : s.signal.addEventListener("abort", u)));
-    const T = Rn(s.url);
+    }), a.isUndefined(s.withCredentials) || (h.withCredentials = !!s.withCredentials), c && c !== "json" && (h.responseType = s.responseType), l && ([w, d] = Z(l, !0), h.addEventListener("progress", w)), u && h.upload && ([p, R] = Z(u), h.upload.addEventListener("progress", p), h.upload.addEventListener("loadend", R)), (s.cancelToken || s.signal) && (f = (A) => {
+      h && (r(!A || A.type ? new H(null, e, h) : A), h.abort(), h = null);
+    }, s.cancelToken && s.cancelToken.subscribe(f), s.signal && (s.signal.aborted ? f() : s.signal.addEventListener("abort", f)));
+    const T = An(s.url);
     if (T && O.protocols.indexOf(T) === -1) {
       r(new m("Unsupported protocol " + T + ":", m.ERR_BAD_REQUEST, e));
       return;
     }
     h.send(o || null);
   });
-}, kn = (e, t) => {
+}, Ln = (e, t) => {
   const { length: n } = e = e ? e.filter(Boolean) : [];
   if (t || n) {
     let r = new AbortController(), s;
     const o = function(l) {
       if (!s) {
         s = !0, c();
-        const u = l instanceof Error ? l : this.reason;
-        r.abort(u instanceof m ? u : new M(u instanceof Error ? u.message : u));
+        const f = l instanceof Error ? l : this.reason;
+        r.abort(f instanceof m ? f : new H(f instanceof Error ? f.message : f));
       }
     };
     let i = t && setTimeout(() => {
@@ -1081,10 +1081,10 @@ const nt = (e) => {
       }), e = null);
     };
     e.forEach((l) => l.addEventListener("abort", o));
-    const { signal: f } = r;
-    return f.unsubscribe = () => a.asap(c), f;
+    const { signal: u } = r;
+    return u.unsubscribe = () => a.asap(c), u;
   }
-}, Pn = function* (e, t) {
+}, Dn = function* (e, t) {
   let n = e.byteLength;
   if (n < t) {
     yield e;
@@ -1093,10 +1093,10 @@ const nt = (e) => {
   let r = 0, s;
   for (; r < n; )
     s = r + t, yield e.slice(r, s), r = s;
-}, Ln = async function* (e, t) {
-  for await (const n of Dn(e))
-    yield* Pn(n, t);
-}, Dn = async function* (e) {
+}, In = async function* (e, t) {
+  for await (const n of Fn(e))
+    yield* Dn(n, t);
+}, Fn = async function* (e) {
   if (e[Symbol.asyncIterator]) {
     yield* e;
     return;
@@ -1112,42 +1112,42 @@ const nt = (e) => {
   } finally {
     await t.cancel();
   }
-}, Pe = (e, t, n, r) => {
-  const s = Ln(e, t);
-  let o = 0, i, c = (f) => {
-    i || (i = !0, r && r(f));
+}, Le = (e, t, n, r) => {
+  const s = In(e, t);
+  let o = 0, i, c = (u) => {
+    i || (i = !0, r && r(u));
   };
   return new ReadableStream({
-    async pull(f) {
+    async pull(u) {
       try {
-        const { done: l, value: u } = await s.next();
+        const { done: l, value: f } = await s.next();
         if (l) {
-          c(), f.close();
+          c(), u.close();
           return;
         }
-        let p = u.byteLength;
+        let p = f.byteLength;
         if (n) {
-          let E = o += p;
-          n(E);
+          let w = o += p;
+          n(w);
         }
-        f.enqueue(new Uint8Array(u));
+        u.enqueue(new Uint8Array(f));
       } catch (l) {
         throw c(l), l;
       }
     },
-    cancel(f) {
-      return c(f), s.return();
+    cancel(u) {
+      return c(u), s.return();
     }
   }, {
     highWaterMark: 2
   });
-}, ae = typeof fetch == "function" && typeof Request == "function" && typeof Response == "function", rt = ae && typeof ReadableStream == "function", In = ae && (typeof TextEncoder == "function" ? /* @__PURE__ */ ((e) => (t) => e.encode(t))(new TextEncoder()) : async (e) => new Uint8Array(await new Response(e).arrayBuffer())), st = (e, ...t) => {
+}, ae = typeof fetch == "function" && typeof Request == "function" && typeof Response == "function", ot = ae && typeof ReadableStream == "function", jn = ae && (typeof TextEncoder == "function" ? /* @__PURE__ */ ((e) => (t) => e.encode(t))(new TextEncoder()) : async (e) => new Uint8Array(await new Response(e).arrayBuffer())), it = (e, ...t) => {
   try {
     return !!e(...t);
   } catch {
     return !1;
   }
-}, Fn = rt && st(() => {
+}, Bn = ot && it(() => {
   let e = !1;
   const t = new Request(O.origin, {
     body: new ReadableStream(),
@@ -1157,7 +1157,7 @@ const nt = (e) => {
     }
   }).headers.has("Content-Type");
   return e && !t;
-}), Le = 64 * 1024, Ee = rt && st(() => a.isReadableStream(new Response("").body)), ee = {
+}), De = 64 * 1024, Ee = ot && it(() => a.isReadableStream(new Response("").body)), ee = {
   stream: Ee && ((e) => e.body)
 };
 ae && ((e) => {
@@ -1167,7 +1167,7 @@ ae && ((e) => {
     });
   });
 })(new Response());
-const Bn = async (e) => {
+const $n = async (e) => {
   if (e == null)
     return 0;
   if (a.isBlob(e))
@@ -1180,11 +1180,11 @@ const Bn = async (e) => {
   if (a.isArrayBufferView(e) || a.isArrayBuffer(e))
     return e.byteLength;
   if (a.isURLSearchParams(e) && (e = e + ""), a.isString(e))
-    return (await In(e)).byteLength;
-}, jn = async (e, t) => {
+    return (await jn(e)).byteLength;
+}, qn = async (e, t) => {
   const n = a.toFiniteNumber(e.getContentLength());
-  return n ?? Bn(t);
-}, $n = ae && (async (e) => {
+  return n ?? $n(t);
+}, Mn = ae && (async (e) => {
   let {
     url: t,
     method: n,
@@ -1193,57 +1193,57 @@ const Bn = async (e) => {
     cancelToken: o,
     timeout: i,
     onDownloadProgress: c,
-    onUploadProgress: f,
+    onUploadProgress: u,
     responseType: l,
-    headers: u,
+    headers: f,
     withCredentials: p = "same-origin",
-    fetchOptions: E
-  } = nt(e);
+    fetchOptions: w
+  } = st(e);
   l = l ? (l + "").toLowerCase() : "text";
-  let R = kn([s, o && o.toAbortSignal()], i), d;
+  let R = Ln([s, o && o.toAbortSignal()], i), d;
   const g = R && R.unsubscribe && (() => {
     R.unsubscribe();
   });
   let h;
   try {
-    if (f && Fn && n !== "get" && n !== "head" && (h = await jn(u, r)) !== 0) {
+    if (u && Bn && n !== "get" && n !== "head" && (h = await qn(f, r)) !== 0) {
       let _ = new Request(t, {
         method: "POST",
         body: r,
         duplex: "half"
       }), I;
-      if (a.isFormData(r) && (I = _.headers.get("content-type")) && u.setContentType(I), _.body) {
-        const [F, W] = Ce(
+      if (a.isFormData(r) && (I = _.headers.get("content-type")) && f.setContentType(I), _.body) {
+        const [j, W] = Ce(
           h,
-          Z(Ne(f))
+          Z(Ne(u))
         );
-        r = Pe(_.body, Le, F, W);
+        r = Le(_.body, De, j, W);
       }
     }
     a.isString(p) || (p = p ? "include" : "omit");
     const S = "credentials" in Request.prototype;
     d = new Request(t, {
-      ...E,
+      ...w,
       signal: R,
       method: n.toUpperCase(),
-      headers: u.normalize().toJSON(),
+      headers: f.normalize().toJSON(),
       body: r,
       duplex: "half",
       credentials: S ? p : void 0
     });
-    let T = await fetch(d, E);
+    let T = await fetch(d, w);
     const A = Ee && (l === "stream" || l === "response");
     if (Ee && (c || A && g)) {
       const _ = {};
-      ["status", "statusText", "headers"].forEach((Te) => {
-        _[Te] = T[Te];
+      ["status", "statusText", "headers"].forEach((Ae) => {
+        _[Ae] = T[Ae];
       });
-      const I = a.toFiniteNumber(T.headers.get("content-length")), [F, W] = c && Ce(
+      const I = a.toFiniteNumber(T.headers.get("content-length")), [j, W] = c && Ce(
         I,
         Z(Ne(c), !0)
       ) || [];
       T = new Response(
-        Pe(T.body, Le, F, () => {
+        Le(T.body, De, j, () => {
           W && W(), g && g();
         }),
         _
@@ -1252,7 +1252,7 @@ const Bn = async (e) => {
     l = l || "text";
     let L = await ee[a.findKey(ee, l) || "text"](T, e);
     return !A && g && g(), await new Promise((_, I) => {
-      et(_, I, {
+      nt(_, I, {
         data: L,
         headers: U.from(T.headers),
         status: T.status,
@@ -1269,12 +1269,12 @@ const Bn = async (e) => {
       }
     ) : m.from(S, S && S.code, e, d);
   }
-}), we = {
-  http: Zt,
-  xhr: Nn,
-  fetch: $n
+}), ye = {
+  http: tn,
+  xhr: Pn,
+  fetch: Mn
 };
-a.forEach(we, (e, t) => {
+a.forEach(ye, (e, t) => {
   if (e) {
     try {
       Object.defineProperty(e, "name", { value: t });
@@ -1283,7 +1283,7 @@ a.forEach(we, (e, t) => {
     Object.defineProperty(e, "adapterName", { value: t });
   }
 });
-const De = (e) => `- ${e}`, qn = (e) => a.isFunction(e) || e === null || e === !1, ot = {
+const Ie = (e) => `- ${e}`, Hn = (e) => a.isFunction(e) || e === null || e === !1, at = {
   getAdapter: (e) => {
     e = a.isArray(e) ? e : [e];
     const { length: t } = e;
@@ -1292,7 +1292,7 @@ const De = (e) => `- ${e}`, qn = (e) => a.isFunction(e) || e === null || e === !
     for (let o = 0; o < t; o++) {
       n = e[o];
       let i;
-      if (r = n, !qn(n) && (r = we[(i = String(n)).toLowerCase()], r === void 0))
+      if (r = n, !Hn(n) && (r = ye[(i = String(n)).toLowerCase()], r === void 0))
         throw new m(`Unknown adapter '${i}'`);
       if (r)
         break;
@@ -1300,11 +1300,11 @@ const De = (e) => `- ${e}`, qn = (e) => a.isFunction(e) || e === null || e === !
     }
     if (!r) {
       const o = Object.entries(s).map(
-        ([c, f]) => `adapter ${c} ` + (f === !1 ? "is not supported by the environment" : "is not available in the build")
+        ([c, u]) => `adapter ${c} ` + (u === !1 ? "is not supported by the environment" : "is not available in the build")
       );
       let i = t ? o.length > 1 ? `since :
-` + o.map(De).join(`
-`) : " " + De(o[0]) : "as no adapter specified";
+` + o.map(Ie).join(`
+`) : " " + Ie(o[0]) : "as no adapter specified";
       throw new m(
         "There is no suitable adapter to dispatch the request " + i,
         "ERR_NOT_SUPPORT"
@@ -1312,40 +1312,40 @@ const De = (e) => `- ${e}`, qn = (e) => a.isFunction(e) || e === null || e === !
     }
     return r;
   },
-  adapters: we
+  adapters: ye
 };
 function de(e) {
   if (e.cancelToken && e.cancelToken.throwIfRequested(), e.signal && e.signal.aborted)
-    throw new M(null, e);
+    throw new H(null, e);
 }
-function Ie(e) {
+function Fe(e) {
   return de(e), e.headers = U.from(e.headers), e.data = fe.call(
     e,
     e.transformRequest
-  ), ["post", "put", "patch"].indexOf(e.method) !== -1 && e.headers.setContentType("application/x-www-form-urlencoded", !1), ot.getAdapter(e.adapter || z.adapter)(e).then(function(r) {
+  ), ["post", "put", "patch"].indexOf(e.method) !== -1 && e.headers.setContentType("application/x-www-form-urlencoded", !1), at.getAdapter(e.adapter || V.adapter)(e).then(function(r) {
     return de(e), r.data = fe.call(
       e,
       e.transformResponse,
       r
     ), r.headers = U.from(r.headers), r;
   }, function(r) {
-    return Ze(r) || (de(e), r && r.response && (r.response.data = fe.call(
+    return tt(r) || (de(e), r && r.response && (r.response.data = fe.call(
       e,
       e.transformResponse,
       r.response
     ), r.response.headers = U.from(r.response.headers))), Promise.reject(r);
   });
 }
-const it = "1.10.0", ce = {};
+const ct = "1.10.0", ce = {};
 ["object", "boolean", "number", "function", "string", "symbol"].forEach((e, t) => {
   ce[e] = function(r) {
     return typeof r === e || "a" + (t < 1 ? "n " : " ") + e;
   };
 });
-const Fe = {};
+const je = {};
 ce.transitional = function(t, n, r) {
   function s(o, i) {
-    return "[Axios v" + it + "] Transitional option '" + o + "'" + i + (r ? ". " + r : "");
+    return "[Axios v" + ct + "] Transitional option '" + o + "'" + i + (r ? ". " + r : "");
   }
   return (o, i, c) => {
     if (t === !1)
@@ -1353,7 +1353,7 @@ ce.transitional = function(t, n, r) {
         s(i, " has been removed" + (n ? " in " + n : "")),
         m.ERR_DEPRECATED
       );
-    return n && !Fe[i] && (Fe[i] = !0, console.warn(
+    return n && !je[i] && (je[i] = !0, console.warn(
       s(
         i,
         " has been deprecated since v" + n + " and will be removed in the near future"
@@ -1364,7 +1364,7 @@ ce.transitional = function(t, n, r) {
 ce.spelling = function(t) {
   return (n, r) => (console.warn(`${r} is likely a misspelling of ${t}`), !0);
 };
-function Mn(e, t, n) {
+function vn(e, t, n) {
   if (typeof e != "object")
     throw new m("options must be an object", m.ERR_BAD_OPTION_VALUE);
   const r = Object.keys(e);
@@ -1372,9 +1372,9 @@ function Mn(e, t, n) {
   for (; s-- > 0; ) {
     const o = r[s], i = t[o];
     if (i) {
-      const c = e[o], f = c === void 0 || i(c, o, e);
-      if (f !== !0)
-        throw new m("option " + o + " must be " + f, m.ERR_BAD_OPTION_VALUE);
+      const c = e[o], u = c === void 0 || i(c, o, e);
+      if (u !== !0)
+        throw new m("option " + o + " must be " + u, m.ERR_BAD_OPTION_VALUE);
       continue;
     }
     if (n !== !0)
@@ -1382,14 +1382,14 @@ function Mn(e, t, n) {
   }
 }
 const Y = {
-  assertOptions: Mn,
+  assertOptions: vn,
   validators: ce
-}, k = Y.validators;
-let j = class {
+}, N = Y.validators;
+let $ = class {
   constructor(t) {
     this.defaults = t || {}, this.interceptors = {
-      request: new xe(),
-      response: new xe()
+      request: new Ue(),
+      response: new Ue()
     };
   }
   /**
@@ -1418,20 +1418,20 @@ let j = class {
     }
   }
   _request(t, n) {
-    typeof t == "string" ? (n = n || {}, n.url = t) : n = t || {}, n = $(this.defaults, n);
+    typeof t == "string" ? (n = n || {}, n.url = t) : n = t || {}, n = q(this.defaults, n);
     const { transitional: r, paramsSerializer: s, headers: o } = n;
     r !== void 0 && Y.assertOptions(r, {
-      silentJSONParsing: k.transitional(k.boolean),
-      forcedJSONParsing: k.transitional(k.boolean),
-      clarifyTimeoutError: k.transitional(k.boolean)
+      silentJSONParsing: N.transitional(N.boolean),
+      forcedJSONParsing: N.transitional(N.boolean),
+      clarifyTimeoutError: N.transitional(N.boolean)
     }, !1), s != null && (a.isFunction(s) ? n.paramsSerializer = {
       serialize: s
     } : Y.assertOptions(s, {
-      encode: k.function,
-      serialize: k.function
+      encode: N.function,
+      serialize: N.function
     }, !0)), n.allowAbsoluteUrls !== void 0 || (this.defaults.allowAbsoluteUrls !== void 0 ? n.allowAbsoluteUrls = this.defaults.allowAbsoluteUrls : n.allowAbsoluteUrls = !0), Y.assertOptions(n, {
-      baseUrl: k.spelling("baseURL"),
-      withXsrfToken: k.spelling("withXSRFToken")
+      baseUrl: N.spelling("baseURL"),
+      withXsrfToken: N.spelling("withXSRFToken")
     }, !0), n.method = (n.method || this.defaults.method || "get").toLowerCase();
     let i = o && a.merge(
       o.common,
@@ -1444,24 +1444,24 @@ let j = class {
       }
     ), n.headers = U.concat(i, o);
     const c = [];
-    let f = !0;
+    let u = !0;
     this.interceptors.request.forEach(function(g) {
-      typeof g.runWhen == "function" && g.runWhen(n) === !1 || (f = f && g.synchronous, c.unshift(g.fulfilled, g.rejected));
+      typeof g.runWhen == "function" && g.runWhen(n) === !1 || (u = u && g.synchronous, c.unshift(g.fulfilled, g.rejected));
     });
     const l = [];
     this.interceptors.response.forEach(function(g) {
       l.push(g.fulfilled, g.rejected);
     });
-    let u, p = 0, E;
-    if (!f) {
-      const d = [Ie.bind(this), void 0];
-      for (d.unshift.apply(d, c), d.push.apply(d, l), E = d.length, u = Promise.resolve(n); p < E; )
-        u = u.then(d[p++], d[p++]);
-      return u;
+    let f, p = 0, w;
+    if (!u) {
+      const d = [Fe.bind(this), void 0];
+      for (d.unshift.apply(d, c), d.push.apply(d, l), w = d.length, f = Promise.resolve(n); p < w; )
+        f = f.then(d[p++], d[p++]);
+      return f;
     }
-    E = c.length;
+    w = c.length;
     let R = n;
-    for (p = 0; p < E; ) {
+    for (p = 0; p < w; ) {
       const d = c[p++], g = c[p++];
       try {
         R = d(R);
@@ -1471,23 +1471,23 @@ let j = class {
       }
     }
     try {
-      u = Ie.call(this, R);
+      f = Fe.call(this, R);
     } catch (d) {
       return Promise.reject(d);
     }
-    for (p = 0, E = l.length; p < E; )
-      u = u.then(l[p++], l[p++]);
-    return u;
+    for (p = 0, w = l.length; p < w; )
+      f = f.then(l[p++], l[p++]);
+    return f;
   }
   getUri(t) {
-    t = $(this.defaults, t);
-    const n = tt(t.baseURL, t.url, t.allowAbsoluteUrls);
-    return Ge(n, t.params, t.paramsSerializer);
+    t = q(this.defaults, t);
+    const n = rt(t.baseURL, t.url, t.allowAbsoluteUrls);
+    return Ye(n, t.params, t.paramsSerializer);
   }
 };
 a.forEach(["delete", "get", "head", "options"], function(t) {
-  j.prototype[t] = function(n, r) {
-    return this.request($(r || {}, {
+  $.prototype[t] = function(n, r) {
+    return this.request(q(r || {}, {
       method: t,
       url: n,
       data: (r || {}).data
@@ -1497,7 +1497,7 @@ a.forEach(["delete", "get", "head", "options"], function(t) {
 a.forEach(["post", "put", "patch"], function(t) {
   function n(r) {
     return function(o, i, c) {
-      return this.request($(c || {}, {
+      return this.request(q(c || {}, {
         method: t,
         headers: r ? {
           "Content-Type": "multipart/form-data"
@@ -1507,9 +1507,9 @@ a.forEach(["post", "put", "patch"], function(t) {
       }));
     };
   }
-  j.prototype[t] = n(), j.prototype[t + "Form"] = n(!0);
+  $.prototype[t] = n(), $.prototype[t + "Form"] = n(!0);
 });
-let Hn = class at {
+let Jn = class lt {
   constructor(t) {
     if (typeof t != "function")
       throw new TypeError("executor must be a function.");
@@ -1533,7 +1533,7 @@ let Hn = class at {
         r.unsubscribe(o);
       }, i;
     }, t(function(o, i, c) {
-      r.reason || (r.reason = new M(o, i, c), n(r.reason));
+      r.reason || (r.reason = new H(o, i, c), n(r.reason));
     });
   }
   /**
@@ -1575,22 +1575,22 @@ let Hn = class at {
   static source() {
     let t;
     return {
-      token: new at(function(s) {
+      token: new lt(function(s) {
         t = s;
       }),
       cancel: t
     };
   }
 };
-function Jn(e) {
+function zn(e) {
   return function(n) {
     return e.apply(null, n);
   };
 }
-function vn(e) {
+function Vn(e) {
   return a.isObject(e) && e.isAxiosError === !0;
 }
-const ye = {
+const Se = {
   Continue: 100,
   SwitchingProtocols: 101,
   Processing: 102,
@@ -1655,53 +1655,53 @@ const ye = {
   NotExtended: 510,
   NetworkAuthenticationRequired: 511
 };
-Object.entries(ye).forEach(([e, t]) => {
-  ye[t] = e;
+Object.entries(Se).forEach(([e, t]) => {
+  Se[t] = e;
 });
-function ct(e) {
-  const t = new j(e), n = je(j.prototype.request, t);
-  return a.extend(n, j.prototype, t, { allOwnKeys: !0 }), a.extend(n, t, null, { allOwnKeys: !0 }), n.create = function(s) {
-    return ct($(e, s));
+function ut(e) {
+  const t = new $(e), n = qe($.prototype.request, t);
+  return a.extend(n, $.prototype, t, { allOwnKeys: !0 }), a.extend(n, t, null, { allOwnKeys: !0 }), n.create = function(s) {
+    return ut(q(e, s));
   }, n;
 }
-const w = ct(z);
-w.Axios = j;
-w.CanceledError = M;
-w.CancelToken = Hn;
-w.isCancel = Ze;
-w.VERSION = it;
-w.toFormData = ie;
-w.AxiosError = m;
-w.Cancel = w.CanceledError;
-w.all = function(t) {
+const E = ut(V);
+E.Axios = $;
+E.CanceledError = H;
+E.CancelToken = Jn;
+E.isCancel = tt;
+E.VERSION = ct;
+E.toFormData = ie;
+E.AxiosError = m;
+E.Cancel = E.CanceledError;
+E.all = function(t) {
   return Promise.all(t);
 };
-w.spread = Jn;
-w.isAxiosError = vn;
-w.mergeConfig = $;
-w.AxiosHeaders = U;
-w.formToJSON = (e) => Ye(a.isHTMLForm(e) ? new FormData(e) : e);
-w.getAdapter = ot.getAdapter;
-w.HttpStatusCode = ye;
-w.default = w;
+E.spread = zn;
+E.isAxiosError = Vn;
+E.mergeConfig = q;
+E.AxiosHeaders = U;
+E.formToJSON = (e) => et(a.isHTMLForm(e) ? new FormData(e) : e);
+E.getAdapter = at.getAdapter;
+E.HttpStatusCode = Se;
+E.default = E;
 const {
-  Axios: rr,
-  AxiosError: sr,
-  CanceledError: or,
-  isCancel: ir,
-  CancelToken: ar,
-  VERSION: cr,
-  all: lr,
-  Cancel: ur,
-  isAxiosError: fr,
-  spread: dr,
-  toFormData: pr,
-  AxiosHeaders: hr,
-  HttpStatusCode: mr,
-  formToJSON: gr,
-  getAdapter: Er,
-  mergeConfig: wr
-} = w, pe = function(e) {
+  Axios: or,
+  AxiosError: ir,
+  CanceledError: ar,
+  isCancel: cr,
+  CancelToken: lr,
+  VERSION: ur,
+  all: fr,
+  Cancel: dr,
+  isAxiosError: pr,
+  spread: hr,
+  toFormData: mr,
+  AxiosHeaders: gr,
+  HttpStatusCode: wr,
+  formToJSON: Er,
+  getAdapter: yr,
+  mergeConfig: Sr
+} = E, pe = function(e) {
   switch (e) {
     case 4:
       return "color: #1976d2";
@@ -1767,8 +1767,8 @@ class Be {
     }
   }
 }
-var zn = {};
-const lt = zn.NODE_ENV === "development", Vn = new URL(location.toString()), Wn = "http://localhost:7979", Kn = lt ? Wn : Vn.origin, ut = "/goapi/v1", Xn = (e, t, n) => lt ? new Be(e, t) : new Be(e, n), Gn = 1e4, y = Xn("AuthService", 2, 1), b = {
+var Wn = {};
+const ft = Wn.NODE_ENV === "development", he = new URL(location.toString()), Kn = he.href.endsWith("/") ? he.href.slice(0, -1) : he.href, Xn = "http://localhost:7979", Gn = ft ? Xn : Kn, dt = "/goapi/v1", Qn = (e, t, n) => ft ? new Be(e, t) : new Be(e, n), Yn = 1e4, $e = (e) => typeof e > "u" || e === null, y = Qn("AuthService", 2, 1), b = {
   JWT_TOKEN: "_goapi_jwt_session_token",
   USER_ID: "_goapi_idgouser",
   USER_EXTERNAL_ID: "_goapi_user_external_id",
@@ -1780,7 +1780,7 @@ const lt = zn.NODE_ENV === "development", Vn = new URL(location.toString()), Wn 
   SESSION_UUID: "_goapi_session_uuid",
   GROUPS: "_goapi_groups"
 };
-class V extends Error {
+class F extends Error {
   constructor(t, n) {
     super(t), this.status = n, this.name = "AuthError";
   }
@@ -1789,11 +1789,11 @@ const te = (e, t) => `${e}${t}`, D = (e, t, n) => {
   sessionStorage.setItem(te(e, t), n);
 }, P = (e, t) => (y.t(
   `session get called with key:${t}, appName:${te(e, t)}`
-), sessionStorage.getItem(te(e, t))), Qn = (e, t) => {
+), sessionStorage.getItem(te(e, t))), Zn = (e, t) => {
   sessionStorage.removeItem(te(e, t));
-}, ft = (e) => {
-  Object.values(b).forEach((t) => Qn(e, t)), y.t("Session storage cleared for app:", e);
-}, Yn = (e) => {
+}, pt = (e) => {
+  y.t(`# entering clearSession... ${e} `), Object.values(b).forEach((t) => Zn(e, t)), y.t("Session storage cleared for app:", e);
+}, er = (e) => {
   try {
     const t = e.split(".")[1];
     if (!t) throw new Error("Invalid JWT format: Missing payload.");
@@ -1802,67 +1802,101 @@ const te = (e, t) => `${e}${t}`, D = (e, t, n) => {
     );
     return JSON.parse(r);
   } catch (t) {
-    throw y.e("Error parsing JWT:", t), new V(
+    throw y.e("Error parsing JWT:", t), new F(
       `Invalid JWT token: ${t instanceof Error ? t.message : String(t)}`
     );
   }
-}, yr = async (e, t = 8) => {
+}, br = async (e, t = 8) => {
   if (e.trim().length >= t) {
     const r = new TextEncoder().encode(e), s = await crypto.subtle.digest("SHA-256", r);
     return Array.from(new Uint8Array(s)).map((i) => i.toString(16).padStart(2, "0")).join("");
   } else
-    throw new V(`Password must be at least ${t} characters long`);
-}, Sr = async (e, t, n, r, s) => {
-  var i;
-  if (!(e != null && e.trim()) || !(r != null && r.trim()) || !(s != null && s.trim()))
-    throw new V("appName, username, and passwordHash are required");
-  const o = `${t}${n}`;
-  y.t(`# entering getToken... ${o} data:`, { username: r });
+    throw new F(
+      `Password must be at least ${t} characters long`
+    );
+}, Rr = async (e, t, n, r, s, o = !1) => {
+  var c;
+  const i = `${t}${n}`;
+  y.t(
+    `# entering getToken... ${i} isF5: ${o}, username: ${r}`
+  );
   try {
-    const c = await w.post(o, {
-      username: r,
-      password_hash: s
-    });
-    y.l("getToken() axios.post Success! response:", c.data);
-    const f = Yn(c.data.token);
-    y.l("getToken() parsed token values:", f);
-    const l = /* @__PURE__ */ new Date(0);
-    return l.setUTCSeconds(f.exp), y.l(`getToken() JWT token expiration: ${l}`), D(e, b.JWT_TOKEN, c.data.token), c.data.session && D(e, b.SESSION_UUID, c.data.session), D(
+    let u = null;
+    if (o)
+      u = await E.get(i), y.l("getToken() isF5 axios.get Success! response:", u.data);
+    else {
+      if (!(e != null && e.trim()) || !(r != null && r.trim()) || !(s != null && s.trim()))
+        throw new F("appName, username, and passwordHash are required");
+      u = await E.post(i, {
+        username: r,
+        password_hash: s
+      }), y.l("getToken() axios.post Success! response:", u.data);
+    }
+    if ($e(u.data))
+      return {
+        msg: "getToken() backend did not send data.",
+        err: new F("backend did not send data"),
+        status: u.status,
+        data: u.data,
+        receivedValidToken: !1
+      };
+    if ($e(u.data.jwtStatus))
+      return {
+        msg: "getToken() backend did not send jwtStatus.",
+        err: new F("backend did not send jwtStatus"),
+        status: u.status,
+        data: u.data,
+        receivedValidToken: !1
+      };
+    if (u.data.jwtStatus !== "success")
+      return {
+        msg: `getToken() backend got problem jwtStatus : ${u.data.jwtStatus}`,
+        err: new F(`backend got problem jwtStatus : ${u.data.jwtStatus}`),
+        status: u.status,
+        data: u.data,
+        receivedValidToken: !1
+      };
+    const l = er(u.data.token);
+    y.l("getToken() parsed token values:", l);
+    const f = /* @__PURE__ */ new Date(0);
+    return f.setUTCSeconds(l.exp), y.l(`getToken() JWT token expiration: ${f}`), D(e, b.JWT_TOKEN, u.data.token), u.data.session && D(e, b.SESSION_UUID, u.data.session), D(
       e,
       b.USER_ID,
-      String(f.User.user_id)
+      String(l.User.user_id)
     ), D(
       e,
       b.USER_EXTERNAL_ID,
-      f.User.external_id
-    ), D(e, b.NAME, f.name), D(e, b.USERNAME, f.User.login), D(e, b.EMAIL, f.User.email), D(
+      l.User.external_id
+    ), D(e, b.NAME, l.name), D(e, b.USERNAME, l.User.login), D(e, b.EMAIL, l.User.email), D(
       e,
       b.IS_ADMIN,
-      String(f.User.is_admin)
+      String(l.User.is_admin)
     ), D(
       e,
       b.DATE_EXPIRATION,
-      String(f.exp)
+      String(l.exp)
     ), {
       msg: "getToken() axios.post Success.",
       err: null,
-      status: c.status,
-      data: c.data
+      status: u.status,
+      data: u.data,
+      receivedValidToken: !0
     };
-  } catch (c) {
-    if (w.isAxiosError(c)) {
-      const l = `getToken() Axios Error: ${c.message}`;
-      return y.w(l, c.response), { msg: l, err: c, status: (i = c.response) == null ? void 0 : i.status, data: null };
+  } catch (u) {
+    if (E.isAxiosError(u)) {
+      const f = `getToken() Axios Error: ${u.message}`;
+      return y.w(f, u.response), { msg: f, err: u, status: (c = u.response) == null ? void 0 : c.status, data: null, receivedValidToken: !1 };
     }
-    const f = `getToken() Unexpected Error: ${c}`;
-    return y.e(f), {
-      msg: f,
-      err: c instanceof Error ? c : new Error(String(c)),
+    const l = `getToken() Unexpected Error: ${u}`;
+    return y.e(l), {
+      msg: l,
+      err: u instanceof Error ? u : new Error(String(u)),
       status: void 0,
-      data: null
+      data: null,
+      receivedValidToken: !1
     };
   }
-}, C = (e) => {
+}, k = (e) => {
   y.t("# entering getUserProfile validation...");
   const t = P(e, b.JWT_TOKEN), n = P(e, b.DATE_EXPIRATION), r = P(e, b.USER_ID), s = P(e, b.EMAIL);
   if (!t || !n || !r || !s)
@@ -1873,7 +1907,7 @@ const te = (e, t) => `${e}${t}`, D = (e, t, n) => {
   if (i > o)
     return y.w(
       `# IN getUserProfile() - SESSION EXPIRED. Expiration was: ${o.toString()}`
-    ), ft(e), null;
+    ), pt(e), null;
   const c = Math.floor(
     (o.getTime() - i.getTime()) / 1e3 / 60
   );
@@ -1891,24 +1925,24 @@ const te = (e, t) => `${e}${t}`, D = (e, t, n) => {
     sessionUuid: P(e, b.SESSION_UUID) ?? "",
     groups: P(e, b.GROUPS)
   };
-}, br = (e) => (y.t("# entering doesCurrentSessionExist..."), C(e) !== null), Rr = async (e, t = Kn) => {
+}, Tr = (e) => (y.t("# entering doesCurrentSessionExist..."), k(e) !== null), Ar = async (e, t = Gn) => {
   var r;
   y.t("# entering getTokenStatus...");
-  const n = C(e);
+  const n = k(e);
   if (!n)
     return {
       msg: "No valid session found locally.",
-      err: new V("No session"),
+      err: new F("No session"),
       status: 401,
       data: null
     };
   try {
-    const s = await w.get(`${t}${ut}/status`, {
+    const s = await E.get(`${t}${dt}/status`, {
       headers: {
         Authorization: `Bearer ${n.jwtToken}`,
         "X-Goeland-Token": n.sessionUuid
       },
-      timeout: Gn
+      timeout: Yn
     });
     y.l("getTokenStatus() axios.get Success! response:", s);
     const o = /* @__PURE__ */ new Date(0);
@@ -1916,7 +1950,7 @@ const te = (e, t) => `${e}${t}`, D = (e, t, n) => {
     const i = `getTokenStatus() JWT token expiration: ${o}`;
     return y.l(i), { msg: i, err: null, status: s.status, data: s.data };
   } catch (s) {
-    if (w.isAxiosError(s)) {
+    if (E.isAxiosError(s)) {
       const i = `Error in getTokenStatus(): ${s.message}`;
       return y.w(i, s.response), { msg: i, err: s, status: (r = s.response) == null ? void 0 : r.status, data: null };
     }
@@ -1928,75 +1962,77 @@ const te = (e, t) => `${e}${t}`, D = (e, t, n) => {
       data: null
     };
   }
-}, Tr = async (e, t) => {
+}, Or = async (e, t) => {
   y.t("# IN logoutAndResetToken()");
-  const n = C(e);
-  if (ft(e), !n) {
+  const n = k(e);
+  if (pt(e), !n) {
     y.w("logoutAndResetToken called, but no local session was found.");
     return;
   }
   try {
-    const r = await w.get(`${t}${ut}/logout`, {
+    const r = await E.get(`${t}${dt}/logout`, {
       headers: { Authorization: `Bearer ${n.jwtToken}` }
     });
     y.l("logoutAndResetToken() Server logout Success! response:", r);
   } catch (r) {
-    throw y.e("logoutAndResetToken() ## SERVER LOGOUT ERROR ##:", r), new V(
+    throw y.e("logoutAndResetToken() ## SERVER LOGOUT ERROR ##:", r), new F(
       `Server logout failed: ${r instanceof Error ? r.message : String(r)}`
     );
   }
-}, Ar = (e) => {
-  var t;
-  return ((t = C(e)) == null ? void 0 : t.jwtToken) ?? "";
-}, Or = (e) => {
-  var t;
-  return ((t = C(e)) == null ? void 0 : t.dateExpiration) ?? 0;
 }, _r = (e) => {
   var t;
-  return ((t = C(e)) == null ? void 0 : t.email) ?? "";
+  return ((t = k(e)) == null ? void 0 : t.jwtToken) ?? "";
 }, xr = (e) => {
   var t;
-  return ((t = C(e)) == null ? void 0 : t.userId) ?? 0;
+  return ((t = k(e)) == null ? void 0 : t.dateExpiration) ?? 0;
 }, Ur = (e) => {
   var t;
-  return ((t = C(e)) == null ? void 0 : t.name) ?? "";
-}, Cr = (e) => {
-  var t;
-  return ((t = C(e)) == null ? void 0 : t.username) ?? "";
-}, Nr = (e) => {
-  var t;
-  return ((t = C(e)) == null ? void 0 : t.isAdmin) ?? !1;
+  return ((t = k(e)) == null ? void 0 : t.email) ?? "";
 }, kr = (e) => {
   var t;
-  return ((t = C(e)) == null ? void 0 : t.sessionUuid) ?? "";
-}, Zn = (e) => {
-  var n;
-  const t = (n = C(e)) == null ? void 0 : n.groups;
-  return !t || t === "null" ? null : t.split(",").map((r) => parseInt(r.trim(), 10));
+  return ((t = k(e)) == null ? void 0 : t.userId) ?? 0;
+}, Cr = (e) => {
+  var t;
+  return ((t = k(e)) == null ? void 0 : t.name) ?? "";
+}, Nr = (e) => {
+  var t;
+  return ((t = k(e)) == null ? void 0 : t.username) ?? "";
 }, Pr = (e) => {
   var t;
-  return ((t = Zn(e)) == null ? void 0 : t[0]) ?? null;
+  return ((t = k(e)) == null ? void 0 : t.isAdmin) ?? !1;
 }, Lr = (e) => {
+  var t;
+  return ((t = k(e)) == null ? void 0 : t.sessionUuid) ?? "";
+}, tr = (e) => {
   var n;
-  const t = (n = C(e)) == null ? void 0 : n.groups;
+  const t = (n = k(e)) == null ? void 0 : n.groups;
+  return !t || t === "null" ? null : t.split(",").map((r) => parseInt(r.trim(), 10));
+}, Dr = (e) => {
+  var t;
+  return ((t = tr(e)) == null ? void 0 : t[0]) ?? null;
+}, Ir = (e) => {
+  var n;
+  const t = (n = k(e)) == null ? void 0 : n.groups;
   return !!t && t !== "null";
 };
 export {
-  br as doesCurrentSessionExist,
-  Or as getDateExpiration,
-  Ar as getLocalJwtTokenAuth,
-  yr as getPasswordHashSHA256,
-  kr as getSessionId,
-  Sr as getToken,
-  Rr as getTokenStatus,
-  _r as getUserEmail,
-  Pr as getUserFirstGroups,
-  Zn as getUserGroupsArray,
-  xr as getUserId,
-  Nr as getUserIsAdmin,
-  Cr as getUserLogin,
-  Ur as getUserName,
-  C as getUserProfile,
-  Lr as isUserHavingGroups,
-  Tr as logoutAndResetToken
+  pt as clearSession,
+  Tr as doesCurrentSessionExist,
+  xr as getDateExpiration,
+  _r as getLocalJwtTokenAuth,
+  br as getPasswordHashSHA256,
+  Lr as getSessionId,
+  Rr as getToken,
+  Ar as getTokenStatus,
+  Ur as getUserEmail,
+  Dr as getUserFirstGroups,
+  tr as getUserGroupsArray,
+  kr as getUserId,
+  Pr as getUserIsAdmin,
+  Nr as getUserLogin,
+  Cr as getUserName,
+  k as getUserProfile,
+  Ir as isUserHavingGroups,
+  Or as logoutAndResetToken,
+  er as parseJwt
 };

@@ -167,7 +167,7 @@ func (s Service) Delete(ctx echo.Context, geoTreeId uuid.UUID) error {
 	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
 	// IF USER IS NOT ADMIN  RETURN 401 Unauthorized
 	if !claims.User.IsAdmin {
-		return echo.NewHTTPError(http.StatusUnauthorized, OnlyAdminCanManageTypeThings)
+		return echo.NewHTTPError(http.StatusUnauthorized, OnlyAdminCanManageThis)
 	}
 	if s.Store.Exist(geoTreeId) == false {
 		msg := fmt.Sprintf("Delete(%v) cannot delete this id, it does not exist !", geoTreeId)
@@ -223,7 +223,7 @@ func (s Service) Update(ctx echo.Context, geoTreeId uuid.UUID) error {
 	s.Log.Info("in %s(%d) : currentUserId: %d", handlerName, geoTreeId, currentUserId)
 	// IF USER IS NOT ADMIN  RETURN 401 Unauthorized
 	if !claims.User.IsAdmin {
-		return echo.NewHTTPError(http.StatusUnauthorized, OnlyAdminCanManageTypeThings)
+		return echo.NewHTTPError(http.StatusUnauthorized, OnlyAdminCanManageThis)
 	}
 	if s.Store.Exist(geoTreeId) == false {
 		msg := fmt.Sprintf("Update(%v) cannot update this id, it does not exist !", geoTreeId)

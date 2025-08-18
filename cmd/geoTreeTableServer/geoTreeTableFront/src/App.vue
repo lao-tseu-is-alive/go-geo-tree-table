@@ -337,8 +337,8 @@ const saveDataToBackend = async () => {
       log.l(`record number ${i}:`, record);
       const geoTree: Omit<GeoTree, "created_at"> = {
         id: crypto.randomUUID(),
-        cada_id: record.id_cadastre || record["_table_row_index"], // Map id_cadastre to cada_id
-        cada_code: record.type_point || 0, // Map type_point to cada_code
+        cada_id: record.id || record["_table_row_index"], // Map id_cadastre to cada_id
+        cada_code: record.code || 0, // Map type_point to cada_code
         cada_comment: record.comment || "", // Map comment to cada_comment
         cada_date: getTimeStampFromFrDate(record.date),
         created_by: appStore.getUserId || 0, // Assuming appStore has getUserId

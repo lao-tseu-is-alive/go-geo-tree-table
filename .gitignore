@@ -35,3 +35,4 @@ go.work.sum
 /data/.~lock.ARBRES.xlsx#
 /deployments/go-testing/app-secrets-go-geo-tree-table.yaml
 /cookies.txt
+/cmd/geoTreeTableServer/geoTreeTableFront/dist_auth_service.tar.gz
