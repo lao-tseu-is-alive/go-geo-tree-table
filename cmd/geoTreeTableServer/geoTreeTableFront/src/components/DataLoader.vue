@@ -24,13 +24,13 @@
           </template>
           <template #subtitle>
             <div class="text-subtitle-1">
-              le format doit respecter le schéma suivant :<br>
-              {{validHeaderRow.join(", ")}}
+              le format doit respecter le schéma suivant :<br />
+              {{ validHeaderRow.join(", ") }}
             </div>
             <v-alert
               v-if="isInvalidFile"
-              :title=isInvalidFileTitle
-              :text=isInvalidFileMsg
+              :title="isInvalidFileTitle"
+              :text="isInvalidFileMsg"
               type="error"
             ></v-alert>
           </template>
@@ -137,7 +137,7 @@ import { onMounted, ref } from "vue";
 import { read, utils } from "xlsx";
 import { getLog } from "@/config";
 import { IInvalidFieldHeader, useDataStore } from "@/stores/DataStore";
-import type { ITableHeader } from "@/stores/DataStore";
+import type { ITableHeader } from "@/tools/TableTypes";
 import { validHeaderRow } from "@/stores/geoTree";
 import { storeToRefs } from "pinia";
 import { isNullOrUndefined } from "@/tools/utils";
@@ -149,6 +149,7 @@ const displayFieldsList = ref(false);
 const isInvalidFile = ref(false);
 const isInvalidFileTitle = ref("");
 const isInvalidFileMsg = ref("");
+const fileHasNoHeader = ref(true);
 const { getHeaders } = storeToRefs(store);
 
 //// EVENT SECTION
@@ -200,25 +201,23 @@ const saveFieldSettings = () => {
   emit("fields-settings-ready", store.headers);
 };
 
-const setInvalidFile = (title: string, msg:string) =>{
+const setInvalidFile = (title: string, msg: string) => {
   isInvalidFile.value = true;
   isInvalidFileTitle.value = title;
-  isInvalidFileMsg.value = msg
-}
+  isInvalidFileMsg.value = msg;
+};
 
-const resetInvalidFile = ()=> {
+const resetInvalidFile = () => {
   isInvalidFile.value = false;
   isInvalidFileTitle.value = "";
   isInvalidFileMsg.value = "";
-}
-
+};
 
 const handleFileUpload = (e: Event) => {
   const inputFile = (e.target as HTMLInputElement).files?.[0];
   if (inputFile) {
     log.l("file selected :", inputFile);
     resetInvalidFile();
-
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -241,37 +240,58 @@ const handleFileUpload = (e: Event) => {
       );
 
       log.l("filteredSheetData", filteredSheetData);
-      // check if the first row is a valid header row
-
-      const receivedHeaderRow = filteredSheetData.shift() as string[];
-      log.l("receivedHeaderRow", receivedHeaderRow);
-      const invalidHeaders = <IInvalidFieldHeader[]>[];
-      let isHeaderRowValid = true;
-      let invalidErrMSg = "";
-      for (let index = 0; index < validHeaderRow.length; index++) {
-        const cell = `${receivedHeaderRow[index]}`.trim().toLowerCase();
-        const valid = `${validHeaderRow[index]}`.trim().toLowerCase()
-        if (cell.includes(valid)) {
-          log.l(
-            `success in header num ${index}, expected: '${valid}', received: '${cell}'`,
-          );
-        } else {
-          log.w(
-            `error in header num ${index}, expected: ${validHeaderRow[index]}, received: ${cell}`,
-          );
-          invalidErrMSg += `col[${index+1}]: ${cell}, au lieu de :${validHeaderRow[index]} `
-          invalidHeaders.push({
-            key: index,
-            expected: validHeaderRow[index],
-            received: cell,
-          });
-          isHeaderRowValid = false;
-        }
-      }
-      if (!isHeaderRowValid) {
-        setInvalidFile("Entête du fichier invalide", invalidErrMSg)
-        emit("header-error", invalidHeaders);
+      if (filteredSheetData.length === 0) {
+        const msg = "Le fichier ne contient aucune donnée."
+        setInvalidFile("Fichier vide", msg);
+        emit("data-error", msg)
         return;
+      }
+
+
+      let receivedHeaderRow: string[];
+      // Asserting the type to be an array of arrays of unknown values
+      const data = filteredSheetData as unknown[][];
+
+      //let's detect content based on first row content
+      fileHasNoHeader.value = (typeof data[0][0] == 'number') && (typeof data[0][1] == 'number');
+
+      if (fileHasNoHeader.value) {
+        // File has no header, use validHeaderRow and all rows are data
+        receivedHeaderRow = validHeaderRow;
+        log.l("File has no header. Using predefined headers.");
+      } else {
+        // File has a header, validate it
+        receivedHeaderRow = filteredSheetData.shift() as string[];
+        log.l("receivedHeaderRow", receivedHeaderRow);
+
+        const invalidHeaders = <IInvalidFieldHeader[]>[];
+        let isHeaderRowValid = true;
+        let invalidErrMSg = "";
+        for (let index = 0; index < validHeaderRow.length; index++) {
+          const cell = `${receivedHeaderRow[index]}`.trim().toLowerCase();
+          const valid = `${validHeaderRow[index]}`.trim().toLowerCase();
+          if (cell.includes(valid)) {
+            log.l(
+              `success in header num ${index}, expected: '${valid}', received: '${cell}'`,
+            );
+          } else {
+            log.w(
+              `error in header num ${index}, expected: ${validHeaderRow[index]}, received: ${cell}`,
+            );
+            invalidErrMSg += `col[${index + 1}]: ${cell}, au lieu de :${validHeaderRow[index]} `;
+            invalidHeaders.push({
+              key: index,
+              expected: validHeaderRow[index],
+              received: cell,
+            });
+            isHeaderRowValid = false;
+          }
+        }
+        if (!isHeaderRowValid) {
+          setInvalidFile("Entête du fichier invalide", invalidErrMSg);
+          emit("header-error", invalidHeaders);
+          return;
+        }
       }
 
       store.setHeaders(receivedHeaderRow);

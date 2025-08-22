@@ -188,10 +188,8 @@ $button_size_20px: 2.1em; // = 42px (body font size = 20px)
       <v-btn icon>
         <v-icon>mdi-dots-vertical</v-icon>
       </v-btn>
-      <template v-if="numRecords > 0">
-        <div class="right-0">
-          {{ numRecords }} records
-        </div>
+      <template v-if="getNumRecords() > 0">
+        <div class="right-0">{{ getNumRecords() }} records</div>
       </template>
     </v-toolbar>
     <div class="map" id="map" ref="myMap">
@@ -221,17 +219,21 @@ import {
   addGeoJsonLayer,
   createLausanneMap,
   mapClickInfo,
-  mapFeatureInfo, zoomToLayerContent
+  mapFeatureInfo,
+  zoomToLayerContent,
 } from "@/components/Map";
 import OlMap from "ol/Map";
 import OlOverlay from "ol/Overlay";
 import LayerSwitcher from "ol-layerswitcher";
 import { isNullOrUndefined } from "@/tools/utils";
 import { useDataStore } from "@/stores/DataStore";
+import { useGeoTreeStore } from "@/stores/geoTreeStore";
 import { storeToRefs } from "pinia";
 
 const store = useDataStore();
-const { numRecords,  getGeoJson } = storeToRefs(store);
+const { numRecords, getGeoJson } = storeToRefs(store);
+const geoTreeStore = useGeoTreeStore();
+const { numDBRecords, getDBGeoJson } = storeToRefs(geoTreeStore);
 const log = getLog("MapLausanneVue", 2, 2);
 const myLayerName = "GoelandThingLayer";
 const posMouseX = ref(0);
@@ -241,9 +243,10 @@ const myOlMap = ref<OlMap | null>(null);
 let myMapOverlay: null | OlOverlay;
 const mapTooltip = ref<HTMLDivElement | null>(null);
 const myProps = defineProps<{
-  zoom: number ;
+  zoom: number;
   center?: number[] | undefined;
   geodata?: object | undefined;
+  useDatabase: boolean;
 }>();
 
 //// EVENT SECTION
@@ -305,10 +308,17 @@ watch(
 );
 //// COMPUTED SECTION
 const getNumRecords = (): number => {
-  if (isNullOrUndefined(numRecords.value)) {
-    return 0;
+  if (myProps.useDatabase) {
+    if (isNullOrUndefined(numDBRecords.value)) {
+      return 0;
+    }
+    return numDBRecords.value;
+  } else {
+    if (isNullOrUndefined(numRecords.value)) {
+      return 0;
+    }
+    return numRecords.value;
   }
-  return numRecords.value;
 };
 
 //// FUNCTIONS SECTION
@@ -317,7 +327,7 @@ const zoomExtent = () => {
   if (myOlMap.value !== null) {
     zoomToLayerContent(myOlMap.value as OlMap, myLayerName);
   }
-}
+};
 const toggleLayerSwitcher = () => {
   log.t(
     `# toggleLayerSwitcher layerSwitcherVisible : ${layerSwitcherVisible.value}`,
@@ -478,12 +488,23 @@ const initialize = async (center: [number, number]) => {
     }
     if (getNumRecords() > 0) {
       log.l("initialize() numRecords > 0");
-      addGeoJsonLayer(
-        myOlMap.value as OlMap,
-        myLayerName,
-        getGeoJson.value,
-        35,
-      );
+      if (myProps.useDatabase) {
+        log.w("initialize() useDatabase is true");
+        addGeoJsonLayer(
+          myOlMap.value as OlMap,
+          myLayerName,
+          getDBGeoJson.value,
+          35,
+        );
+      } else {
+        log.w("initialize() useDatabase is false");
+        addGeoJsonLayer(
+          myOlMap.value as OlMap,
+          myLayerName,
+          getGeoJson.value,
+          35,
+        );
+      }
     }
   }
 };

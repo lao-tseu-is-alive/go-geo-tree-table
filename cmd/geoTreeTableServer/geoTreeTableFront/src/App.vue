@@ -55,6 +55,30 @@
             Effacer
           </v-btn>
         </template>
+        <template v-else>
+          <template v-if="!showDataInDB">
+            <v-btn
+              class="ml-1"
+              variant="outlined"
+              prepend-icon="mdi-database-search"
+              title="Voir les données déjà dans la base de donées"
+              @click="showDataInsideDB"
+            >
+              Voir les données déjà en base
+            </v-btn>
+          </template>
+          <template v-else-if="showDataInDB">
+            <v-btn
+              class="ml-1"
+              variant="outlined"
+              prepend-icon="mdi-database-export"
+              title="Charger des nouvelles données..."
+              @click="uploadNewDataState"
+            >
+              Charger des nouvelles données...
+            </v-btn>
+          </template>
+        </template>
         <!--
         <v-btn
           v-if="DEV"
@@ -74,6 +98,11 @@
           <MyTable @row-clicked="handleRowClicked" />
         </VResizeDrawer>
       </template>
+      <template v-else-if="showDataInDB">
+        <VResizeDrawer v-model="drawer" v-bind="drawerOptions">
+          <MyDBTable @row-clicked="handleRowClicked" />
+        </VResizeDrawer>
+      </template>
       <v-main>
         <v-snackbar
           v-model="appStore.feedbackVisible"
@@ -90,15 +119,16 @@
           ></v-alert>
         </v-snackbar>
         <v-container class="w-100 full-width full-height">
-          <template v-if="!dataLoaded">
+          <template v-if="!dataLoaded && !showDataInDB">
             <MyDataLoader
               v-if="!dataLoaded"
               @data-loaded="handleDataLoaded"
               @header-error="handleHeaderInvalid"
+              @data-error="handleDataInvalid"
               @fields-settings-ready="handleFieldsSettingsReady"
             />
           </template>
-          <template v-else>
+          <template v-else-if="dataLoaded && !showDataInDB">
             <v-row v-if="showDebug">
               <v-col cols="12">
                 <v-code outlined rows="5" readonly disabled
@@ -114,7 +144,28 @@
                 :zoom="mapZoom"
                 :center="mapCenter"
                 :geodata="getGeoJson"
+                :use-database="false"
                 @map-click="handleMapClickEvent"
+              />
+            </v-row>
+          </template>
+          <template v-else-if="!dataLoaded && showDataInDB">
+            <v-row v-if="showDebug">
+              <v-col cols="12">
+                <v-code outlined rows="5" readonly disabled
+                >{{ getGeoJsonString() }}
+                </v-code>
+              </v-col>
+            </v-row>
+            <v-row>
+              <!-- map-lausanne should be ready to display the geojson data -->
+              <map-lausanne
+                v-if="showDataInDB"
+                ref="myMapDB"
+                :zoom="mapZoom"
+                :center="mapCenter"
+                :use-database="true"
+                :geodata="getDBGeoJson"
               />
             </v-row>
           </template>
@@ -137,6 +188,7 @@
 import { onMounted, ref, computed } from "vue";
 import { getTimeStampFromFrDate, isNullOrUndefined } from "@/tools/utils";
 import MyTable from "./components/Table.vue";
+import MyDBTable from "./components/TableDB.vue";
 import MyDataLoader from "./components/DataLoader.vue";
 import VResizeDrawer from "@wdns/vuetify-resize-drawer";
 import { BACKEND_URL, DEV, getLog } from "@/config";
@@ -152,6 +204,7 @@ import { clearSession } from "@/components/AuthService";
 
 let log = getLog("APP", 4, 4);
 const dataLoaded = ref(false);
+const showDataInDB = ref(false);
 const mapZoom = ref(14);
 const placeStFrancoisLausanne = [2538202, 1152364];
 const mapCenter = ref(placeStFrancoisLausanne);
@@ -159,6 +212,7 @@ const appStore = useAppStore();
 const dataStore = useDataStore();
 const geoTreeStore = useGeoTreeStore();
 const { getGeoJson } = storeToRefs(dataStore);
+const { getDBGeoJson } = storeToRefs(geoTreeStore);
 const showDebug = ref(false);
 const drawer = ref(false);
 const drawerOptions = ref({
@@ -287,6 +341,14 @@ const handleHeaderInvalid = (invalidHeaders: IInvalidFieldHeader[]) => {
   clearData();
 };
 
+const handleDataInvalid = (msg: string) => {
+  log.t(`## handleDataInvalid entering...`);
+  dataLoaded.value = false;
+  drawer.value = false;
+  log.w(`Invalid data : ${msg}`);
+  clearData();
+};
+
 const handleFieldsSettingsReady = () => {
   log.t(`## handleFieldsSettingsReady entering...`);
   dataLoaded.value = true;
@@ -310,6 +372,18 @@ const handleRowClicked = (item: Record<string, any>) => {
   } else {
     log.t(`## index was not found... item:}`, item);
   }
+};
+
+const showDataInsideDB = async () => {
+  log.t(`## entering saveDataToBackend...`);
+  drawer.value = true;
+  showDataInDB.value = true;
+};
+
+const uploadNewDataState = async () => {
+  log.t(`## entering uploadNewDataState...`);
+  drawer.value = false;
+  showDataInDB.value = false;
 };
 
 const saveDataToBackend = async () => {
@@ -475,10 +549,11 @@ onMounted(async () => {
       `App.vue ${appStore.getAppName} v${appStore.getAppVersion}, from ${appStore.getAppRepository}`,
     );
     // clear old stuff
-    clearSession(appStore.getAppName)
+    clearSession(appStore.getAppName);
     const areWeUsingHttpOnlyCookieJwt = await appStore.checkStatusRoute(false);
     log.l(`areWeUsingHttpOnlyCookieJwt: ${areWeUsingHttpOnlyCookieJwt}`);
     await getListOfTreesPositionFromDB();
+    log.w("getDBGeoJson : ",getDBGeoJson)
   } catch (error) {
     log.e("Error fetching app info:", error);
   }

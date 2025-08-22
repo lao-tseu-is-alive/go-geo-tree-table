@@ -17,10 +17,12 @@
           prepend-icon="mdi-text-box-outline"
           rel="noopener noreferrer"
           rounded="lg"
-          title="Données Points arbres"
+          title="Données Points arbres déjà dans la Base de données"
           variant="text"
         >
-          <template v-slot:text> </template>
+          <template v-slot:text>
+
+          </template>
 
           <template #default>
             <v-data-table
@@ -31,6 +33,7 @@
               :row-props="getRowClass"
               @click:row="handleRowClick"
             >
+
             </v-data-table>
           </template>
         </v-card>
@@ -42,12 +45,12 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
 import { getLog } from "@/config";
-import { useDataStore } from "@/stores/DataStore";
+import { useGeoTreeStore,  } from "@/stores/geoTreeStore";
 import { ITableHeader } from "@/tools/TableTypes";
 import { storeToRefs } from "pinia";
 import { isNullOrUndefined } from "@/tools/utils";
 
-const store = useDataStore();
+const store = useGeoTreeStore();
 const log = getLog("Table", 4, 2);
 const clickedRowIndex = ref(null);
 

@@ -6,6 +6,7 @@ import {
   isNullOrUndefined, isTimestamp,
   parseJsonWithDetailedError,
 } from "@/tools/utils";
+import { ITableHeader } from "@/tools/TableTypes";
 
 const log = getLog("DataStore", 2, 2);
 
@@ -17,14 +18,7 @@ export interface IInvalidFieldHeader {
   received: string;
   key: number;
 }
-export interface ITableHeader {
-  title: string;
-  align: "start" | "center" | "end";
-  key: string;
-  sortable?: boolean;
-  isVisible: boolean;
-  frozenField: boolean;
-}
+
 
 function getValueFromTemplate(
   r: Record<string, any>,

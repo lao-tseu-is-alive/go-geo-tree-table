@@ -9,6 +9,13 @@ import type {
   ListGeoTreesParams,
 } from "@/stores/geoTree";
 import { getLog, BACKEND_URL, API_URL } from "@/config";
+import { ITableHeader } from "@/tools/TableTypes";
+import {
+  getDateIsoFromTimeStamp,
+  isNullOrUndefined,
+  isTimestamp,
+  parseJsonWithDetailedError,
+} from "@/tools/utils";
 // Logger setup
 const log = getLog("geoTreeStore", 4, 1);
 
@@ -25,37 +32,176 @@ export const useGeoTreeStore = defineStore("geoTree", {
     loading: false,
   }),
   getters: {
-    numRecords: (state): number => {
+    getData: (state) => {
+      log.t(`> Entering getData.. records.length : ${state.geoTrees.length}`);
+      const filteredArray = state.geoTrees.map((row: Record<string, any>) => {
+        const newRow: Record<string, any> = {}; // Use a type assertion if you have a defined type for your data
+        for (const key in row) {
+          if (key.includes("date") && isTimestamp(row[key])) {
+            // Modify the date field here (e.g., convert to a Date object, format differently)
+            log.t(`key : '${key}' row[key] : ${row[key]}`);
+            newRow[key] = getDateIsoFromTimeStamp(row[key]);
+            log.t(`key : '${key}' newRow[key] : ${newRow[key]}`);
+          } else {
+            newRow[key] = row[key];
+          }
+        }
+        log.t(`newRow `, newRow);
+        return newRow;
+      });
+      log.w("filteredArray", filteredArray);
+      return filteredArray;
+    },
+    getHeaders: (state) => {
+      const headers = [] as ITableHeader[];
+      const tableHeaders: string[] = [
+        "id",
+        "goeland_thing_id",
+        "cada_id",
+        "tree_circumference_cm",
+        "tree_crown_m",
+        "cada_tree_type",
+        "cada_comment",
+        "cada_date",
+        "created_by",
+        "pos_east",
+        "pos_north",
+      ];
+
+      tableHeaders.forEach((header, index: number) => {
+        const currentHeader: ITableHeader = {
+          title: header,
+          align: "start",
+          key: header,
+          isVisible: true,
+          frozenField: false,
+        };
+        log.l(`header ${index}:`, currentHeader);
+        switch (header) {
+          case "id":
+            currentHeader.isVisible = false;
+            break;
+          case "tree_circumference_cm":
+            currentHeader.title = "circonférence";
+            break;
+          case "tree_crown_m":
+            currentHeader.title = "couronne";
+            break;
+          case "goeland_thing_id":
+            currentHeader.title = "goeland_id";
+            break;
+          case "cada_id":
+            currentHeader.title = "id";
+            break;
+          case "cada_tree_type":
+            currentHeader.title = "essence";
+            break;
+          case "cada_comment":
+            currentHeader.title = "commentaire";
+            break;
+          case "cada_date":
+            currentHeader.title = "date";
+            break;
+        }
+
+        headers.push(currentHeader);
+      });
+      return headers;
+    },
+    getDBGeoJson: (state) => {
+      log.t(
+        `> Entering getDBGeoJson.. records.length : ${state.geoTrees.length}`,
+      );
+      // const startTime = performance.now()
+      if (state.geoTrees.length > 0) {
+        log.t(
+          `> IN getDBGeoJson.. geoTrees.length : ${state.geoTrees.length} ready to do ForEach`,
+        );
+        let myGeoJson = null;
+        let result = '{"type": "FeatureCollection", "features": [';
+        for (let i = 0; i < state.geoTrees.length; i++) {
+          const r = state.geoTrees[i];
+          const myIconPath = "img/gomarker_tree_ok.png";
+          const myGoelandID = isNullOrUndefined(r.goeland_thing_id)
+            ? "inconnu"
+            : `${r.goeland_thing_id}`;
+          const myName = `id:${r.cada_id},go_id:${myGoelandID}`;
+
+          //log.w(`> IN getGeoJson.. i : ${i} record before setting feature:`, r)
+          const feature = `
+           {
+            "type": "Feature",
+            "geometry": {
+              "type": "Point",
+              "crs": {
+                "type": "name",
+                "properties": {
+                  "name": "EPSG:2056"
+                }
+              },
+              "coordinates": [${r.pos_east}, ${r.pos_north}]
+              },
+              "properties": {
+                "id": "${r.cada_id}",
+                "goeland_id": "${myGoelandID}",
+                "name": "${myName}",
+                "icon_path": "${myIconPath}"
+              }},`;
+          log.l(feature);
+          result += feature;
+        } //) end of for loop
+        //log.l(`> IN getGeoJson.. result after ForEach: ${result}`)
+        if (result.endsWith(",")) {
+          result = result.slice(0, -1);
+        }
+        result += "]}";
+        try {
+          myGeoJson = parseJsonWithDetailedError(result);
+        } catch (e) {
+          log.w(`> Error in getGeoJson.. JSON.parse(result) : ${e}`, result);
+        }
+        return myGeoJson;
+      }
+      return { type: "FeatureCollection", features: [] };
+    },
+    numDBRecords: (state): number => {
       if (state.geoTrees === null) {
         return 0;
       }
       return state.geoTrees.length;
     },
-    treeByPosition: (state) => (east: number, north: number): GeoTreeList[] | null => {
-      log.t(`# entering treeByPosition getter with east: ${east}, north: ${north}`);
-      const nearbyTrees = state.geoTrees.filter((tree) => {
-        const treeEast = tree.pos_east || 0;
-        const treeNorth = tree.pos_north || 0;
-        const distance = Math.sqrt(
-          Math.pow(east - treeEast, 2) + Math.pow(north - treeNorth, 2)
+    treeByPosition:
+      (state) =>
+      (east: number, north: number): GeoTreeList[] | null => {
+        log.t(
+          `# entering treeByPosition getter with east: ${east}, north: ${north}`,
         );
-        return distance < minDistanceTolerance; //  threshold
-      });
-      log.l(`Found ${nearbyTrees.length} trees within 0.1m of (${east}, ${north})`, nearbyTrees);
-      return nearbyTrees.length > 0 ? nearbyTrees : null;
-    },
+        const nearbyTrees = state.geoTrees.filter((tree) => {
+          const treeEast = tree.pos_east || 0;
+          const treeNorth = tree.pos_north || 0;
+          const distance = Math.sqrt(
+            Math.pow(east - treeEast, 2) + Math.pow(north - treeNorth, 2),
+          );
+          return distance < minDistanceTolerance; //  threshold
+        });
+        log.l(
+          `Found ${nearbyTrees.length} trees within 0.1m of (${east}, ${north})`,
+          nearbyTrees,
+        );
+        return nearbyTrees.length > 0 ? nearbyTrees : null;
+      },
   },
   actions: {
     // Set JWT token for all requests
     setAuthToken(token: string) {
       log.t(`# entering setAuthToken... ${token}`);
 
-      if (token === null || token === undefined || token === ""){
-        log.w("cannot set Authorization Header with null or undefined token")
+      if (token === null || token === undefined || token === "") {
+        log.w("cannot set Authorization Header with null or undefined token");
       }
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     },
-    setAxiosWithCredentials(val:boolean) {
+    setAxiosWithCredentials(val: boolean) {
       log.t(`# entering setAxiosWithCredentials(${val})`);
       axios.defaults.withCredentials = val;
     },
@@ -163,8 +309,8 @@ export const useGeoTreeStore = defineStore("geoTree", {
           `${API_BASE_URL}/geoTree`,
           geoTree,
           {
-            withCredentials: true
-          }
+            withCredentials: true,
+          },
         );
         this.selectedGeoTree = response.data;
         return response.data;
