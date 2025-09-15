@@ -36,3 +36,5 @@ go.work.sum
 /deployments/go-testing/app-secrets-go-geo-tree-table.yaml
 /cookies.txt
 /cmd/geoTreeTableServer/geoTreeTableFront/dist_auth_service.tar.gz
+/deployments/go-testing/app-secrets-go-geo-tree-table_production_gc_interne.yaml
+/deployments/go-testing/comodo_STAR_lausanne_ch_2025.ca-bundle

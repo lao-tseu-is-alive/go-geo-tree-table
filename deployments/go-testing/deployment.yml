@@ -66,9 +66,14 @@ spec:
         supplementalGroups:
           - 100
       automountServiceAccountToken: false
+      hostAliases:
+      - ip: "192.168.50.110"
+        hostnames:
+        - "soi-golux.lausanne.ch"
+        - "golux.lausanne.ch"  
       containers:
       - name: go-geo-tree-table
-        image: ghcr.io/lao-tseu-is-alive/go-geo-tree-table:v0.0.17
+        image: ghcr.io/lao-tseu-is-alive/go-geo-tree-table:v0.1.4
         imagePullPolicy: Always
         securityContext:
           seccompProfile:
@@ -97,15 +102,15 @@ spec:
             path: /health
             port: 7979
             scheme: HTTP
-          initialDelaySeconds: 5
-          periodSeconds: 15
+          initialDelaySeconds: 8
+          periodSeconds: 35
           timeoutSeconds: 2
         readinessProbe:          # To check if the Pod is ready to serve traffic or not
           httpGet:
             path: /readiness
             port: 7979
             scheme: HTTP
-          initialDelaySeconds: 5
+          initialDelaySeconds: 8
           timeoutSeconds: 2
         env:
           - name: PORT
@@ -118,7 +123,11 @@ spec:
               configMapKeyRef:
                 key: APP_ENV
                 name: app-config-go-geo-tree-table
-
+          - name: ENV_IS_PROD
+            valueFrom:
+              configMapKeyRef:
+                key: ENV_IS_PROD
+                name: app-config-go-geo-tree-table
           - name: ADMIN_USER
             valueFrom:
               secretKeyRef:
