@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"runtime"
 	"strings"
 
@@ -275,14 +276,26 @@ func main() {
 	r.GET(jwtStatusUrl, yourService.GetStatus)
 
 	geoStore := geoTree.GetStorageInstanceOrPanic("pgx", db, l)
-
-	// now with restricted group reference you can register your secured handlers defined in OpenApi things.yaml
 	geoTreeService := geoTree.Service{
 		Log:              l,
 		DbConn:           db,
 		Store:            geoStore,
 		Server:           server,
+		Authorizer:       nil,
 		ListDefaultLimit: 50,
+	}
+
+	var areWeInProduction bool
+	val, ok := os.LookupEnv("ENV_IS_PROD")
+	if !ok || strings.TrimSpace(val) == "" {
+		areWeInProduction = false
+	}
+	areWeInProduction = strings.ToUpper(val) == "TRUE"
+	if areWeInProduction {
+		geoTreeService.Authorizer = geoTree.NewLiveAuthorizer()
+	} else {
+		mockAuth := &geoTree.MockAuthorizer{AllowBypass: true}
+		geoTreeService.Authorizer = mockAuth
 	}
 
 	geoTree.RegisterHandlers(r, &geoTreeService)

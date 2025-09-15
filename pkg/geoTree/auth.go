@@ -7,6 +7,33 @@ import (
 	"time"
 )
 
+const (
+	authBaseUrl   = "https://soi-golux.lausanne.ch/goeland/gestion_spec/g_user_ingroup.php"
+	securityGroup = "cadageomtree"
+)
+
+// Authorizer is an interface for checking user authorization.
+// This allows for mocking in tests and using a real implementation in production.
+type Authorizer interface {
+	IsUserAuthorized(userLogin string) (bool, error)
+}
+
+// LiveAuthorizer is the implementation of Authorizer that makes a real HTTP call.
+type LiveAuthorizer struct {
+	Client      *http.Client
+	AuthBaseURL string
+}
+
+// NewLiveAuthorizer creates a new instance of LiveAuthorizer.
+func NewLiveAuthorizer() *LiveAuthorizer {
+	return &LiveAuthorizer{
+		Client: &http.Client{
+			Timeout: 10 * time.Second,
+		},
+		AuthBaseURL: authBaseUrl,
+	}
+}
+
 // AuthResponse defines the structure of the JSON response from the authorization service.
 type AuthResponse struct {
 	IdEmploye      int    `json:"id_employe"`
@@ -19,41 +46,43 @@ type AuthResponse struct {
 	BinGroupe      int    `json:"bingroupe"`
 }
 
-const (
-	authBaseUrl   = "https://soi-golux.lausanne.ch/goeland/gestion_spec/g_user_ingroup.php"
-	securityGroup = "cadageomtree"
-)
-
 // IsUserAuthorized checks if a user is part of a specific security group.
 // It makes an external HTTP GET request to the authorization service.
-func IsUserAuthorized(userLogin string) (bool, error) {
+func (a *LiveAuthorizer) IsUserAuthorized(userLogin string) (bool, error) {
 	// 1. Construct the request URL with the necessary query parameters.
-	url := fmt.Sprintf("%s?userlogin=%s&groupesecurite=%s", authBaseUrl, userLogin, securityGroup)
+	url := fmt.Sprintf("%s?userlogin=%s&groupesecurite=%s", a.AuthBaseURL, userLogin, securityGroup)
 
-	// 2. Create a new HTTP client with a reasonable timeout to prevent hanging requests.
-	// This is a best practice for production-grade services.
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-	}
-
-	// 3. Perform the HTTP GET request.
-	resp, err := client.Get(url)
+	// 2. Perform the HTTP GET request.
+	resp, err := a.Client.Get(url)
 	if err != nil {
 		return false, fmt.Errorf("error performing authorization request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// 4. Check for a successful HTTP status code.
+	// 3. Check for a successful HTTP status code.
 	if resp.StatusCode != http.StatusOK {
 		return false, fmt.Errorf("authorization service returned non-200 status: %d", resp.StatusCode)
 	}
 
-	// 5. Decode the JSON response into our struct.
+	// 4. Decode the JSON response into our struct.
 	var authResp AuthResponse
 	if err := json.NewDecoder(resp.Body).Decode(&authResp); err != nil {
 		return false, fmt.Errorf("error decoding authorization response: %w", err)
 	}
 
-	// 6. The core authorization logic: check if 'bingroupe' is 1.
+	// 5. The core authorization logic: check if 'bingroupe' is 1.
 	return authResp.BinGroupe == 1, nil
+}
+
+// MockAuthorizer is a mock implementation of the Authorizer interface for testing.
+type MockAuthorizer struct {
+	// AllowBypass can be set to false to test unauthorized cases.
+	AllowBypass bool
+}
+
+// IsUserAuthorized for MockAuthorizer always returns true, bypassing the real check.
+func (m *MockAuthorizer) IsUserAuthorized(userLogin string) (bool, error) {
+	// In tests, we can simply return true to bypass the check.
+	// We could also add logic here to test failure scenarios.
+	return m.AllowBypass, nil
 }

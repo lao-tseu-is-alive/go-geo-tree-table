@@ -20,6 +20,7 @@ type Service struct {
 	DbConn           database.DB
 	Store            Storage
 	Server           *goHttpEcho.Server
+	Authorizer       Authorizer
 	ListDefaultLimit int
 }
 
@@ -101,7 +102,7 @@ func (s Service) Create(ctx echo.Context) error {
 	currentUserId := claims.User.UserId
 	currentUserLogin := claims.User.Login
 	s.Log.Info("in %s : currentUserId: %d, login: %s", handlerName, currentUserId, currentUserLogin)
-	isAuthorized, err := IsUserAuthorized(currentUserLogin)
+	isAuthorized, err := s.Authorizer.IsUserAuthorized(currentUserLogin)
 	if err != nil {
 		s.Log.Error("authorization check failed for user '%s': %v", currentUserLogin, err)
 		// It's good practice to return a generic error message to the client
@@ -112,6 +113,7 @@ func (s Service) Create(ctx echo.Context) error {
 		s.Log.Warn("user '%s' is not authorized to create a geoTree, (not member of CadaGeomTree ?)", currentUserLogin)
 		return echo.NewHTTPError(http.StatusUnauthorized, fmt.Sprintf("user %s is not authorized to perform this action(not member of CadaGeomTree ?).", currentUserLogin))
 	}
+	s.Log.Info("user '%s' is authorized to create a geoTree", currentUserLogin)
 
 	newGeoTree := &GeoTree{
 		CreatedBy: int32(currentUserId),
