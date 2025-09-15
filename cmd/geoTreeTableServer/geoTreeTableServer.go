@@ -4,6 +4,11 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"log"
+	"net/http"
+	"runtime"
+	"strings"
+
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
@@ -17,10 +22,6 @@ import (
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/tools"
 	"github.com/lao-tseu-is-alive/go-geo-tree-table/pkg/geoTree"
 	"github.com/lao-tseu-is-alive/go-geo-tree-table/pkg/version"
-	"log"
-	"net/http"
-	"runtime"
-	"strings"
 )
 
 const (

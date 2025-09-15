@@ -3,15 +3,16 @@ package geoTree
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/database"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/goHttpEcho"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/golog"
-	"net/http"
-	"strings"
-	"time"
 )
 
 type Service struct {
@@ -98,7 +99,19 @@ func (s Service) Create(ctx echo.Context) error {
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := claims.User.UserId
-	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
+	currentUserLogin := claims.User.Login
+	s.Log.Info("in %s : currentUserId: %d, login: %s", handlerName, currentUserId, currentUserLogin)
+	isAuthorized, err := IsUserAuthorized(currentUserLogin)
+	if err != nil {
+		s.Log.Error("authorization check failed for user '%s': %v", currentUserLogin, err)
+		// It's good practice to return a generic error message to the client
+		// to avoid leaking internal implementation details.
+		return echo.NewHTTPError(http.StatusInternalServerError, "Could not verify user authorization.")
+	}
+	if !isAuthorized {
+		s.Log.Warn("user '%s' is not authorized to create a geoTree, (not member of CadaGeomTree ?)", currentUserLogin)
+		return echo.NewHTTPError(http.StatusUnauthorized, fmt.Sprintf("user %s is not authorized to perform this action(not member of CadaGeomTree ?).", currentUserLogin))
+	}
 
 	newGeoTree := &GeoTree{
 		CreatedBy: int32(currentUserId),
