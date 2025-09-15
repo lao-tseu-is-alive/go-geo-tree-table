@@ -50,6 +50,9 @@ LABEL org.opencontainers.image.version="${APP_REVISION}"
 LABEL org.opencontainers.image.revision="${APP_REVISION}"
 LABEL org.opencontainers.image.created="${BUILD}"
 
+# The Go HTTP client automatically looks for certificates in this location.
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
 USER 1221:1221
 WORKDIR /goapp
 
