@@ -2,13 +2,14 @@ import { defineStore } from "pinia";
 import { getLog } from "@/config";
 import {
   escapeJsonString,
-  extractFirstMatch, getDateIsoFromTimeStamp,
-  isNullOrUndefined, isTimestamp,
+  extractFirstMatch,
+  isNullOrUndefined,
+  isValidFrDate,
   parseJsonWithDetailedError,
 } from "@/tools/utils";
 import { ITableHeader } from "@/tools/TableTypes";
 
-const log = getLog("DataStore", 2, 2);
+const log = getLog("DataStore", 4, 2);
 
 const defaultXPosFieldName = "e"
 const defaultYPosFieldName = "n"
@@ -76,11 +77,16 @@ export const useDataStore = defineStore("data", {
       const filteredArray = state.records.map((row: Record<string, any>) => {
         const newRow: Record<string, any> = {}; // Use a type assertion if you have a defined type for your data
         for (const key in row) {
-          if ((key.includes("date")) && isTimestamp(row[key])) {
+          if ((key.includes("date")) ) {
             // Modify the date field here (e.g., convert to a Date object, format differently)
             log.t(`key : '${key}' row[key] : ${row[key]}`);
-            newRow[key] = getDateIsoFromTimeStamp(row[key]);
+            if (isValidFrDate(row[key])) {
+              newRow[key] = row[key];
+            } else {
+              newRow[key] = `# DATE INVALIDE :  ${row[key]}`;
+            }
             log.t(`key : '${key}' newRow[key] : ${newRow[key]}`);
+
           } else {
             newRow[key] = row[key];
           }

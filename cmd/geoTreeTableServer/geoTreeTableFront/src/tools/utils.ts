@@ -1,7 +1,7 @@
 /*eslint @typescript-eslint/no-explicit-any: "off"*/
 import { getLog } from "@/config";
 
-const log = getLog("Utils", 2, 2);
+const log = getLog("Utils", 4, 2);
 /**
  * check if the given variable is null or undefined
  * @param variable
@@ -65,8 +65,40 @@ export const getTimeStampFromFrDate = (frDate: string): string => {
   return parsedDate;
 };
 
+export const isValidFrDate = (strFrDate: string): boolean => {
+  log.t(`#> entering : ${strFrDate}`, strFrDate);
+  // 1. Check format: DD.MM.YYYY (digits only)
+  const dateRegex = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+  const match = strFrDate.match(dateRegex);
 
+  if (!match) {
+    log.l(`#> format invalid: ${strFrDate}`); // Re-enable if you want logging
+    return false;
+  }
 
+  // Extract components from regex groups
+  // Day is group 1, Month is group 2, Year is group 3
+  const day = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10);
+  const year = parseInt(match[3], 10);
+
+  // 2. Create Date object using standard YYYY-MM-DD format (or components)
+  // Note: JavaScript months are 0-indexed (0=Jan, 11=Dec), so we subtract 1 from the month.
+  const dateCandidate = new Date(year, month - 1, day);
+
+  // 3. Validate components
+  // A Date object created with an invalid date (e.g., Feb 30) will "roll over"
+  // to the next valid date (e.g., Mar 1 or 2). We check if the components
+  // of the created date object match the original components.
+  const isValid = (
+    dateCandidate.getFullYear() === year &&
+    dateCandidate.getMonth() === month - 1 && // Check 0-indexed month
+    dateCandidate.getDate() === day
+  );
+
+  log.t(`#> entering : ${strFrDate}`, isValid ? 'Valid' : 'Invalid'); // Re-enable if you want logging
+  return isValid;
+};
 
 /**
  * convert a date string from iso yyyy-mm-dd in french europe dd-mm-yyyy
