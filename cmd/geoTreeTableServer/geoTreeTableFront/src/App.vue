@@ -413,7 +413,7 @@ const saveDataToBackend = async () => {
         id: crypto.randomUUID(),
         cada_id: record.id || record["_table_row_index"], // Map id_cadastre to cada_id
         cada_code: record.code || 0, // Map type_point to cada_code
-        cada_comment: record.comment || "", // Map comment to cada_comment
+        cada_comment: record.commentaire || "", // Map comment to cada_comment
         cada_date: getTimeStampFromFrDate(record.date),
         created_by: appStore.getUserId || 0, // Assuming appStore has getUserId
         pos_east: +record.e || 0, // Map e to pos_east

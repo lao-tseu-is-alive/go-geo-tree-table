@@ -292,8 +292,10 @@ func main() {
 	}
 	areWeInProduction = strings.ToUpper(val) == "TRUE"
 	if areWeInProduction {
+		l.Warn("areWeInProduction is TRUE =>PROD")
 		geoTreeService.Authorizer = geoTree.NewLiveAuthorizer()
 	} else {
+		l.Warn("areWeInProduction is FALSE => DEV")
 		mockAuth := &geoTree.MockAuthorizer{AllowBypass: true}
 		geoTreeService.Authorizer = mockAuth
 	}
