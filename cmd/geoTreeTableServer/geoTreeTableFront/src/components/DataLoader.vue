@@ -1,4 +1,9 @@
-<style></style>
+<style scoped>
+.data-loader-error-message {
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+</style>
 <template>
   <v-responsive class="fill-height mx-auto" min-width="300">
     <v-row id="step-001-select-file" v-if="!fileSelected">
@@ -30,9 +35,12 @@
             <v-alert
               v-if="isInvalidFile"
               :title="isInvalidFileTitle"
-              :text="isInvalidFileMsg"
               type="error"
-            ></v-alert>
+            >
+              <div class="data-loader-error-message">
+                {{ isInvalidFileMsg }}
+              </div>
+            </v-alert>
           </template>
           <template #actions>
             <v-file-input
@@ -140,7 +148,7 @@ import { IInvalidFieldHeader, useDataStore } from "@/stores/DataStore";
 import type { ITableHeader } from "@/tools/TableTypes";
 import { validHeaderRow } from "@/stores/geoTree";
 import { storeToRefs } from "pinia";
-import { isNullOrUndefined } from "@/tools/utils";
+import { isNullOrUndefined, isValidFrDate } from "@/tools/utils";
 
 const store = useDataStore();
 const log = getLog("DataLoader", 4, 2);
@@ -151,6 +159,21 @@ const isInvalidFileTitle = ref("");
 const isInvalidFileMsg = ref("");
 const fileHasNoHeader = ref(true);
 const { getHeaders } = storeToRefs(store);
+const expectedColumnCount = validHeaderRow.length;
+const expectedDateFormat = "JJ.MM.AAAA";
+const expectedSchema = validHeaderRow.join(";");
+const dateColumnIndex = expectedColumnCount - 2;
+const dateColumnName = validHeaderRow[dateColumnIndex];
+
+interface IInvalidDataRowShape {
+  rowNumber: number;
+  receivedColumnCount: number;
+}
+
+interface IInvalidDataRowDate {
+  rowNumber: number;
+  receivedValue: string;
+}
 
 //// EVENT SECTION
 
@@ -213,6 +236,89 @@ const resetInvalidFile = () => {
   isInvalidFileMsg.value = "";
 };
 
+const getReceivedColumnsLabel = (row: unknown[]) => {
+  return row.map((cell) => `${cell ?? ""}`.trim()).join(";");
+};
+
+const getInvalidDataRowShapes = (
+  rows: unknown[][],
+  firstDataRowNumber: number,
+): IInvalidDataRowShape[] => {
+  return rows
+    .map((row, index) => ({
+      rowNumber: firstDataRowNumber + index,
+      receivedColumnCount: row.length,
+    }))
+    .filter((row) => row.receivedColumnCount !== expectedColumnCount);
+};
+
+const buildInvalidDataShapeMessage = (
+  invalidRows: IInvalidDataRowShape[],
+  firstInvalidRow: unknown[],
+) => {
+  const displayedRows = invalidRows
+    .slice(0, 5)
+    .map((row) => `ligne ${row.rowNumber}: ${row.receivedColumnCount} colonnes`)
+    .join("; ");
+  const moreRows =
+    invalidRows.length > 5
+      ? `; ${invalidRows.length - 5} autre(s) ligne(s) invalide(s)`
+      : "";
+  const missingEssenceHint = invalidRows.some(
+    (row) => row.receivedColumnCount === expectedColumnCount - 1,
+  )
+    ? ' La colonne "essence" semble peut-etre absente: ajoutez une valeur entre "couronne_[m]" et "date".'
+    : "";
+
+  return [
+    `Le fichier doit contenir exactement ${expectedColumnCount} colonnes.`,
+    `Colonnes attendues: ${expectedSchema}.`,
+    `Probleme detecte: ${displayedRows}${moreRows}.`,
+    `Premiere ligne invalide recue: ${getReceivedColumnsLabel(firstInvalidRow)}.`,
+    missingEssenceHint,
+  ]
+    .filter((part) => part !== "")
+    .join("\n");
+};
+
+const buildInvalidHeaderShapeMessage = (receivedHeaderRow: unknown[]) => {
+  return [
+    `L'entete du fichier doit contenir exactement ${expectedColumnCount} colonnes.`,
+    `Colonnes attendues: ${expectedSchema}.`,
+    `Colonnes recues: ${getReceivedColumnsLabel(receivedHeaderRow)}.`,
+  ].join("\n");
+};
+
+const getInvalidDataRowDates = (
+  rows: unknown[][],
+  firstDataRowNumber: number,
+): IInvalidDataRowDate[] => {
+  return rows
+    .map((row, index) => ({
+      rowNumber: firstDataRowNumber + index,
+      receivedValue: `${row[dateColumnIndex] ?? ""}`.trim(),
+    }))
+    .filter((row) => !isValidFrDate(row.receivedValue));
+};
+
+const buildInvalidDataDateMessage = (invalidRows: IInvalidDataRowDate[]) => {
+  const displayedRows = invalidRows
+    .slice(0, 5)
+    .map((row) => `ligne ${row.rowNumber}: "${row.receivedValue}"`)
+    .join("; ");
+  const moreRows =
+    invalidRows.length > 5
+      ? `; ${invalidRows.length - 5} autre(s) date(s) invalide(s)`
+      : "";
+
+  return [
+    `La colonne "${dateColumnName}" doit contenir une date valide.`,
+    `Format attendu: ${expectedDateFormat}, par exemple 25.08.2025.`,
+    `Date(s) invalide(s): ${displayedRows}${moreRows}.`,
+    "Corrigez les valeurs impossibles comme un mois superieur a 12 ou un jour inexistant.",
+  ].join("\n");
+};
+
 const handleFileUpload = (e: Event) => {
   const inputFile = (e.target as HTMLInputElement).files?.[0];
   if (inputFile) {
@@ -241,19 +347,20 @@ const handleFileUpload = (e: Event) => {
 
       log.l("filteredSheetData", filteredSheetData);
       if (filteredSheetData.length === 0) {
-        const msg = "Le fichier ne contient aucune donnée."
+        const msg = "Le fichier ne contient aucune donnée.";
         setInvalidFile("Fichier vide", msg);
-        emit("data-error", msg)
+        emit("data-error", msg);
         return;
       }
-
 
       let receivedHeaderRow: string[];
       // Asserting the type to be an array of arrays of unknown values
       const data = filteredSheetData as unknown[][];
+      let firstDataRowNumber = 1;
 
       //let's detect content based on first row content
-      fileHasNoHeader.value = (typeof data[0][0] == 'number') && (typeof data[0][1] == 'number');
+      fileHasNoHeader.value =
+        typeof data[0][0] == "number" && typeof data[0][1] == "number";
 
       if (fileHasNoHeader.value) {
         // File has no header, use validHeaderRow and all rows are data
@@ -262,7 +369,14 @@ const handleFileUpload = (e: Event) => {
       } else {
         // File has a header, validate it
         receivedHeaderRow = filteredSheetData.shift() as string[];
+        firstDataRowNumber = 2;
         log.l("receivedHeaderRow", receivedHeaderRow);
+        if (receivedHeaderRow.length !== expectedColumnCount) {
+          const msg = buildInvalidHeaderShapeMessage(receivedHeaderRow);
+          setInvalidFile("Entête du fichier invalide", msg);
+          emit("data-error", msg);
+          return;
+        }
 
         const invalidHeaders = <IInvalidFieldHeader[]>[];
         let isHeaderRowValid = true;
@@ -292,6 +406,34 @@ const handleFileUpload = (e: Event) => {
           emit("header-error", invalidHeaders);
           return;
         }
+      }
+
+      const dataRows = filteredSheetData as unknown[][];
+      const invalidDataRowShapes = getInvalidDataRowShapes(
+        dataRows,
+        firstDataRowNumber,
+      );
+      if (invalidDataRowShapes.length > 0) {
+        const firstInvalidRow =
+          dataRows[invalidDataRowShapes[0].rowNumber - firstDataRowNumber];
+        const msg = buildInvalidDataShapeMessage(
+          invalidDataRowShapes,
+          firstInvalidRow,
+        );
+        setInvalidFile("Structure du fichier invalide", msg);
+        emit("data-error", msg);
+        return;
+      }
+
+      const invalidDataRowDates = getInvalidDataRowDates(
+        dataRows,
+        firstDataRowNumber,
+      );
+      if (invalidDataRowDates.length > 0) {
+        const msg = buildInvalidDataDateMessage(invalidDataRowDates);
+        setInvalidFile("Date invalide dans le fichier", msg);
+        emit("data-error", msg);
+        return;
       }
 
       store.setHeaders(receivedHeaderRow);

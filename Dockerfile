@@ -82,10 +82,8 @@ ENV APP_ENV="${APP_ENV}"
 # Expose port  to the outside world, goCloudK8sThing will use the env PORT as listening port or 8080 as default
 EXPOSE ${PORT}
 
-# how to check if container is ok https://docs.docker.com/engine/reference/builder/#healthcheck
-HEALTHCHECK --start-period=5s --interval=30s --timeout=3s \
-    CMD curl --fail http://localhost:${PORT}/health || exit 1
-
+# No HEALTHCHECK here: FROM scratch has no shell or curl.
+# Health monitoring is handled by Kubernetes httpGet probes on /health and /readiness.
 
 # Command to run the executable
 CMD ["./geoTreeTableServer"]

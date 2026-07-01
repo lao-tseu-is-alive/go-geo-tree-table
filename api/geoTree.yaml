@@ -499,9 +499,6 @@ components:
       required:
         - id
         - cada_id
-        - tree_circumference_cm
-        - tree_crown_m
-        - cada_tree_type
         - cada_date
         - cada_comment
         - created_at
