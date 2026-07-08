@@ -125,6 +125,11 @@ func (s Service) Create(ctx echo.Context) error {
 	}
 	newGeoTree.CreatedBy = int32(currentUserId)
 	s.Log.Info("Create GeoTree Bind ok : %+v ", newGeoTree)
+	if err := newGeoTree.Validate(); err != nil {
+		msg := fmt.Sprintf("Create has invalid values: %v", err)
+		s.Log.Error(msg)
+		return ctx.JSON(http.StatusBadRequest, msg)
+	}
 	if len(strings.Trim(newGeoTree.CadaComment, " ")) < 1 {
 		// store current timestamp
 		dateNow := time.Now()
@@ -249,6 +254,11 @@ func (s Service) Update(ctx echo.Context, geoTreeId uuid.UUID) error {
 	updateGeoTree := new(GeoTree)
 	if err := ctx.Bind(updateGeoTree); err != nil {
 		msg := fmt.Sprintf("Update has invalid format error:[%v]", err)
+		s.Log.Error(msg)
+		return ctx.JSON(http.StatusBadRequest, msg)
+	}
+	if err := updateGeoTree.Validate(); err != nil {
+		msg := fmt.Sprintf("Update has invalid values: %v", err)
 		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}

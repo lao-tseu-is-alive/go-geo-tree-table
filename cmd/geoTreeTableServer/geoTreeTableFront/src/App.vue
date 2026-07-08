@@ -422,7 +422,7 @@ const saveDataToBackend = async () => {
         tree_crown_m: +record["diam_couronne"] || undefined, // Keep as is if present
         cada_tree_type: record["essence"] || undefined, // Map tree_type to cada_tree_type
         description: record.description || undefined, // Keep as is if present
-        pos_altitude: +record.pos_altitude || undefined, // Keep as is if present
+        pos_altitude: +record.z || undefined, // Map z to pos_altitude (0 ou vide = null)
       };
       // Check for existing trees within 0.1 meters using the getter
       const nearbyTrees = geoTreeStore.treeByPosition(

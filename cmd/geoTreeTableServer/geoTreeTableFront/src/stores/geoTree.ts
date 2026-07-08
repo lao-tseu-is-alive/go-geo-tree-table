@@ -60,9 +60,21 @@ export const validHeaderRow = [
   "code",
   "e",
   "n",
+  "z",
   "circ_tronc_[cm]",
   "couronne_[m]",
   "essence ",
   "date",
   "commentaire",
 ];
+
+// Bornes géographiques et d'altitude acceptées lors de l'import CSV
+// (coordonnées MN95 / EPSG:2056). Doivent rester cohérentes avec la
+// validation backend (voir pkg/geoTree/validation.go).
+// E / N sont obligatoires ; Z (altitude) peut être vide ou 0 (considéré nul).
+export const MIN_POS_EAST = 2531000;
+export const MAX_POS_EAST = 2547000;
+export const MIN_POS_NORTH = 1149000;
+export const MAX_POS_NORTH = 1161000;
+export const MIN_ALTITUDE = 370;
+export const MAX_ALTITUDE = 950;

@@ -146,7 +146,15 @@ import { read, utils } from "xlsx";
 import { getLog } from "@/config";
 import { IInvalidFieldHeader, useDataStore } from "@/stores/DataStore";
 import type { ITableHeader } from "@/tools/TableTypes";
-import { validHeaderRow } from "@/stores/geoTree";
+import {
+  MAX_ALTITUDE,
+  MAX_POS_EAST,
+  MAX_POS_NORTH,
+  MIN_ALTITUDE,
+  MIN_POS_EAST,
+  MIN_POS_NORTH,
+  validHeaderRow,
+} from "@/stores/geoTree";
 import { storeToRefs } from "pinia";
 import { isNullOrUndefined, isValidFrDate } from "@/tools/utils";
 
@@ -164,6 +172,17 @@ const expectedDateFormat = "JJ.MM.AAAA";
 const expectedSchema = validHeaderRow.join(";");
 const dateColumnIndex = expectedColumnCount - 2;
 const dateColumnName = validHeaderRow[dateColumnIndex];
+const altitudeColumnIndex = validHeaderRow.findIndex(
+  (header) => `${header}`.trim().toLowerCase() === "z",
+);
+const altitudeColumnName =
+  altitudeColumnIndex >= 0 ? validHeaderRow[altitudeColumnIndex] : "z";
+const eastColumnIndex = validHeaderRow.findIndex(
+  (header) => `${header}`.trim().toLowerCase() === "e",
+);
+const northColumnIndex = validHeaderRow.findIndex(
+  (header) => `${header}`.trim().toLowerCase() === "n",
+);
 
 interface IInvalidDataRowShape {
   rowNumber: number;
@@ -171,6 +190,16 @@ interface IInvalidDataRowShape {
 }
 
 interface IInvalidDataRowDate {
+  rowNumber: number;
+  receivedValue: string;
+}
+
+interface IInvalidDataRowAltitude {
+  rowNumber: number;
+  receivedValue: string;
+}
+
+interface IInvalidDataRowCoordinate {
   rowNumber: number;
   receivedValue: string;
 }
@@ -264,10 +293,10 @@ const buildInvalidDataShapeMessage = (
     invalidRows.length > 5
       ? `; ${invalidRows.length - 5} autre(s) ligne(s) invalide(s)`
       : "";
-  const missingEssenceHint = invalidRows.some(
+  const missingColumnHint = invalidRows.some(
     (row) => row.receivedColumnCount === expectedColumnCount - 1,
   )
-    ? ' La colonne "essence" semble peut-etre absente: ajoutez une valeur entre "couronne_[m]" et "date".'
+    ? ` Une colonne semble absente: verifiez notamment la colonne "${altitudeColumnName}" (altitude Z, ajoutee apres E et N) et la colonne "essence".`
     : "";
 
   return [
@@ -275,7 +304,7 @@ const buildInvalidDataShapeMessage = (
     `Colonnes attendues: ${expectedSchema}.`,
     `Probleme detecte: ${displayedRows}${moreRows}.`,
     `Premiere ligne invalide recue: ${getReceivedColumnsLabel(firstInvalidRow)}.`,
-    missingEssenceHint,
+    missingColumnHint,
   ]
     .filter((part) => part !== "")
     .join("\n");
@@ -316,6 +345,107 @@ const buildInvalidDataDateMessage = (invalidRows: IInvalidDataRowDate[]) => {
     `Format attendu: ${expectedDateFormat}, par exemple 25.08.2025.`,
     `Date(s) invalide(s): ${displayedRows}${moreRows}.`,
     "Corrigez les valeurs impossibles comme un mois superieur a 12 ou un jour inexistant.",
+  ].join("\n");
+};
+
+// Une altitude Z est valide si elle est vide, égale à 0 (considérée comme
+// nulle), ou un nombre compris entre MIN_ALTITUDE et MAX_ALTITUDE.
+const isValidAltitudeValue = (rawValue: string): boolean => {
+  const value = rawValue.trim();
+  if (value === "") {
+    return true;
+  }
+  const numericValue = Number(value.replace(",", "."));
+  if (Number.isNaN(numericValue)) {
+    return false;
+  }
+  if (numericValue === 0) {
+    return true;
+  }
+  return numericValue >= MIN_ALTITUDE && numericValue <= MAX_ALTITUDE;
+};
+
+const getInvalidDataRowAltitudes = (
+  rows: unknown[][],
+  firstDataRowNumber: number,
+): IInvalidDataRowAltitude[] => {
+  return rows
+    .map((row, index) => ({
+      rowNumber: firstDataRowNumber + index,
+      receivedValue: `${row[altitudeColumnIndex] ?? ""}`.trim(),
+    }))
+    .filter((row) => !isValidAltitudeValue(row.receivedValue));
+};
+
+const buildInvalidDataAltitudeMessage = (
+  invalidRows: IInvalidDataRowAltitude[],
+) => {
+  const displayedRows = invalidRows
+    .slice(0, 5)
+    .map((row) => `ligne ${row.rowNumber}: "${row.receivedValue}"`)
+    .join("; ");
+  const moreRows =
+    invalidRows.length > 5
+      ? `; ${invalidRows.length - 5} autre(s) altitude(s) invalide(s)`
+      : "";
+
+  return [
+    `La colonne "${altitudeColumnName}" (altitude Z) doit etre vide, 0, ou un nombre entre ${MIN_ALTITUDE} et ${MAX_ALTITUDE}.`,
+    `Altitude(s) invalide(s): ${displayedRows}${moreRows}.`,
+  ].join("\n");
+};
+
+// Une coordonnée E ou N est obligatoire : elle doit être un nombre compris
+// entre min et max (bornes MN95 / EPSG:2056).
+const isValidCoordinateValue = (
+  rawValue: string,
+  min: number,
+  max: number,
+): boolean => {
+  const value = rawValue.trim();
+  if (value === "") {
+    return false;
+  }
+  const numericValue = Number(value.replace(",", "."));
+  if (Number.isNaN(numericValue)) {
+    return false;
+  }
+  return numericValue >= min && numericValue <= max;
+};
+
+const getInvalidDataRowCoordinates = (
+  rows: unknown[][],
+  firstDataRowNumber: number,
+  columnIndex: number,
+  min: number,
+  max: number,
+): IInvalidDataRowCoordinate[] => {
+  return rows
+    .map((row, index) => ({
+      rowNumber: firstDataRowNumber + index,
+      receivedValue: `${row[columnIndex] ?? ""}`.trim(),
+    }))
+    .filter((row) => !isValidCoordinateValue(row.receivedValue, min, max));
+};
+
+const buildInvalidDataCoordinateMessage = (
+  columnName: string,
+  invalidRows: IInvalidDataRowCoordinate[],
+  min: number,
+  max: number,
+) => {
+  const displayedRows = invalidRows
+    .slice(0, 5)
+    .map((row) => `ligne ${row.rowNumber}: "${row.receivedValue}"`)
+    .join("; ");
+  const moreRows =
+    invalidRows.length > 5
+      ? `; ${invalidRows.length - 5} autre(s) valeur(s) invalide(s)`
+      : "";
+
+  return [
+    `La colonne "${columnName}" doit contenir un nombre entre ${min} et ${max}.`,
+    `Valeur(s) invalide(s): ${displayedRows}${moreRows}.`,
   ].join("\n");
 };
 
@@ -432,6 +562,52 @@ const handleFileUpload = (e: Event) => {
       if (invalidDataRowDates.length > 0) {
         const msg = buildInvalidDataDateMessage(invalidDataRowDates);
         setInvalidFile("Date invalide dans le fichier", msg);
+        emit("data-error", msg);
+        return;
+      }
+
+      const coordinateChecks = [
+        {
+          columnIndex: eastColumnIndex,
+          columnName: "E",
+          min: MIN_POS_EAST,
+          max: MAX_POS_EAST,
+        },
+        {
+          columnIndex: northColumnIndex,
+          columnName: "N",
+          min: MIN_POS_NORTH,
+          max: MAX_POS_NORTH,
+        },
+      ];
+      for (const check of coordinateChecks) {
+        const invalidCoordinates = getInvalidDataRowCoordinates(
+          dataRows,
+          firstDataRowNumber,
+          check.columnIndex,
+          check.min,
+          check.max,
+        );
+        if (invalidCoordinates.length > 0) {
+          const msg = buildInvalidDataCoordinateMessage(
+            check.columnName,
+            invalidCoordinates,
+            check.min,
+            check.max,
+          );
+          setInvalidFile(`Coordonnée ${check.columnName} invalide`, msg);
+          emit("data-error", msg);
+          return;
+        }
+      }
+
+      const invalidDataRowAltitudes = getInvalidDataRowAltitudes(
+        dataRows,
+        firstDataRowNumber,
+      );
+      if (invalidDataRowAltitudes.length > 0) {
+        const msg = buildInvalidDataAltitudeMessage(invalidDataRowAltitudes);
+        setInvalidFile("Altitude invalide dans le fichier", msg);
         emit("data-error", msg);
         return;
       }
