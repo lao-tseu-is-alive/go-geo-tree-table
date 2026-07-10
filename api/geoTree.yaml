@@ -560,6 +560,10 @@ components:
           type: number
           format: double
           title: "Coordonnées Nord-Sud - Y de cet objet"
+        pos_altitude:
+          type: number
+          format: double
+          title: "Altitude - Z de cet objet"
     geoTreeGoelandThingId:
       required:
         - id

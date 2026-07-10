@@ -96,6 +96,7 @@ type GeoTreeList struct {
 
 	// Id cet Universally unique identifier (UUID) sera généré automatiquement pour vous
 	Id                  openapi_types.UUID `json:"id"`
+	PosAltitude         *float64           `json:"pos_altitude,omitempty"`
 	PosEast             float64            `json:"pos_east"`
 	PosNorth            float64            `json:"pos_north"`
 	TreeCircumferenceCm *int32             `json:"tree_circumference_cm,omitempty"`
