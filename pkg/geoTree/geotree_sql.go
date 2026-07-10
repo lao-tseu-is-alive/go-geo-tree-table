@@ -47,7 +47,8 @@ SELECT
        created_by as created_by,
        created_at as created_at,
 	   st_x(geom) as pos_east,
-       st_y(geom) as pos_north
+       st_y(geom) as pos_north,
+       pos_altitude
 FROM cada_tree_position
 WHERE deleted = false AND geom IS NOT NULL  
 `
