@@ -139,9 +139,9 @@ export async function getWmtsLausanneBaseLayers(
     arrWmtsLayers.push(
       createBaseOlLayerTile(
         WMTSCapabilitiesParsed,
-        "Orthophoto 2016 (Lausanne)",
-        "orthophotos_ortho_lidar_2016",
-        initialBaseLayer === "orthophotos_ortho_lidar_2016",
+        "Orthophoto 2024 (Lausanne)",
+        "orthophotos_ortho_lidar_2024",
+        initialBaseLayer === "orthophotos_ortho_lidar_2024",
       ),
     );
     arrWmtsLayers.push(
@@ -625,7 +625,7 @@ export async function createSwissMap(
  * @param divOfMap the id of the div you want to draw a map
  * @param centerOfMap the position where you want to center map in MN95 Coordinates [x,y] array
  * @param zoomLevel
- * @param baseLayer one of orthophotos_ortho_lidar_2016 fonds_geo_osm_bdcad_(gris|couleur)
+ * @param baseLayer one of orthophotos_ortho_lidar_2024 fonds_geo_osm_bdcad_(gris|couleur)
  * @returns an instance of an OpenLayer Map
  */
 export async function createLausanneMap(
