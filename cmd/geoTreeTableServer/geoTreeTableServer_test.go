@@ -1,14 +1,17 @@
 package main
 
 import (
+	"context"
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
+	"os"
 	"runtime"
 	"strings"
 	"sync"
@@ -48,11 +51,11 @@ type testStruct struct {
 	body                         string
 }
 
-func MakeHttpRequest(method, url, sendBody, token string, caCert []byte, l golog.MyLogger, defaultReadTimeout time.Duration) (string, error) {
+func MakeHttpRequest(ctx context.Context, method, url, sendBody, token string, caCert []byte, l *slog.Logger, defaultReadTimeout time.Duration) (string, error) {
 	var bearer = "Bearer " + token
-	req, err := http.NewRequest(method, url, strings.NewReader(sendBody))
+	req, err := http.NewRequestWithContext(ctx, method, url, strings.NewReader(sendBody))
 	if err != nil {
-		l.Error("MakeHttpRequest: Error creating request.\n[ERROR] - %v", err)
+		l.Error("MakeHttpRequest: Error creating request", "error", err)
 		return "", err
 	}
 	req.Header.Add("Authorization", bearer)
@@ -76,18 +79,18 @@ func MakeHttpRequest(method, url, sendBody, token string, caCert []byte, l golog
 	}
 	resp, err := client.Do(req)
 	if err != nil {
-		l.Error("MakeHttpRequest: Error on response.\n[ERROR] - %v", err)
+		l.Error("MakeHttpRequest: Error on response", "error", err)
 		return "", err
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-			l.Error("MakeHttpRequest: Error on Body.Close().\n[ERROR] - %v", err)
+			l.Error("MakeHttpRequest: Error on Body.Close()", "error", err)
 		}
 	}(resp.Body)
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		l.Error("MakeHttpRequest: Error while reading the response bytes: %v", err)
+		l.Error("MakeHttpRequest: Error while reading the response bytes", "error", err)
 		return "", err
 	}
 	return string(body), nil
@@ -95,24 +98,33 @@ func MakeHttpRequest(method, url, sendBody, token string, caCert []byte, l golog
 
 func TestMainExec(t *testing.T) {
 	prefix := fmt.Sprintf("%s_TESTING ", version.APP)
-	l, err := golog.NewLogger("zap", golog.DebugLevel, prefix)
+	l := golog.NewLogger("simple", os.Stderr, golog.DebugLevel, prefix)
+	ctx := context.Background()
+	listenPort, err := config.GetPort(defaultPort)
 	if err != nil {
-		t.Fatalf("### ERROR: golog.NewLogger failed: %v", err)
+		t.Fatalf("### ERROR: config.GetPort failed: %v", err)
 	}
-	listenPort := config.GetPortFromEnvOrPanic(defaultPort)
 	listenAddr := fmt.Sprintf("http://localhost:%d", listenPort)
 	fmt.Printf("INFO: 'Will start HTTP server listening on port %s'\n", listenAddr)
 
 	// Get the ENV JWT_AUTH_URL value
-	jwtAuthUrl := config.GetJwtAuthUrlFromEnvOrPanic()
-	urlLogin := fmt.Sprintf("%s", jwtAuthUrl)
+	urlLogin, err := config.GetJwtAuthUrl()
+	if err != nil {
+		t.Fatalf("### ERROR: config.GetJwtAuthUrl failed: %v", err)
+	}
 
 	// Common messages
 	nameCannotBeEmpty := fmt.Sprintf(geoTree.FieldCannotBeEmpty, "CadaComment")
 
 	// Set local admin user for test
-	adminUsername := config.GetAdminUserFromEnvOrPanic("goadmin")
-	adminPassword := config.GetAdminPasswordFromEnvOrPanic()
+	adminUsername, err := config.GetAdminUser(defaultAdminUser)
+	if err != nil {
+		t.Fatalf("### ERROR: config.GetAdminUser failed: %v", err)
+	}
+	adminPassword, err := config.GetAdminPassword()
+	if err != nil {
+		t.Fatalf("### ERROR: config.GetAdminPassword failed: %v", err)
+	}
 	h := sha256.New()
 	h.Write([]byte(adminPassword))
 	adminPasswordHash := fmt.Sprintf("%x", h.Sum(nil))
@@ -126,7 +138,7 @@ func TestMainExec(t *testing.T) {
 	formLoginWrong.Set("pass", "anObviouslyWrongPass")
 
 	getValidToken := func() string {
-		req, err := http.NewRequest(http.MethodPost, listenAddr+urlLogin, strings.NewReader(formLogin.Encode()))
+		req, err := http.NewRequestWithContext(ctx, http.MethodPost, listenAddr+urlLogin, strings.NewReader(formLogin.Encode()))
 		if err != nil {
 			t.Fatalf("### getValidToken: Problem creating request: %v", err)
 		}
@@ -157,36 +169,44 @@ func TestMainExec(t *testing.T) {
 	}
 
 	// Database setup
-	dbDsn := config.GetPgDbDsnUrlFromEnvOrPanic(defaultDBIp, defaultDBPort, tools.ToSnakeCase(version.APP), version.AppSnake, defaultDBSslMode)
-	db, err := database.GetInstance("pgx", dbDsn, runtime.NumCPU(), l)
+	dbDsn, err := config.GetPgDbDsnUrl(defaultDBIp, defaultDBPort, tools.ToSnakeCase(version.APP), version.AppSnake, defaultDBSslMode)
+	if err != nil {
+		t.Fatalf("💥💥 error doing config.GetPgDbDsnUrl: %v", err)
+	}
+	db, err := database.GetInstance(ctx, "pgx", dbDsn, runtime.NumCPU(), l)
 	if err != nil {
 		t.Fatalf("💥💥 error doing database.GetInstance(pgx ...): %v", err)
 	}
 	defer db.Close()
 
 	// Checking database connection
-	dbVersion, err := db.GetVersion()
+	dbVersion, err := db.GetVersion(ctx)
 	if err != nil {
 		t.Fatalf("💥💥 error doing dbConn.GetVersion(): %v", err)
 	}
 	fmt.Printf("connected to db version: %s\n", dbVersion)
 
 	// Check if cada_tree_position table exists and clean up test data
-	existTable, err := db.GetQueryBool("SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'cada_tree_position');")
+	existTable, err := db.GetQueryBool(ctx, "SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'cada_tree_position');")
 	if err != nil {
 		t.Fatalf("problem verifying if cada_tree_position exists in DB: %v", err)
 	}
 	if existTable {
-		count, err := db.GetQueryInt("SELECT COUNT(*) FROM public.cada_tree_position WHERE id = $1;", newGeoTreeId)
+		count, err := db.GetQueryInt(ctx, "SELECT COUNT(*) FROM public.cada_tree_position WHERE id = $1;", newGeoTreeId)
 		if err != nil {
 			t.Fatalf("problem during cleanup before test DB: %v", err)
 		}
 		if count > 0 {
 			fmt.Printf("This Id(%v) exists, will cleanup before running test\n", newGeoTreeId)
-			db.ExecActionQuery("DELETE FROM public.cada_tree_position WHERE id=$1", newGeoTreeId)
+			if _, err := db.ExecActionQuery(ctx, "DELETE FROM public.cada_tree_position WHERE id=$1", newGeoTreeId); err != nil {
+				t.Fatalf("problem during cleanup delete before test DB: %v", err)
+			}
 		}
 	}
-	userID := config.GetAdminIdFromEnvOrPanic(defaultAdminId)
+	userID, err := config.GetAdminId(defaultAdminId)
+	if err != nil {
+		t.Fatalf("### ERROR: config.GetAdminId failed: %v", err)
+	}
 
 	var exampleGeoTree = fmt.Sprintf(`
 {
@@ -485,7 +505,7 @@ func TestMainExec(t *testing.T) {
 		defer wg.Done()
 		main()
 	}()
-	gohttpclient.WaitForHttpServer(listenAddr, 1*time.Second, 10)
+	gohttpclient.WaitForHttpServer(listenAddr, 1*time.Second, 10, l)
 
 	// Get a valid JWT token
 	var bearer = "Bearer " + getValidToken()

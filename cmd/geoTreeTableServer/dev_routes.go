@@ -26,7 +26,7 @@ func DevRoutes(e *echo.Echo, yourService *Service, jwtAuthUrl string) {
 // fakeDevF5 is a handler that returns a fake JWT token for development purposes.
 // This function will be part of your `Service` struct, as defined in main.go
 func (s *Service) fakeDevF5(ctx echo.Context) error {
-	s.Logger.TraceHttpRequest("fakeDevF5", ctx.Request())
+	goHttpEcho.TraceHttpRequest("fakeDevF5", ctx.Request(), s.Logger)
 	login := "USER_TEST"
 	userInfo := &goHttpEcho.UserInfo{
 		UserId:     99,
@@ -58,7 +58,7 @@ func (s *Service) fakeDevF5(ctx echo.Context) error {
 		"jwtStatus": "success",
 		"token":     token.String(),
 	}
-	s.Logger.Info(fmt.Sprintf("getJwtCookieFromF5(%s) successful, token set in HTTP-Only cookie.", login))
+	s.Logger.Info("getJwtCookieFromF5 successful, token set in HTTP-Only cookie", "login", login)
 	return ctx.JSON(http.StatusOK, response)
 
 }

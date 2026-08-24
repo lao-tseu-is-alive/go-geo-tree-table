@@ -3,6 +3,7 @@ package geoTree
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
@@ -12,11 +13,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/database"
 	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/goHttpEcho"
-	"github.com/lao-tseu-is-alive/go-cloud-k8s-common-libs/pkg/golog"
 )
 
 type Service struct {
-	Log              golog.MyLogger
+	Log              *slog.Logger
 	DbConn           database.DB
 	Store            Storage
 	Server           *goHttpEcho.Server
@@ -26,15 +26,16 @@ type Service struct {
 
 func (s Service) ListByPosition(ctx echo.Context, params ListByPositionParams) error {
 	handlerName := "ListByPosition"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := claims.User.UserId
-	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
-	list, err := s.Store.ListByPosition(params)
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId)
+	list, err := s.Store.ListByPosition(reqCtx, params)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
-			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("there was a problem when calling store.List :%v", err))
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("there was a problem when calling store.ListByPosition :%v", err))
 		} else {
 			list = make([]*GeoTreeList, 0)
 			return ctx.JSON(http.StatusOK, list)
@@ -45,18 +46,18 @@ func (s Service) ListByPosition(ctx echo.Context, params ListByPositionParams) e
 
 func (s Service) GeoJson(ctx echo.Context, params GeoJsonParams) error {
 	handlerName := "GeoJson"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := claims.User.UserId
-	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
-	jsonResult, err := s.Store.GeoJson(params)
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId)
+	jsonResult, err := s.Store.GeoJson(reqCtx, params)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
-			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("there was a problem when calling store.List :%v", err))
+			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("there was a problem when calling store.GeoJson :%v", err))
 		} else {
-			jsonResult = "empty"
-			return ctx.JSONBlob(http.StatusOK, []byte(jsonResult))
+			return ctx.JSONBlob(http.StatusOK, []byte(emptyGeoJson))
 		}
 	}
 	return ctx.JSONBlob(http.StatusOK, []byte(jsonResult))
@@ -67,11 +68,12 @@ func (s Service) GeoJson(ctx echo.Context, params GeoJsonParams) error {
 // curl -s -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" 'http://localhost:9090/goapi/v1/geoTree?limit=3&type=112' |jq
 func (s Service) List(ctx echo.Context, params ListParams) error {
 	handlerName := "List"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := claims.User.UserId
-	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId)
 	limit := s.ListDefaultLimit
 	if params.Limit != nil {
 		limit = int(*params.Limit)
@@ -80,7 +82,7 @@ func (s Service) List(ctx echo.Context, params ListParams) error {
 	if params.Offset != nil {
 		offset = int(*params.Offset)
 	}
-	list, err := s.Store.List(offset, limit, params)
+	list, err := s.Store.List(reqCtx, offset, limit, params)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("there was a problem when calling store.List :%v", err))
@@ -96,24 +98,25 @@ func (s Service) List(ctx echo.Context, params ListParams) error {
 // curl -s -XPOST -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"id": "3999971f-53d7-4eb6-8898-97f257ea5f27","type_id": 3,"name": "Gil-Parcelle","description": "just a nice parcelle test","external_id": 345678912,"inactivated": false,"managed_by": 999, "more_data": NULL,"pos_x":2537603.0 ,"pos_y":1152613.0   }' 'http://localhost:9090/goapi/v1/geoTree'
 func (s Service) Create(ctx echo.Context) error {
 	handlerName := "Create"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := claims.User.UserId
 	currentUserLogin := claims.User.Login
-	s.Log.Info("in %s : currentUserId: %d, login: %s", handlerName, currentUserId, currentUserLogin)
-	isAuthorized, err := s.Authorizer.IsUserAuthorized(currentUserLogin)
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId, "login", currentUserLogin)
+	isAuthorized, err := s.Authorizer.IsUserAuthorized(reqCtx, currentUserLogin)
 	if err != nil {
-		s.Log.Error("authorization check failed for user '%s': %v", currentUserLogin, err)
+		s.Log.Error("authorization check failed", "login", currentUserLogin, "error", err)
 		// It's good practice to return a generic error message to the client
 		// to avoid leaking internal implementation details.
 		return echo.NewHTTPError(http.StatusInternalServerError, "Could not verify user authorization.")
 	}
 	if !isAuthorized {
-		s.Log.Warn("user '%s' is not authorized to create a geoTree, (not member of CadaGeomTree ?)", currentUserLogin)
+		s.Log.Warn("user is not authorized to create a geoTree, (not member of CadaGeomTree ?)", "login", currentUserLogin)
 		return echo.NewHTTPError(http.StatusUnauthorized, fmt.Sprintf("user %s is not authorized to perform this action(not member of CadaGeomTree ?).", currentUserLogin))
 	}
-	s.Log.Info("user '%s' is authorized to create a geoTree", currentUserLogin)
+	s.Log.Info("user is authorized to create a geoTree", "login", currentUserLogin)
 
 	newGeoTree := &GeoTree{
 		CreatedBy: int32(currentUserId),
@@ -124,7 +127,7 @@ func (s Service) Create(ctx echo.Context) error {
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
 	newGeoTree.CreatedBy = int32(currentUserId)
-	s.Log.Info("Create GeoTree Bind ok : %+v ", newGeoTree)
+	s.Log.Debug("Create GeoTree Bind ok", "geoTree", newGeoTree)
 	if err := newGeoTree.Validate(); err != nil {
 		msg := fmt.Sprintf("Create has invalid values: %v", err)
 		s.Log.Error(msg)
@@ -138,24 +141,19 @@ func (s Service) Create(ctx echo.Context) error {
 			claims.User.Name,
 			dateNow.Format("2006-01-02 15:04:05	"),
 		)
-		/*
-			msg := fmt.Sprintf(FieldCannotBeEmpty, "CadaComment")
-			s.Log.Error(msg)
-			return ctx.JSON(http.StatusBadRequest, msg)
-		*/
 	}
-	if s.Store.Exist(newGeoTree.Id) {
+	if s.Store.Exist(reqCtx, newGeoTree.Id) {
 		msg := fmt.Sprintf("This id (%v) already exist !", newGeoTree.Id)
 		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
-	geoTreeCreated, err := s.Store.Create(*newGeoTree)
+	geoTreeCreated, err := s.Store.Create(reqCtx, *newGeoTree)
 	if err != nil {
 		msg := fmt.Sprintf("Create had an error saving geoTree:%#v, err:%#v", *newGeoTree, err)
-		s.Log.Info(msg)
+		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
-	s.Log.Info("# Create() success GeoTree %#v\n", geoTreeCreated)
+	s.Log.Info("Create success", "id", geoTreeCreated.Id)
 	return ctx.JSON(http.StatusCreated, geoTreeCreated)
 }
 
@@ -163,12 +161,13 @@ func (s Service) Create(ctx echo.Context) error {
 // curl -s -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" 'http://localhost:9090/goapi/v1/geoTree/count' |jq
 func (s Service) Count(ctx echo.Context, params CountParams) error {
 	handlerName := "Count"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := claims.User.UserId
-	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
-	numGeoTrees, err := s.Store.Count(params)
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId)
+	numGeoTrees, err := s.Store.Count(reqCtx, params)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("problem counting geoTrees :%v", err))
 	}
@@ -180,22 +179,23 @@ func (s Service) Count(ctx echo.Context, params CountParams) error {
 // curl -v -XDELETE -H "Content-Type: application/json"  -H "Authorization: Bearer $token" 'http://localhost:8888/users/93333' -> 400 Bad Request
 func (s Service) Delete(ctx echo.Context, geoTreeId uuid.UUID) error {
 	handlerName := "Delete"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := int32(claims.User.UserId)
-	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId, "geoTreeId", geoTreeId)
 	// IF USER IS NOT ADMIN  RETURN 401 Unauthorized
 	if !claims.User.IsAdmin {
 		return echo.NewHTTPError(http.StatusUnauthorized, OnlyAdminCanManageThis)
 	}
-	if s.Store.Exist(geoTreeId) == false {
+	if !s.Store.Exist(reqCtx, geoTreeId) {
 		msg := fmt.Sprintf("Delete(%v) cannot delete this id, it does not exist !", geoTreeId)
 		s.Log.Warn(msg)
 		return ctx.JSON(http.StatusNotFound, msg)
 	}
 
-	err := s.Store.Delete(geoTreeId, currentUserId)
+	err := s.Store.Delete(reqCtx, geoTreeId, currentUserId)
 	if err != nil {
 		msg := fmt.Sprintf("Delete(%v) got an error: %#v ", geoTreeId, err)
 		s.Log.Error(msg)
@@ -209,17 +209,18 @@ func (s Service) Delete(ctx echo.Context, geoTreeId uuid.UUID) error {
 // curl -s -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" 'http://localhost:9090/goapi/v1/geoTree/9999971f-53d7-4eb6-8898-97f257ea5f27' |jq
 func (s Service) Get(ctx echo.Context, geoTreeId uuid.UUID) error {
 	handlerName := "Get"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := claims.User.UserId
-	s.Log.Info("in %s : currentUserId: %d", handlerName, currentUserId)
-	if s.Store.Exist(geoTreeId) == false {
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId, "geoTreeId", geoTreeId)
+	if !s.Store.Exist(reqCtx, geoTreeId) {
 		msg := fmt.Sprintf("Get(%v) cannot get this id, it does not exist !", geoTreeId)
 		s.Log.Info(msg)
 		return ctx.JSON(http.StatusNotFound, msg)
 	}
-	geoTree, err := s.Store.Get(geoTreeId)
+	geoTree, err := s.Store.Get(reqCtx, geoTreeId)
 	if err != nil {
 		if !errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("problem retrieving geoTree :%v", err))
@@ -236,16 +237,17 @@ func (s Service) Get(ctx echo.Context, geoTreeId uuid.UUID) error {
 // curl -s -XPUT -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" -d '{"id": "3999971f-53d7-4eb6-8898-97f257ea5f27","type_id": 3,"name": "Gil-Parcelle","description": "just a nice parcelle test by GIL","external_id": 345678912,"inactivated": false,"managed_by": 999, "more_data": {"info_value": 3230 },"pos_x":2537603.0 ,"pos_y":1152613.0   }' 'http://localhost:9090/goapi/v1/geoTree/3999971f-53d7-4eb6-8898-97f257ea5f27' |jq
 func (s Service) Update(ctx echo.Context, geoTreeId uuid.UUID) error {
 	handlerName := "Update"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := int32(claims.User.UserId)
-	s.Log.Info("in %s(%d) : currentUserId: %d", handlerName, geoTreeId, currentUserId)
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId, "geoTreeId", geoTreeId)
 	// IF USER IS NOT ADMIN  RETURN 401 Unauthorized
 	if !claims.User.IsAdmin {
 		return echo.NewHTTPError(http.StatusUnauthorized, OnlyAdminCanManageThis)
 	}
-	if s.Store.Exist(geoTreeId) == false {
+	if !s.Store.Exist(reqCtx, geoTreeId) {
 		msg := fmt.Sprintf("Update(%v) cannot update this id, it does not exist !", geoTreeId)
 		s.Log.Warn(msg)
 		return ctx.JSON(http.StatusNotFound, msg)
@@ -268,15 +270,13 @@ func (s Service) Update(ctx echo.Context, geoTreeId uuid.UUID) error {
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
 
-	//updateGeoTree.CLastModifiedBy = &currentUserId
-
-	geoTreeUpdated, err := s.Store.Update(geoTreeId, *updateGeoTree)
+	geoTreeUpdated, err := s.Store.Update(reqCtx, geoTreeId, *updateGeoTree)
 	if err != nil {
 		msg := fmt.Sprintf("Update had an error saving geoTree:%#v, err:%#v", *updateGeoTree, err)
-		s.Log.Info(msg)
+		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
-	s.Log.Info("# Update success GeoTree %#v\n", geoTreeUpdated)
+	s.Log.Info("Update success", "id", geoTreeUpdated.Id)
 	return ctx.JSON(http.StatusOK, geoTreeUpdated)
 }
 
@@ -285,12 +285,13 @@ func (s Service) Update(ctx echo.Context, geoTreeId uuid.UUID) error {
 // curl -X PUT -H "Content-Type: application/json" -v -b cookies.txt -d '{"id":"52e1a220-7652-41f3-abe1-a6f3c7587f33","goeland_thing_id":69, "goeland_thing_saved_by":34}'  cookies.txt http://localhost:7979/goapi/v1/geoTree/setGoelandThingId/52e1a220-7652-41f3-abe1-a6f3c7587f33
 func (s Service) UpdateGoelandThingId(ctx echo.Context, geoTreeId uuid.UUID) error {
 	handlerName := "UpdateGoelandThingId"
-	s.Log.TraceHttpRequest(handlerName, ctx.Request())
+	goHttpEcho.TraceHttpRequest(handlerName, ctx.Request(), s.Log)
+	reqCtx := ctx.Request().Context()
 	// get the current user from JWT TOKEN
 	claims := s.Server.JwtCheck.GetJwtCustomClaimsFromContext(ctx)
 	currentUserId := int32(claims.User.UserId)
-	s.Log.Info("in %s(%s) : currentUserId: %d", handlerName, geoTreeId, currentUserId)
-	if s.Store.Exist(geoTreeId) == false {
+	s.Log.Info("entering handler", "handler", handlerName, "currentUserId", currentUserId, "geoTreeId", geoTreeId)
+	if !s.Store.Exist(reqCtx, geoTreeId) {
 		msg := fmt.Sprintf("UpdateGoelandThingId(%v) cannot update this id, it does not exist !", geoTreeId)
 		s.Log.Warn(msg)
 		return ctx.JSON(http.StatusNotFound, msg)
@@ -302,13 +303,13 @@ func (s Service) UpdateGoelandThingId(ctx echo.Context, geoTreeId uuid.UUID) err
 		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
-	s.Log.Info("about to call UpdateGoelandThingId(%v, %+v)", geoTreeId, *updateGeoTreeGoelandThingId)
-	geoTreeUpdated, err := s.Store.UpdateGoelandThingId(geoTreeId, *updateGeoTreeGoelandThingId)
+	s.Log.Debug("about to call UpdateGoelandThingId", "geoTreeId", geoTreeId, "data", *updateGeoTreeGoelandThingId)
+	geoTreeUpdated, err := s.Store.UpdateGoelandThingId(reqCtx, geoTreeId, *updateGeoTreeGoelandThingId)
 	if err != nil {
 		msg := fmt.Sprintf("UpdateGoelandThingId had an error saving updateGeoTreeGoelandThingId:%#v, err:%#v", *updateGeoTreeGoelandThingId, err)
-		s.Log.Info(msg)
+		s.Log.Error(msg)
 		return ctx.JSON(http.StatusBadRequest, msg)
 	}
-	s.Log.Info("# Update success GeoTree %#v\n", geoTreeUpdated)
+	s.Log.Info("UpdateGoelandThingId success", "id", geoTreeUpdated.Id)
 	return ctx.JSON(http.StatusOK, geoTreeUpdated)
 }

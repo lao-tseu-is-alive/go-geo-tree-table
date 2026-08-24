@@ -1,9 +1,11 @@
 package geoTree
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -15,7 +17,7 @@ const (
 // Authorizer is an interface for checking user authorization.
 // This allows for mocking in tests and using a real implementation in production.
 type Authorizer interface {
-	IsUserAuthorized(userLogin string) (bool, error)
+	IsUserAuthorized(ctx context.Context, userLogin string) (bool, error)
 }
 
 // LiveAuthorizer is the implementation of Authorizer that makes a real HTTP call.
@@ -48,12 +50,18 @@ type AuthResponse struct {
 
 // IsUserAuthorized checks if a user is part of a specific security group.
 // It makes an external HTTP GET request to the authorization service.
-func (a *LiveAuthorizer) IsUserAuthorized(userLogin string) (bool, error) {
+func (a *LiveAuthorizer) IsUserAuthorized(ctx context.Context, userLogin string) (bool, error) {
 	// 1. Construct the request URL with the necessary query parameters.
-	url := fmt.Sprintf("%s?userlogin=%s&groupesecurite=%s", a.AuthBaseURL, userLogin, securityGroup)
+	// les valeurs sont échappées pour éviter toute injection dans la query string.
+	authUrl := fmt.Sprintf("%s?userlogin=%s&groupesecurite=%s",
+		a.AuthBaseURL, url.QueryEscape(userLogin), url.QueryEscape(securityGroup))
 
-	// 2. Perform the HTTP GET request.
-	resp, err := a.Client.Get(url)
+	// 2. Perform the HTTP GET request, bound to the caller context.
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, authUrl, nil)
+	if err != nil {
+		return false, fmt.Errorf("error creating authorization request: %w", err)
+	}
+	resp, err := a.Client.Do(req)
 	if err != nil {
 		return false, fmt.Errorf("error performing authorization request: %w", err)
 	}
@@ -80,8 +88,8 @@ type MockAuthorizer struct {
 	AllowBypass bool
 }
 
-// IsUserAuthorized for MockAuthorizer always returns true, bypassing the real check.
-func (m *MockAuthorizer) IsUserAuthorized(userLogin string) (bool, error) {
+// IsUserAuthorized for MockAuthorizer always returns AllowBypass, bypassing the real check.
+func (m *MockAuthorizer) IsUserAuthorized(_ context.Context, userLogin string) (bool, error) {
 	// In tests, we can simply return true to bypass the check.
 	// We could also add logic here to test failure scenarios.
 	return m.AllowBypass, nil

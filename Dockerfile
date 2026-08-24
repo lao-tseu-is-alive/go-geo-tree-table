@@ -1,5 +1,5 @@
 # Start from the latest golang base image
-FROM golang:1.24.5-alpine3.22 AS builder
+FROM golang:1.27-alpine3.24 AS builder
 
 # Define build arguments for version and build timestamp
 ARG APP_REVISION
