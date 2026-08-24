@@ -269,10 +269,37 @@ const getReceivedColumnsLabel = (row: unknown[]) => {
   return row.map((cell) => `${cell ?? ""}`.trim()).join(";");
 };
 
+const isEmptyCell = (cell: unknown) => `${cell ?? ""}`.trim() === "";
+
+// Le parseur de feuille (xlsx) ne restitue pas les cellules vides situées en
+// fin de ligne : "7001;31;...;19.08.2026;;" est rendu avec 9 colonnes au lieu
+// de 10. À l'inverse, un point-virgule final ajoute une colonne vide en trop.
+// On enlève donc les colonnes vides de fin avant toute vérification.
+const trimTrailingEmptyCells = (row: unknown[]): unknown[] => {
+  const cells = [...row];
+  while (cells.length > 0 && isEmptyCell(cells[cells.length - 1])) {
+    cells.pop();
+  }
+  return cells;
+};
+
+// Normalise une ligne de données : colonnes vides de fin supprimées, puis
+// complétées par des chaînes vides jusqu'au nombre de colonnes attendu.
+// Une ligne qui contient des valeurs au-delà des colonnes attendues garde sa
+// longueur réelle afin d'être signalée comme invalide.
+const normalizeDataRow = (row: unknown[]): unknown[] => {
+  const cells = trimTrailingEmptyCells(row);
+  while (cells.length < expectedColumnCount) {
+    cells.push("");
+  }
+  return cells;
+};
+
 const getInvalidDataRowShapes = (
   rows: unknown[][],
   firstDataRowNumber: number,
 ): IInvalidDataRowShape[] => {
+  log.t(`in getInvalidDataRowShapes rows.length :${rows.length}  `);
   return rows
     .map((row, index) => ({
       rowNumber: firstDataRowNumber + index,
@@ -294,10 +321,10 @@ const buildInvalidDataShapeMessage = (
       ? `; ${invalidRows.length - 5} autre(s) ligne(s) invalide(s)`
       : "";
   const missingColumnHint = invalidRows.some(
-    (row) => row.receivedColumnCount === expectedColumnCount - 1,
+    (row) => row.receivedColumnCount > expectedColumnCount,
   )
-    ? ` Une colonne semble absente: verifiez notamment la colonne "${altitudeColumnName}" (altitude Z, ajoutee apres E et N) et la colonne "essence".`
-    : "";
+    ? ` Une colonne en trop a ete detectee: verifiez les separateurs ";" surnumeraires ou une valeur (par exemple un commentaire) contenant un ";".`
+    : ` Une colonne semble absente: verifiez notamment la colonne "${altitudeColumnName}" (altitude Z, ajoutee apres E et N) et la colonne "essence".`;
 
   return [
     `Le fichier doit contenir exactement ${expectedColumnCount} colonnes.`,
@@ -462,7 +489,9 @@ const handleFileUpload = (e: Event) => {
       log.l("workbook", workbook);
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
-      const sheetData = utils.sheet_to_json(sheet, { header: 1 });
+      // defval: "" évite les "trous" dans les lignes pour les cellules vides
+      // (colonnes z ou commentaire non renseignées).
+      const sheetData = utils.sheet_to_json(sheet, { header: 1, defval: "" });
       log.l("sheetData", sheetData);
 
       // Filter out empty rows
@@ -498,7 +527,9 @@ const handleFileUpload = (e: Event) => {
         log.l("File has no header. Using predefined headers.");
       } else {
         // File has a header, validate it
-        receivedHeaderRow = filteredSheetData.shift() as string[];
+        receivedHeaderRow = trimTrailingEmptyCells(
+          data.shift() as unknown[],
+        ) as string[];
         firstDataRowNumber = 2;
         log.l("receivedHeaderRow", receivedHeaderRow);
         if (receivedHeaderRow.length !== expectedColumnCount) {
@@ -538,7 +569,7 @@ const handleFileUpload = (e: Event) => {
         }
       }
 
-      const dataRows = filteredSheetData as unknown[][];
+      const dataRows = data.map(normalizeDataRow);
       const invalidDataRowShapes = getInvalidDataRowShapes(
         dataRows,
         firstDataRowNumber,
@@ -613,7 +644,7 @@ const handleFileUpload = (e: Event) => {
       }
 
       store.setHeaders(receivedHeaderRow);
-      store.setData(filteredSheetData);
+      store.setData(dataRows);
       log.l("getHeaders", getHeaders.value);
       fileSelected.value = true;
       if (!displayFieldsList.value) {
